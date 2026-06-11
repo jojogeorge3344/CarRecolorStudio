@@ -40,6 +40,6 @@ D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Proj
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\Car Colour Project.sourcelink.json
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\bin\Debug\net10.0\data\car-details-db.json
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\4mthzs9lzj-{0}-p9lwhaqfie-p9lwhaqfie.gz
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\sgf4ka4t2u-{0}-j51x8ysryv-j51x8ysryv.gz
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\dgh69yr5lh-{0}-fr9mubgdtz-fr9mubgdtz.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\sgf4ka4t2u-{0}-3yi5hlnm2b-3yi5hlnm2b.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\4mthzs9lzj-{0}-5o7durced9-5o7durced9.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\dgh69yr5lh-{0}-z4y6q68sgf-z4y6q68sgf.gz

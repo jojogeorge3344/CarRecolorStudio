@@ -1,0 +1,90 @@
+﻿using System.Text.Json;
+using Car_Colour_Project.Models;
+
+namespace Car_Colour_Project.Services;
+
+public sealed class CarDetailsRepository : ICarDetailsRepository
+{
+    private readonly IWebHostEnvironment _environment;
+    private readonly SemaphoreSlim _syncLock = new(1, 1);
+    private readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
+
+    private readonly string _filePath;
+
+    public CarDetailsRepository(IWebHostEnvironment environment)
+    {
+        _environment = environment;
+        _filePath = Path.Combine(_environment.ContentRootPath, "data", "car-details-db.json");
+    }
+
+    public async Task<IReadOnlyList<CarDetailSection>> GetByCarIdAsync(string carId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(carId))
+        {
+            return [];
+        }
+
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            var store = await ReadStoreAsync(cancellationToken);
+            return store.TryGetValue(NormalizeCarId(carId), out var sections)
+                ? sections
+                : [];
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
+    public async Task SaveByCarIdAsync(string carId, IReadOnlyList<CarDetailSection> sections, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(carId))
+        {
+            return;
+        }
+
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            var store = await ReadStoreAsync(cancellationToken);
+            store[NormalizeCarId(carId)] = sections.ToList();
+            await WriteStoreAsync(store, cancellationToken);
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
+    private async Task<Dictionary<string, List<CarDetailSection>>> ReadStoreAsync(CancellationToken cancellationToken)
+    {
+        var directory = Path.GetDirectoryName(_filePath)!;
+        Directory.CreateDirectory(directory);
+
+        if (!File.Exists(_filePath))
+        {
+            return [];
+        }
+
+        await using var stream = File.OpenRead(_filePath);
+        var data = await JsonSerializer.DeserializeAsync<Dictionary<string, List<CarDetailSection>>>(stream, _serializerOptions, cancellationToken);
+        return data ?? [];
+    }
+
+    private async Task WriteStoreAsync(Dictionary<string, List<CarDetailSection>> store, CancellationToken cancellationToken)
+    {
+        var directory = Path.GetDirectoryName(_filePath)!;
+        Directory.CreateDirectory(directory);
+
+        await using var stream = File.Create(_filePath);
+        await JsonSerializer.SerializeAsync(stream, store, _serializerOptions, cancellationToken);
+    }
+
+    private static string NormalizeCarId(string carId) => carId.Trim().ToLowerInvariant();
+}

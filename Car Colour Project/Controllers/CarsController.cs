@@ -10,11 +10,13 @@ public sealed class CarsController : ControllerBase
 {
     private static readonly HashSet<string> AllowedImageExtensions = [".png", ".jpg", ".jpeg", ".webp"];
     private readonly ICarRepository _carRepository;
+    private readonly ICarDetailsRepository _carDetailsRepository;
     private readonly IWebHostEnvironment _environment;
 
-    public CarsController(ICarRepository carRepository, IWebHostEnvironment environment)
+    public CarsController(ICarRepository carRepository, ICarDetailsRepository carDetailsRepository, IWebHostEnvironment environment)
     {
         _carRepository = carRepository;
+        _carDetailsRepository = carDetailsRepository;
         _environment = environment;
     }
 
@@ -115,6 +117,26 @@ public sealed class CarsController : ControllerBase
         return Ok(updated);
     }
 
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return BadRequest("Car id is required.");
+        }
+
+        var deleted = await _carRepository.DeleteAsync(id, cancellationToken);
+        if (deleted is null)
+        {
+            return NotFound("Car not found.");
+        }
+
+        await _carDetailsRepository.DeleteByCarIdAsync(id, cancellationToken);
+        TryDeleteImage(deleted.Image);
+
+        return Ok(new { success = true, deletedCarId = deleted.Id });
+    }
+
     private async Task<string> EnsureUniqueCarIdAsync(string idBase, CancellationToken cancellationToken)
     {
         var suffix = 1;
@@ -153,10 +175,20 @@ public sealed class CarsController : ControllerBase
             return;
         }
 
-        var oldImagePath = Path.Combine(_environment.WebRootPath, oldImageRelativePath.Replace('/', Path.DirectorySeparatorChar));
-        if (System.IO.File.Exists(oldImagePath))
+        TryDeleteImage(oldImageRelativePath);
+    }
+
+    private void TryDeleteImage(string imageRelativePath)
+    {
+        if (string.IsNullOrWhiteSpace(imageRelativePath))
         {
-            System.IO.File.Delete(oldImagePath);
+            return;
+        }
+
+        var imagePath = Path.Combine(_environment.WebRootPath, imageRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (System.IO.File.Exists(imagePath))
+        {
+            System.IO.File.Delete(imagePath);
         }
     }
 

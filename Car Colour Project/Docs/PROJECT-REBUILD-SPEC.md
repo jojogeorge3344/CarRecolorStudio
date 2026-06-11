@@ -1,0 +1,766 @@
+# CarColourStudio — Rebuild Specification
+
+## 1) Project Overview
+
+**Product name:** CarColourStudio  
+**Type:** ASP.NET Core Web App (backend API + static frontend)  
+**Target framework:** .NET 10 (`net10.0`)  
+**Purpose:**
+- Let users select a car and recolor it using a chosen HEX color.
+- Provide searchable color library + category filtering.
+- Maintain recent color history in browser storage.
+- Support adding new cars with image upload.
+- Support updating existing car images.
+- Support per-car editable information sections (heading/description/font style).
+
+---
+
+## 2) Tech Stack
+
+### Backend
+- ASP.NET Core Web API (controllers)
+- Dependency Injection with singleton/scoped services
+- JSON file persistence (no database)
+- `SixLabors.ImageSharp` for image processing and recoloring
+- `Swashbuckle.AspNetCore` for Swagger in Development
+
+### Frontend
+- Plain HTML/CSS/JavaScript (no framework)
+- `fetch` API for backend calls
+- `localStorage` for recent colors
+- HTML canvas for manual paint overlay
+
+### Packages (exact)
+- `Swashbuckle.AspNetCore` `10.2.1`
+- `SixLabors.ImageSharp` `3.1.12`
+- `Microsoft.VisualStudio.Azure.Containers.Tools.Targets` `1.23.0`
+
+---
+
+## 3) Solution/Project Layout
+
+```text
+Car Colour Project.slnx
+Car Colour Project/
+  Car Colour Project.csproj
+  Program.cs
+  appsettings.json
+  appsettings.Development.json
+  Dockerfile
+  Controllers/
+	CarsController.cs
+	ColorsController.cs
+	RecolorController.cs
+	CarDetailsController.cs
+  Models/
+	Car.cs
+	ColorInfo.cs
+	RecolorRequest.cs
+	RecolorResponse.cs
+	CarDetailSection.cs
+  Services/
+	JsonDataLoader.cs
+	ICarRepository.cs
+	IColorRepository.cs
+	IImageRecolorService.cs
+	ICarDetailsRepository.cs
+	CarRepository.cs
+	ColorRepository.cs
+	ImageRecolorService.cs
+	CarDetailsRepository.cs
+  data/
+	cars.json
+	colors.json
+	car-details-db.json
+  wwwroot/
+	index.html
+	app.js
+	styles.css
+	images/      (source car images)
+	masks/       (optional grayscale masks)
+	generated/   (generated recolored images)
+```
+
+---
+
+## 4) Runtime & Hosting
+
+## HTTP URLs
+- `appsettings.json`: `http://localhost:5080;https://localhost:5081`
+- `appsettings.Development.json`: `http://localhost:5000;https://localhost:5001`
+
+## Middleware & startup behavior
+In `Program.cs`:
+1. Add controllers
+2. Add Swagger (Development only)
+3. Register repositories/services in DI
+4. Use HTTPS redirection
+5. Serve static files from `wwwroot`
+6. Map controllers
+7. Redirect `/` to `/index.html`
+
+---
+
+## 5) Dependency Injection Contract
+
+- `JsonDataLoader` → **Singleton**
+- `ICarRepository` → `CarRepository` (**Singleton**)
+- `IColorRepository` → `ColorRepository` (**Singleton**)
+- `ICarDetailsRepository` → `CarDetailsRepository` (**Singleton**)
+- `IImageRecolorService` → `ImageRecolorService` (**Scoped**)
+
+---
+
+## 6) Domain Models
+
+## `Car`
+- `id` (string, required)
+- `brand` (string, required)
+- `model` (string, required)
+- `image` (string, required, relative path like `images/bmw-x1.jpg`)
+
+## `ColorInfo`
+- `name` (string, required)
+- `hex` (string, required; `#RRGGBB` expected)
+- `category` (string, default `Custom`)
+
+## `RecolorRequest`
+- `carId` (required)
+- `hexColor` (required, regex: `^#(?:[0-9a-fA-F]{3}){1,2}$`)
+
+## `RecolorResponse`
+- `success` (bool)
+- `imageUrl` (string?)
+- `message` (string?)
+
+## `CarDetailSection`
+- `id` (string, required)
+- `heading` (string, required)
+- `description` (string, required)
+- `fontStyle` (string, required, UI uses: `inter|serif|mono|classic`)
+
+---
+
+## 7) Data Persistence Specification
+
+## Files
+- `data/cars.json` → array of `Car`
+- `data/colors.json` → seed array of `ColorInfo`
+- `data/car-details-db.json` → object map:
+  - key = normalized car id (trim + lowercase)
+  - value = `CarDetailSection[]`
+
+## Persistence behavior
+- Repositories cache in memory after first load.
+- Writes are file-based JSON overwrite with indentation.
+- Concurrency safety via `SemaphoreSlim` lock per repository.
+
+## Color expansion behavior
+`ColorRepository` auto-generates additional colors if seed list has fewer than 1000 items:
+- RGB step = 16 for each channel
+- De-duplicate by HEX
+- Categorize generated colors by RGB heuristics
+- Stop when total reaches ~1200
+- Final list sorted by color name
+
+---
+
+## 8) API Specification
+
+Base path: `/api`
+
+## Cars
+### `GET /api/cars`
+Returns all cars.
+
+### `GET /api/cars/search?term={text}`
+Returns cars where `brand`, `model`, or `"brand model"` matches term (case-insensitive).
+
+### `POST /api/cars` (multipart/form-data)
+Create new car.
+
+Form fields:
+- `brand` (required)
+- `model` (required)
+- `image` file (required)
+
+Allowed image extensions:
+- `.png`, `.jpg`, `.jpeg`, `.webp`
+
+Behavior:
+- Build slug id from `brand-model`:
+  - lowercase
+  - non-alphanumeric → `-`
+  - collapse repeated `-`
+  - trim leading/trailing `-`
+- Ensure uniqueness by suffixing `-1`, `-2`, etc.
+- Save image to `wwwroot/images/{carId}.{ext}`
+- Save car entry in `cars.json`
+
+Success: `201 Created` with car JSON.
+
+### `PUT /api/cars/{id}/image` (multipart/form-data)
+Update image for existing car.
+
+Form fields:
+- `image` file (required)
+
+Behavior:
+- Validate car exists
+- Validate extension
+- Save new image as `wwwroot/images/{id}-{unixMillis}.{ext}`
+- Update `cars.json` image path
+- Delete old image file if different and exists
+
+Success: `200 OK` with updated car JSON.
+
+## Colors
+### `GET /api/colors`
+Returns full color list (seed + generated)
+
+### `GET /api/colors/search?term={text}`
+Search by `name`, `hex`, or `category` (case-insensitive)
+
+## Recolor
+### `POST /api/recolor`
+Request body:
+```json
+{ "carId": "bmw-x1", "hexColor": "#FF2800" }
+```
+
+Behavior:
+- Validate car exists
+- Load source image from `wwwroot/{car.image}`
+- Optional: load grayscale mask from `wwwroot/masks` using one of:
+  - `{carId}.*`
+  - `{sanitizedCarId}.*`
+  - `{sourceFileNameWithoutExt}.*`
+- If mask not found, use auto-mask algorithm
+- Recolor and save to `wwwroot/generated/{sanitizedCarId}-{hexNoHashLower}.png`
+- Return generated URL `/generated/{file}`
+
+Success response:
+```json
+{ "success": true, "imageUrl": "/generated/bmwx1-ff2800.png", "message": null }
+```
+
+Failure:
+```json
+{ "success": false, "imageUrl": null, "message": "..." }
+```
+
+## Car Details
+### `GET /api/car-details/{carId}`
+Returns list of saved detail sections for a car (or `[]`).
+
+### `POST /api/car-details/{carId}`
+Request body: `CarDetailSection[]`
+
+Behavior:
+- Save array under normalized car id in `car-details-db.json`
+- Overwrites existing list for that car
+
+Success: `{ "success": true }`
+
+---
+
+## 9) Recolor Algorithm Specification
+
+Implemented in `ImageRecolorService`.
+
+## Input
+- Source pixel image (`Rgba32`)
+- Target color from HEX (`Rgba32`)
+- Optional grayscale mask (`L8`)
+
+## Output
+- PNG recolored image written to `/wwwroot/generated`
+
+## Strategy
+1. Parse HEX (`#RGB` or `#RRGGBB`; must start with `#`)
+2. Attempt load mask
+3. If mask exists:
+   - For each pixel:
+	 - Skip transparent pixels (`A < 10`)
+	 - Convert source pixel RGB→HSV
+	 - Compute mask weight from grayscale (`<0.15 => 0`)
+	 - Blend factor: `clamp((0.60 + s*0.30) * maskWeight, 0, 0.94)`
+	 - Blend target color scaled by source value channel (`v`) with original pixel
+4. If mask absent:
+   - Build auto-mask weight map using dominant hue detection + spatial/luminance fallback
+   - Smooth weight map with separable box blur radius 3
+   - Apply same blend formula
+
+## Auto-mask details
+- Ignore sky/ground strips (top/bottom 8%)
+- Ignore very dark (`v < 0.12`) and blown highlight (`v > 0.97 && s < 0.05`) pixels
+- Colored car path: hue proximity around dominant hue (±40°)
+- Neutral car path: centered ellipse + luminance gating
+
+## Error handling
+- Unsupported decoder/format throws clear message (AVIF/HEIC unsupported)
+- Missing source image throws file-not-found error
+
+---
+
+## 10) Frontend UI Specification
+
+Single-page static app (`index.html` + `app.js` + `styles.css`) with two modules:
+
+## Module A: Recolor Studio
+Features:
+- Car dropdown (grouped by brand)
+- Color search + category filter
+- Custom HEX input + native color picker
+- Recent colors chips (persisted in `localStorage` key `recentColors`)
+- Original/Recolored side-by-side view
+- Slider comparison with draggable range
+- Zoom control (`1.0` to `2.0`)
+- Fullscreen viewer
+- Download recolored image
+- Paint overlay tools (brush/eraser, size, color, clear)
+
+Flow:
+1. Load cars and colors from API on startup
+2. Select car → show original image in all image slots
+3. Select color → call `/api/recolor`
+4. Replace recolored image + enable download button
+
+## Module B: Car Info
+Features:
+- Search cars by brand/model
+- Select car and preview image
+- Add new car (brand, model, file upload)
+- Update selected car image
+- Add/edit/reorder/save car detail sections
+- Preview saved car details with style mapping
+
+Car details editor rules:
+- Heading required
+- Description required
+- Description max 1000 words
+- Drag-and-drop reorder in preview screen
+- Save writes full ordered list to backend
+
+Font mapping:
+- `inter` → Inter/Segoe
+- `serif` → Georgia/Times
+- `mono` → Courier New
+- `classic` → Cambria/Times
+
+---
+
+## 11) Client State Contract (`app.js`)
+
+Top-level state:
+- `cars`, `colors`, `filteredColors`
+- `selectedCar`, `selectedInfoCar`, `selectedColor`
+- `recent` (max 20)
+- `carDetailsByCar` map
+- `draftSections`
+- `paint` object: tool, size, color, drawing metadata
+
+Initialization (`init`):
+1. Load recent colors from localStorage
+2. Fetch cars + colors in parallel
+3. Populate dropdowns and filters
+4. Auto-select first car if present
+5. Wire event listeners
+6. Setup paint canvas
+
+---
+
+## 12) File/Path Conventions
+
+- Stored source images referenced as relative URLs like `images/file.ext`
+- API-generated images stored under `wwwroot/generated`
+- Optional masks stored under `wwwroot/masks`
+- Car ID in storage/search is case-insensitive for lookups
+- Car detail DB keys are lowercase normalized IDs
+
+---
+
+## 13) Security/Validation Baseline
+
+Current validations implemented:
+- Required checks for create/update forms and recolor request
+- Regex HEX validation in API model
+- File extension allowlist for uploaded car images
+
+Not implemented (recommended for rebuild hardening):
+- Max upload file size enforcement
+- MIME signature/content sniff validation
+- Authentication/authorization
+- Rate limiting for recolor endpoint
+
+---
+
+## 14) Build, Run, and Rebuild Instructions
+
+## Prerequisites
+- .NET 10 SDK
+- Optional: Visual Studio 2026 preview/insiders
+
+## Run locally
+```bash
+dotnet restore
+dotnet run --project "Car Colour Project/Car Colour Project.csproj"
+```
+
+Open:
+- `https://localhost:5081/index.html` (or configured URL)
+
+## Container build
+Use included Dockerfile (Windows nanoserver .NET 10 base images).
+
+---
+
+## 15) Acceptance Criteria for Rebuild
+
+A rebuild is functionally equivalent if all are true:
+1. App starts and serves `/index.html` from root redirect.
+2. `/api/cars`, `/api/colors`, `/api/recolor`, `/api/car-details/{carId}` behave as specified.
+3. Car creation and image update persist to `cars.json` and `wwwroot/images`.
+4. Recolor generates PNG in `/wwwroot/generated` and returns URL.
+5. Recolor works both with and without mask files.
+6. Car details can be created, reordered, saved, and reloaded.
+7. Frontend supports search/filter/recent/custom HEX/download/zoom/fullscreen/paint overlay.
+8. Color repository returns at least seed colors and generated palette expansion logic.
+
+---
+
+## 16) Known Constraints
+
+- JSON-file storage is single-node and not ideal for high concurrency.
+- Recolor processing is CPU-bound and synchronous per request execution path.
+- Generated images are not auto-cleaned; storage can grow over time.
+- Manual paint overlay is client-side only and not persisted to backend.
+
+---
+
+## 17) Rebuild Checklist (Implementation Order)
+
+1. Create ASP.NET Core web project targeting `net10.0`.
+2. Add package dependencies exactly.
+3. Implement models and interfaces.
+4. Implement JSON loader + repositories with locks + caching.
+5. Implement recolor service with mask + automask algorithm.
+6. Implement controllers and routes exactly as above.
+7. Add static frontend files and wire API calls.
+8. Add seed JSON files and required `wwwroot` folders.
+9. Configure startup middleware + DI + Swagger (dev only).
+10. Validate end-to-end with manual test scenarios from acceptance criteria.
+
+---
+
+## 18) High-Level Architecture Specification
+
+This section defines the system architecture in a way that allows a user to rebuild the same project from scratch.
+
+## Architectural style
+- Monolithic web application with clean logical layering.
+- Single deployable ASP.NET Core process.
+- Stateless API endpoints; state persisted in JSON files and browser localStorage.
+
+## Logical layers
+1. **Presentation Layer (Frontend)**
+   - `index.html`, `styles.css`, `app.js`
+   - Renders UI, tracks client state, and calls backend APIs.
+2. **API Layer (Controllers)**
+   - Receives HTTP requests, validates basic input, returns JSON/HTTP responses.
+3. **Domain/Data Access Layer (Repositories + Services)**
+   - Repositories handle JSON persistence and querying.
+   - Recolor service performs image processing.
+4. **Storage Layer**
+   - Filesystem under `data/` and `wwwroot/`.
+
+## Component interaction flow
+1. User performs action in browser.
+2. `app.js` updates local state and calls API via `fetch`.
+3. Controller delegates to repository/service.
+4. Repository/service reads/writes JSON or image files.
+5. API returns result to frontend.
+6. Frontend refreshes view/state.
+
+## Runtime deployment view
+- One web host process serving:
+  - static assets from `wwwroot`
+  - REST API under `/api/*`
+- Can run in local process or Windows container via Dockerfile.
+
+---
+
+## 19) Backend Method Catalog (Purpose + Workflow)
+
+This is the implementation contract for backend methods and public behavior.
+
+## `Program.cs` startup workflow
+- **Purpose:** Compose host, DI container, middleware pipeline, endpoint mapping.
+- **Functions configured:**
+  - `AddControllers`, `AddEndpointsApiExplorer`, `AddSwaggerGen`
+  - DI registrations for repositories/services
+  - `UseHttpsRedirection`, `UseStaticFiles`, `MapControllers`
+  - `MapGet("/", redirect to /index.html)`
+
+## Controllers
+
+### `CarsController`
+- `GetAll(cancellationToken)`
+  - **Purpose:** Return full car catalog.
+  - **Workflow:** repository `GetAllAsync` → `200 OK` list.
+- `Search(term, cancellationToken)`
+  - **Purpose:** Search cars by text.
+  - **Workflow:** repository `SearchAsync(term)` → `200 OK` list.
+- `Create(request, cancellationToken)`
+  - **Purpose:** Add new car and image.
+  - **Workflow:** validate brand/model/image → validate extension → slug/id generation → unique id check → file save → repository `AddAsync` → `201 Created`.
+- `UpdateImage(id, request, cancellationToken)`
+  - **Purpose:** Replace image for existing car.
+  - **Workflow:** validate id and image → verify car exists → validate extension → save new file → repository `UpdateImageAsync` → delete old file → `200 OK`.
+- `EnsureUniqueCarIdAsync(idBase, cancellationToken)`
+  - **Purpose:** Prevent duplicate IDs.
+- `ValidateImageExtension(image)`
+  - **Purpose:** Restrict upload file extensions.
+- `SaveImageAsync(image, imageFileName, cancellationToken)`
+  - **Purpose:** Persist uploaded image to `wwwroot/images`.
+- `TryDeleteOldImage(oldPath, newPath)`
+  - **Purpose:** Cleanup replaced image files.
+- `BuildSlug(input)`
+  - **Purpose:** Normalize brand/model into URL-safe ID.
+
+### `ColorsController`
+- `GetAll(cancellationToken)`
+  - **Purpose:** Return complete color library.
+- `Search(term, cancellationToken)`
+  - **Purpose:** Search colors by name/hex/category.
+
+### `RecolorController`
+- `Recolor(request, cancellationToken)`
+  - **Purpose:** Generate recolored car image.
+  - **Workflow:** validate car existence via repository → call recolor service → return success/failure response model.
+
+### `CarDetailsController`
+- `GetByCarId(carId, cancellationToken)`
+  - **Purpose:** Load saved details sections for selected car.
+- `SaveByCarId(carId, sections, cancellationToken)`
+  - **Purpose:** Persist ordered detail sections for selected car.
+
+## Services/Repositories
+
+### `JsonDataLoader`
+- `LoadListAsync<T>(relativePath, cancellationToken)`
+  - **Purpose:** Generic JSON array loader with case-insensitive deserialization.
+
+### `CarRepository`
+- `GetAllAsync(cancellationToken)`
+  - **Purpose:** Return cached cars or load from file.
+- `SearchAsync(term, cancellationToken)`
+  - **Purpose:** In-memory text search over cars.
+- `GetByIdAsync(id, cancellationToken)`
+  - **Purpose:** Case-insensitive ID lookup.
+- `AddAsync(car, cancellationToken)`
+  - **Purpose:** Add car, enforce unique ID, write file, update cache.
+- `UpdateImageAsync(id, imageRelativePath, cancellationToken)`
+  - **Purpose:** Replace image field and persist.
+- `WriteCarsAsync(cars, cancellationToken)`
+  - **Purpose:** Persist car list JSON with indentation.
+
+### `ColorRepository`
+- `GetAllAsync(cancellationToken)`
+  - **Purpose:** Return color library with generated expansion.
+- `SearchAsync(term, cancellationToken)`
+  - **Purpose:** In-memory text filtering.
+- `BuildGeneratedColors(existing)`
+  - **Purpose:** Expand palette when seed is small.
+- `DetermineCategory(r, g, b)`
+  - **Purpose:** Assign category heuristic for generated colors.
+
+### `CarDetailsRepository`
+- `GetByCarIdAsync(carId, cancellationToken)`
+  - **Purpose:** Load section list from key-value JSON store.
+- `SaveByCarIdAsync(carId, sections, cancellationToken)`
+  - **Purpose:** Upsert section list for car key.
+- `ReadStoreAsync(cancellationToken)`
+  - **Purpose:** Read full dictionary store from disk.
+- `WriteStoreAsync(store, cancellationToken)`
+  - **Purpose:** Persist dictionary store to disk.
+- `NormalizeCarId(carId)`
+  - **Purpose:** Consistent lowercase trimmed keying.
+
+### `ImageRecolorService`
+- `RecolorAsync(carId, sourceRelativePath, hexColor, cancellationToken)`
+  - **Purpose:** End-to-end recolor pipeline.
+- `TryLoadMaskAsync(carId, sourcePath, width, height, cancellationToken)`
+  - **Purpose:** Resolve optional grayscale mask and resize if needed.
+- `ApplyRecolorWithMask(image, mask, target)`
+  - **Purpose:** Pixel blend using explicit mask weights.
+- `BuildAutoMaskWeights(image)`
+  - **Purpose:** Build fallback weight map when no mask exists.
+- `ApplyRecolorWithWeights(image, weights, target)`
+  - **Purpose:** Pixel blend using auto weights.
+- `DetectDominantHue(image, width, height)`
+  - **Purpose:** Determine likely car body hue for colored cars.
+- `SmoothWeights(weights, width, height, radius)`
+  - **Purpose:** Feather edges in auto mask.
+- `BlendPixel(pixel, target, v, blend)`
+  - **Purpose:** Preserve shading while applying target color.
+- `ParseHex(hex)`
+  - **Purpose:** Convert HEX string to RGB values.
+- `RgbToHsv(r, g, b)` / `HueDiff(h1, h2)` / `GetMaskWeight(maskPixel)` / `Sanitize(input)`
+  - **Purpose:** Internal color math and file naming helpers.
+
+---
+
+## 20) Frontend Function Catalog (Purpose + Workflow)
+
+This section defines how each major frontend function contributes to behavior.
+
+## Bootstrapping & module routing
+- `init()`
+  - **Purpose:** Initialize app state and UI.
+  - **Workflow:** load recent colors → fetch cars/colors → populate UI → autoselect first car → wire events.
+- `wireEvents()`
+  - **Purpose:** Bind all user interaction handlers.
+- `setActiveModule(module)`
+  - **Purpose:** Toggle between Recolor and Car Info modules.
+
+## Car selection and info
+- `populateRecolorCarDropdown(cars)`
+  - **Purpose:** Build grouped car selector by brand.
+- `populateCarInfoDropdown(cars, searchTerm)`
+  - **Purpose:** Build car dropdown for info module with filtering.
+- `selectCar(carId)`
+  - **Purpose:** Set active car for recolor workflow and reset dependent state.
+- `renderCarInfo(carId)`
+  - **Purpose:** Show selected car preview + actions in Car Info module.
+- `applyCarInfoSearch()` / `matchesCarTerm(car, term)` / `renderCarSearchResults(cars, term)`
+  - **Purpose:** Car search UX behavior.
+
+## Car create/update operations
+- `handleAddCar()`
+  - **Purpose:** Submit new car form to backend.
+- `handleUpdateCarImage()`
+  - **Purpose:** Upload replacement image for selected car.
+- `setAddCarFeedback(...)` / `setUpdateCarImageFeedback(...)` / `resetAddCarForm()`
+  - **Purpose:** User feedback and form reset controls.
+
+## Car details editor/viewer
+- `openDetailsEditor()` / `openDetailsViewer()`
+  - **Purpose:** Enter details edit/view modes.
+- `addDetailSection()` / `validateSectionInputs()` / `updateWordCount()` / `countWords(text)`
+  - **Purpose:** Validate and add section drafts.
+- `openPreviewScreen()` / `renderPreviewSections()` / `reorderDraftSections(...)`
+  - **Purpose:** Reorder sections via drag-and-drop.
+- `savePreviewOrder()`
+  - **Purpose:** Persist ordered sections to backend.
+- `renderDraftSections()` / `renderSavedDetails(...)`
+  - **Purpose:** Visualize draft/saved section content.
+- `syncCarDetailsForCar(carId)`
+  - **Purpose:** Fetch latest server-side section list for selected car.
+
+## Color/recolor workflow
+- `renderCategoryFilter(colors)`
+  - **Purpose:** Build category dropdown.
+- `applyColorFilter()`
+  - **Purpose:** Filter color list by search term and category.
+- `renderColorList(colors)`
+  - **Purpose:** Render selectable color rows.
+- `applyColor(color)`
+  - **Purpose:** Execute recolor operation against backend and refresh recolored image.
+
+## Recent colors
+- `pushRecent(color)` / `loadRecent()` / `renderRecent()`
+  - **Purpose:** Persist and render recently used colors in localStorage.
+
+## Viewer, paint, and utility functions
+- `setupPaintCanvas()` / `resizePaintCanvas()` / `setPaintTool(tool)`
+  - **Purpose:** Initialize and maintain paint overlay behavior.
+- `startPaint(event)` / `movePaint(event)` / `stopPaint()` / `clearPaintCanvas()` / `getPaintPoint(event)`
+  - **Purpose:** Manual brush/eraser drawing over recolored image.
+- `downloadRecoloredImage()`
+  - **Purpose:** Download current recolored output image.
+- `setStatusLabel(...)`, `fetchJson(url)`, `debounce(fn, delay)`, `applyFont(...)`
+  - **Purpose:** Shared UI/network helper operations.
+
+---
+
+## 21) End-to-End Workflow Specifications
+
+## Workflow A: Startup
+1. Browser loads `index.html` and static assets.
+2. `init()` executes.
+3. Cars/colors fetched from `/api/cars` and `/api/colors`.
+4. First car auto-selected if available.
+5. UI becomes interactive.
+
+## Workflow B: Recolor a car
+1. User selects car.
+2. User selects library color or custom HEX.
+3. Frontend sends `POST /api/recolor`.
+4. Backend generates/reuses recolored output file.
+5. Frontend displays recolored image and enables download.
+
+## Workflow C: Add new car
+1. User enters brand/model and selects image file.
+2. Frontend sends multipart `POST /api/cars`.
+3. Backend validates, creates unique ID, stores image, persists car record.
+4. Frontend refreshes selectors and auto-selects new car.
+
+## Workflow D: Update car image
+1. User selects existing car and picks replacement image.
+2. Frontend sends multipart `PUT /api/cars/{id}/image`.
+3. Backend stores new file, updates JSON, removes old image.
+4. Frontend refreshes displayed image and related state.
+
+## Workflow E: Add/reorder car details
+1. User opens details editor for selected car.
+2. User adds one or more heading/description sections.
+3. User opens preview and drag-reorders sections.
+4. User saves; frontend posts ordered array to `/api/car-details/{carId}`.
+5. Backend persists ordered list in JSON store.
+
+---
+
+## 22) Future Feature Extension Blueprint
+
+This section ensures future users can add features safely using the same architecture.
+
+## Extension principles
+- Keep controllers thin; move business logic to services/repositories.
+- Preserve API contracts unless introducing versioned endpoints.
+- Keep shared model changes backward compatible when possible.
+- Reuse existing JSON loader, caching, and lock patterns.
+- Add frontend features by extending state + isolated render/handler functions.
+
+## Recommended extension patterns
+
+### Add new backend feature
+1. Define model contract in `Models/`.
+2. Add interface contract in `Services/` (`I*`).
+3. Implement service/repository with lock-safe file operations if persistence needed.
+4. Register DI in `Program.cs`.
+5. Expose endpoint in a controller.
+6. Update spec sections: API, method catalog, workflows, acceptance criteria.
+
+### Add new frontend feature
+1. Add required HTML section/controls.
+2. Add state fields in `state` object.
+3. Add render function + event handlers in `app.js`.
+4. Integrate with API calls using `fetchJson` or `fetch`.
+5. Extend CSS styles while preserving existing token design system.
+6. Document function purpose and workflow in this spec.
+
+### Replace JSON storage with database (future migration)
+- Keep repository interfaces unchanged.
+- Swap repository implementations with DB-based versions.
+- Preserve controller contracts and frontend API calls.
+- Migrate seed and existing JSON data with one-time migration scripts.
+
+## Feature governance checklist for future changes
+- Is architecture layering still respected?
+- Are API request/response contracts explicitly documented?
+- Are file/path conventions still consistent?
+- Are new workflows captured in spec?
+- Are acceptance criteria updated for the feature?
+
+If all answers are yes, the feature is considered spec-compliant and maintainable.

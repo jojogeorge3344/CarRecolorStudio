@@ -131,6 +131,39 @@ public sealed class CarRepository : ICarRepository
         }
     }
 
+    public async Task<Car?> DeleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            _cache ??= await _dataLoader.LoadListAsync<Car>(Path.Combine("data", "cars.json"), cancellationToken);
+
+            var cars = _cache.ToList();
+            var index = cars.FindIndex(existing => string.Equals(existing.Id, id, StringComparison.OrdinalIgnoreCase));
+            if (index < 0)
+            {
+                return null;
+            }
+
+            var removed = cars[index];
+            cars.RemoveAt(index);
+
+            await WriteCarsAsync(cars, cancellationToken);
+            _cache = cars;
+
+            return removed;
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
     private async Task WriteCarsAsync(List<Car> cars, CancellationToken cancellationToken)
     {
         var directory = Path.GetDirectoryName(_carsFilePath)!;

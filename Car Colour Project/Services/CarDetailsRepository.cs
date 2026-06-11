@@ -62,6 +62,28 @@ public sealed class CarDetailsRepository : ICarDetailsRepository
         }
     }
 
+    public async Task DeleteByCarIdAsync(string carId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(carId))
+        {
+            return;
+        }
+
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            var store = await ReadStoreAsync(cancellationToken);
+            if (store.Remove(NormalizeCarId(carId)))
+            {
+                await WriteStoreAsync(store, cancellationToken);
+            }
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
     private async Task<Dictionary<string, List<CarDetailSection>>> ReadStoreAsync(CancellationToken cancellationToken)
     {
         var directory = Path.GetDirectoryName(_filePath)!;

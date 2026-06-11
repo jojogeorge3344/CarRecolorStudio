@@ -23,10 +23,35 @@ const state = {
 
 const MAX_RECENT = 20;
 
+let appInitialized = false;
+let engineAudioContext = null;
+let engineOscillator = null;
+let engineGain = null;
+let loginSuccessAudio = null;
+let smokeAudioContext = null;
+let smokeNoiseSource = null;
+let smokeGain = null;
+let roamingCarTimer = null;
+
 // ─────────────────────────────────────────────
 //  Element references
 // ─────────────────────────────────────────────
 const el = {
+    appShell: document.getElementById('appShell'),
+    loginScreen: document.getElementById('loginScreen'),
+    loginRoamingCar: document.getElementById('loginRoamingCar'),
+    loginForm: document.getElementById('loginForm'),
+    loginUsername: document.getElementById('loginUsername'),
+    loginPassword: document.getElementById('loginPassword'),
+    loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+    loginError: document.getElementById('loginError'),
+    loginAnimationOverlay: document.getElementById('loginAnimationOverlay'),
+    animationScene: document.getElementById('animationScene'),
+    animationCar: document.getElementById('animationCar'),
+    blastPieces: document.getElementById('blastPieces'),
+    animationFog: document.getElementById('animationFog'),
+    animationResultText: document.getElementById('animationResultText'),
+    logoutBtn: document.getElementById('logoutBtn'),
     recolorModuleBtn: document.getElementById('recolorModuleBtn'),
     carInfoModuleBtn: document.getElementById('carInfoModuleBtn'),
     recolorModule: document.getElementById('recolorModule'),
@@ -72,7 +97,9 @@ const el = {
     carInfoActions: document.getElementById('carInfoActions'),
     updateCarImageInput: document.getElementById('updateCarImageInput'),
     saveCarImageBtn: document.getElementById('saveCarImageBtn'),
+    deleteCarBtn: document.getElementById('deleteCarBtn'),
     updateCarImageFeedback: document.getElementById('updateCarImageFeedback'),
+    deleteCarFeedback: document.getElementById('deleteCarFeedback'),
     newCarBrand: document.getElementById('newCarBrand'),
     newCarModel: document.getElementById('newCarModel'),
     newCarImage: document.getElementById('newCarImage'),
@@ -103,7 +130,400 @@ const el = {
 // ─────────────────────────────────────────────
 //  Boot
 // ─────────────────────────────────────────────
-init();
+bootLogin();
+
+function bootLogin() {
+    el.loginForm.addEventListener('submit', handleLoginSubmit);
+    el.logoutBtn.addEventListener('click', handleLogoutClick);
+    window.addEventListener('resize', moveRoamingCar);
+    el.loginUsername.value = '';
+    el.loginPassword.value = '';
+    startRoamingLoginCar();
+}
+
+async function handleLoginSubmit(event) {
+    event.preventDefault();
+
+    const username = el.loginUsername.value.trim();
+    const password = el.loginPassword.value;
+
+    el.loginSubmitBtn.disabled = true;
+    setLoginError('');
+
+    let isSuccess = false;
+    try {
+        isSuccess = await authenticateLogin(username, password);
+    } catch (error) {
+        console.error('Login validation failed:', error);
+        setLoginError('Unable to validate login right now. Please try again.');
+        el.loginSubmitBtn.disabled = false;
+        return;
+    }
+
+    if (!isSuccess) {
+        setLoginError('Login failed. Username or password is incorrect.');
+        el.loginPassword.value = '';
+        el.loginUsername.focus();
+        el.loginSubmitBtn.disabled = false;
+        return;
+    }
+
+    stopRoamingLoginCar();
+    await playLoginAnimation();
+
+    el.loginScreen.classList.add('hidden');
+    el.appShell.classList.remove('hidden');
+    await startApp();
+
+    el.loginSubmitBtn.disabled = false;
+}
+
+async function startApp() {
+    if (appInitialized) {
+        setActiveModule('recolor');
+        return;
+    }
+
+    appInitialized = true;
+    await init();
+    setActiveModule('recolor');
+}
+
+function startRoamingLoginCar() {
+    if (roamingCarTimer) {
+        return;
+    }
+
+    el.loginRoamingCar.classList.remove('hidden');
+    moveRoamingCar();
+    roamingCarTimer = window.setInterval(moveRoamingCar, 900);
+}
+
+function stopRoamingLoginCar() {
+    if (roamingCarTimer) {
+        window.clearInterval(roamingCarTimer);
+        roamingCarTimer = null;
+    }
+
+    el.loginRoamingCar.classList.add('hidden');
+}
+
+function moveRoamingCar() {
+    if (el.loginScreen.classList.contains('hidden')) {
+        return;
+    }
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const x = Math.max(16, Math.floor(Math.random() * (width - 120)));
+    const y = Math.max(16, Math.floor(Math.random() * (height - 120)));
+    const rotation = Math.floor(Math.random() * 360);
+
+    el.loginRoamingCar.style.left = `${x}px`;
+    el.loginRoamingCar.style.top = `${y}px`;
+    el.loginRoamingCar.style.transform = `rotate(${rotation}deg)`;
+}
+
+async function playLoginAnimation() {
+    el.animationScene.classList.remove('logout-mode');
+    el.loginAnimationOverlay.classList.remove('hidden');
+    el.animationFog.classList.remove('show');
+    el.animationResultText.classList.remove('show', 'logout-cloud', 'blast-out');
+    el.animationResultText.textContent = '';
+    el.animationCar.classList.remove('car-blast');
+    el.blastPieces.classList.remove('active');
+    el.blastPieces.innerHTML = buildBlastPiecesMarkup(18);
+
+    playLoginSuccessSound();
+
+    return new Promise(resolve => {
+        window.setTimeout(() => {
+            el.animationCar.classList.add('car-blast');
+            el.blastPieces.classList.add('active');
+        }, 250);
+
+        window.setTimeout(() => {
+            el.animationResultText.textContent = 'LOGIN SUCCESS';
+            el.animationResultText.classList.add('show');
+        }, 950);
+
+        window.setTimeout(() => {
+            stopLoginSuccessSound();
+            el.loginAnimationOverlay.classList.add('hidden');
+            el.animationResultText.classList.remove('show');
+            el.animationResultText.textContent = '';
+            el.blastPieces.classList.remove('active');
+            el.blastPieces.innerHTML = '';
+            resolve();
+        }, 2600);
+    });
+}
+
+function buildBlastPiecesMarkup(count) {
+    let markup = '';
+    for (let i = 0; i < count; i++) {
+        const tx = Math.floor((Math.random() * 360) - 180);
+        const ty = Math.floor((Math.random() * 280) - 140);
+        const rot = Math.floor((Math.random() * 720) - 360);
+        const delay = (Math.random() * 0.22).toFixed(2);
+        markup += `<span class="blast-piece" style="--tx:${tx}px;--ty:${ty}px;--rot:${rot}deg;--delay:${delay}s"></span>`;
+    }
+
+    return markup;
+}
+
+async function handleLogoutClick() {
+    el.logoutBtn.disabled = true;
+
+    await playLogoutAnimation();
+
+    setActiveModule('recolor');
+    setLoginError('');
+    el.loginPassword.value = '';
+    el.loginScreen.classList.remove('hidden');
+    el.appShell.classList.add('hidden');
+    startRoamingLoginCar();
+    el.loginUsername.focus();
+
+    el.logoutBtn.disabled = false;
+}
+
+async function playLogoutAnimation() {
+    el.animationScene.classList.add('logout-mode');
+    el.loginAnimationOverlay.classList.remove('hidden');
+    el.animationFog.classList.remove('show');
+    el.animationResultText.classList.remove('show', 'blast-out');
+    el.animationResultText.classList.add('logout-cloud');
+    el.animationResultText.innerHTML = '';
+
+    const logoutMessage = 'LOGOUT SUCCESS';
+    const timing = getLogoutBlastTiming(logoutMessage.length);
+
+    startSmokeSound();
+
+    return new Promise(resolve => {
+        window.setTimeout(() => {
+            el.animationFog.classList.add('show');
+            el.animationResultText.innerHTML = `<span class="logout-cloud-bubble">${buildLogoutLettersMarkup(logoutMessage)}</span>`;
+            el.animationResultText.classList.add('show', 'blast-out');
+        }, 220);
+
+        window.setTimeout(() => {
+            stopSmokeSound();
+            el.loginAnimationOverlay.classList.add('hidden');
+            el.animationScene.classList.remove('logout-mode');
+            el.animationResultText.classList.remove('logout-cloud', 'blast-out');
+            el.animationResultText.innerHTML = '';
+            resolve();
+        }, 220 + timing.totalMs);
+    });
+}
+
+function buildLogoutLettersMarkup(message) {
+    return [...message]
+        .map((character, index) => {
+            const content = character === ' ' ? '&nbsp;' : character;
+            return `<span class="logout-letter" style="--i:${index};">${content}</span>`;
+        })
+        .join('');
+}
+
+function getLogoutBlastTiming(charCount) {
+    const delayMs = 70;
+    const burnMs = 280;
+    const blastMs = 360;
+    const tailMs = 80;
+    const totalMs = Math.max(1200, (Math.max(1, charCount) - 1) * delayMs + burnMs + blastMs + tailMs);
+
+    return { totalMs };
+}
+
+async function authenticateLogin(username, password) {
+    const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+
+    if (!response.ok) {
+        throw new Error('Login API failed');
+    }
+
+    const result = await response.json();
+    return !!result.success;
+}
+
+function setLoginError(message) {
+    el.loginError.textContent = message;
+    el.loginError.classList.toggle('hidden', !message);
+}
+
+function startEngineSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return;
+        }
+
+        stopEngineSound();
+
+        engineAudioContext = new AudioContextClass();
+        engineOscillator = engineAudioContext.createOscillator();
+        engineGain = engineAudioContext.createGain();
+
+        engineOscillator.type = 'sawtooth';
+        engineOscillator.frequency.setValueAtTime(110, engineAudioContext.currentTime);
+        engineOscillator.frequency.linearRampToValueAtTime(180, engineAudioContext.currentTime + 2.6);
+
+        engineGain.gain.setValueAtTime(0.001, engineAudioContext.currentTime);
+        engineGain.gain.linearRampToValueAtTime(0.06, engineAudioContext.currentTime + 0.25);
+
+        engineOscillator.connect(engineGain);
+        engineGain.connect(engineAudioContext.destination);
+        engineOscillator.start();
+    } catch (error) {
+        console.error('Engine sound start failed:', error);
+    }
+}
+
+function stopEngineSound() {
+    try {
+        if (engineGain && engineAudioContext) {
+            engineGain.gain.cancelScheduledValues(engineAudioContext.currentTime);
+            engineGain.gain.setTargetAtTime(0.0001, engineAudioContext.currentTime, 0.12);
+        }
+
+        if (engineOscillator) {
+            engineOscillator.stop();
+            engineOscillator.disconnect();
+        }
+
+        if (engineGain) {
+            engineGain.disconnect();
+        }
+
+        if (engineAudioContext) {
+            engineAudioContext.close();
+        }
+    } catch (error) {
+        console.error('Engine sound stop failed:', error);
+    } finally {
+        engineAudioContext = null;
+        engineOscillator = null;
+        engineGain = null;
+    }
+}
+
+function playLoginSuccessSound() {
+    try {
+        stopLoginSuccessSound();
+        loginSuccessAudio = new Audio('/sounds/login-success.mp3');
+        loginSuccessAudio.volume = 1;
+        loginSuccessAudio.currentTime = 0;
+        loginSuccessAudio.play().catch(() => {});
+    } catch (error) {
+        console.error('Login success audio start failed:', error);
+    }
+}
+
+function stopLoginSuccessSound() {
+    try {
+        if (!loginSuccessAudio) {
+            return;
+        }
+
+        loginSuccessAudio.pause();
+        loginSuccessAudio.currentTime = 0;
+    } catch (error) {
+        console.error('Login success audio stop failed:', error);
+    } finally {
+        loginSuccessAudio = null;
+    }
+}
+
+function startSmokeSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return;
+        }
+
+        stopSmokeSound();
+
+        smokeAudioContext = new AudioContextClass();
+        const now = smokeAudioContext.currentTime;
+
+        const bufferSize = smokeAudioContext.sampleRate * 2;
+        const noiseBuffer = smokeAudioContext.createBuffer(1, bufferSize, smokeAudioContext.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = (Math.random() * 2 - 1) * 0.34;
+        }
+
+        smokeNoiseSource = smokeAudioContext.createBufferSource();
+        smokeNoiseSource.buffer = noiseBuffer;
+        smokeNoiseSource.loop = true;
+
+        const smokeFilter = smokeAudioContext.createBiquadFilter();
+        smokeFilter.type = 'bandpass';
+        smokeFilter.frequency.setValueAtTime(540, now);
+
+        const whooshOscillator = smokeAudioContext.createOscillator();
+        whooshOscillator.type = 'triangle';
+        whooshOscillator.frequency.setValueAtTime(180, now);
+        whooshOscillator.frequency.exponentialRampToValueAtTime(52, now + 1.4);
+
+        smokeGain = smokeAudioContext.createGain();
+        smokeGain.gain.setValueAtTime(0.001, now);
+        smokeGain.gain.linearRampToValueAtTime(0.2, now + 0.16);
+
+        const whooshGain = smokeAudioContext.createGain();
+        whooshGain.gain.setValueAtTime(0.0001, now);
+        whooshGain.gain.linearRampToValueAtTime(0.12, now + 0.18);
+
+        smokeNoiseSource.connect(smokeFilter);
+        smokeFilter.connect(smokeGain);
+        smokeGain.connect(smokeAudioContext.destination);
+
+        whooshOscillator.connect(whooshGain);
+        whooshGain.connect(smokeAudioContext.destination);
+
+        smokeNoiseSource.start();
+        whooshOscillator.start();
+        whooshOscillator.stop(now + 1.5);
+    } catch (error) {
+        console.error('Smoke sound start failed:', error);
+    }
+}
+
+function stopSmokeSound() {
+    try {
+        if (smokeGain && smokeAudioContext) {
+            smokeGain.gain.cancelScheduledValues(smokeAudioContext.currentTime);
+            smokeGain.gain.setTargetAtTime(0.0001, smokeAudioContext.currentTime, 0.18);
+        }
+
+        if (smokeNoiseSource) {
+            smokeNoiseSource.stop();
+            smokeNoiseSource.disconnect();
+        }
+
+        if (smokeGain) {
+            smokeGain.disconnect();
+        }
+
+        if (smokeAudioContext) {
+            smokeAudioContext.close();
+        }
+    } catch (error) {
+        console.error('Smoke sound stop failed:', error);
+    } finally {
+        smokeAudioContext = null;
+        smokeNoiseSource = null;
+        smokeGain = null;
+    }
+}
 
 async function init() {
     state.recent = loadRecent();
@@ -209,6 +629,7 @@ function wireEvents() {
 
     el.addCarBtn.addEventListener('click', handleAddCar);
     el.saveCarImageBtn.addEventListener('click', handleUpdateCarImage);
+    el.deleteCarBtn.addEventListener('click', handleDeleteCar);
     el.addCarDetailsBtn.addEventListener('click', openDetailsEditor);
     el.viewCarInfoBtn.addEventListener('click', openDetailsViewer);
     el.detailDescription.addEventListener('input', updateWordCount);
@@ -341,6 +762,7 @@ async function renderCarInfo(carId) {
     el.carInfoImageWrap.classList.remove('hidden');
     el.carInfoActions.classList.remove('hidden');
     setUpdateCarImageFeedback('', false, true);
+    setDeleteCarFeedback('', false, true);
 
     showDefaultCarInfoScreen();
 }
@@ -354,6 +776,7 @@ function clearCarInfoPreview() {
     el.carInfoActions.classList.add('hidden');
     el.updateCarImageInput.value = '';
     setUpdateCarImageFeedback('', false, true);
+    setDeleteCarFeedback('', false, true);
     hideDetailScreens();
 }
 
@@ -552,6 +975,63 @@ async function handleUpdateCarImage() {
     }
 }
 
+async function handleDeleteCar() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) {
+        setDeleteCarFeedback('Select a car first.', true);
+        return;
+    }
+
+    const car = state.cars.find(c => c.id === carId);
+    if (!car) {
+        setDeleteCarFeedback('Car not found in current list.', true);
+        return;
+    }
+
+    const confirmed = window.confirm(`Delete ${car.brand} ${car.model}? This removes image and details permanently.`);
+    if (!confirmed) {
+        return;
+    }
+
+    el.deleteCarBtn.disabled = true;
+    setDeleteCarFeedback('Deleting car...', false);
+
+    try {
+        const response = await fetch(`/api/cars/${encodeURIComponent(carId)}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(message || 'Failed to delete car.');
+        }
+
+        state.cars = state.cars.filter(item => item.id !== carId);
+        delete state.carDetailsByCar[carId];
+
+        populateRecolorCarDropdown(state.cars);
+        populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
+
+        if (state.cars.length === 0) {
+            el.carSelect.value = '';
+            el.carInfoSelect.value = '';
+            clearCarInfoPreview();
+            resetRecolorViewerForNoCars();
+            setDeleteCarFeedback('Car deleted successfully.', false);
+            return;
+        }
+
+        const fallbackCar = state.cars[0];
+        el.carSelect.value = fallbackCar.id;
+        el.carInfoSelect.value = fallbackCar.id;
+        selectCar(fallbackCar.id);
+        await renderCarInfo(fallbackCar.id);
+        setDeleteCarFeedback('Car deleted successfully.', false);
+    } catch (err) {
+        console.error('Delete car failed:', err);
+        setDeleteCarFeedback(err.message || 'Failed to delete car. Please try again.', true);
+    } finally {
+        el.deleteCarBtn.disabled = false;
+    }
+}
+
 function setUpdateCarImageFeedback(message, isError, hide = false) {
     if (hide) {
         el.updateCarImageFeedback.textContent = '';
@@ -563,6 +1043,37 @@ function setUpdateCarImageFeedback(message, isError, hide = false) {
     el.updateCarImageFeedback.textContent = message;
     el.updateCarImageFeedback.classList.remove('hidden', 'error', 'success');
     el.updateCarImageFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+function setDeleteCarFeedback(message, isError, hide = false) {
+    if (hide) {
+        el.deleteCarFeedback.textContent = '';
+        el.deleteCarFeedback.classList.add('hidden');
+        el.deleteCarFeedback.classList.remove('error', 'success');
+        return;
+    }
+
+    el.deleteCarFeedback.textContent = message;
+    el.deleteCarFeedback.classList.remove('hidden', 'error', 'success');
+    el.deleteCarFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+function resetRecolorViewerForNoCars() {
+    state.selectedCar = null;
+    state.selectedColor = null;
+    el.downloadRecoloredBtn.disabled = true;
+    clearPaintCanvas();
+
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+        img.src = '';
+        img.alt = '';
+    });
+
+    el.carInfo.classList.add('hidden');
+    el.compareArea.classList.add('hidden');
+    el.emptyState.classList.remove('hidden');
+    setStatusLabel(el.selectedCarLabel, '🚗', 'No car selected');
+    setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
 }
 
 // ─────────────────────────────────────────────
