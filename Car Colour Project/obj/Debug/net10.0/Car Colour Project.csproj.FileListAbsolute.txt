@@ -26,9 +26,6 @@ D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Proj
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\scopedcss\bundle\Car Colour Project.styles.css
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\4mthzs9lzj-{0}-6vj7f6kkif-6vj7f6kkif.gz
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\sgf4ka4t2u-{0}-7hzn3gz94q-7hzn3gz94q.gz
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\dgh69yr5lh-{0}-hobxnwihwj-hobxnwihwj.gz
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\staticwebassets.build.json
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\staticwebassets.build.json.cache
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\staticwebassets.development.json
@@ -41,3 +38,8 @@ D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Proj
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\Car Colour Project.genruntimeconfig.cache
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\ref\Car Colour Project.dll
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\Car Colour Project.sourcelink.json
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\bin\Debug\net10.0\data\car-details-db.json
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\dgh69yr5lh-{0}-bfiq0j2n3w-bfiq0j2n3w.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\sgf4ka4t2u-{0}-28svo49hl2-28svo49hl2.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\4mthzs9lzj-{0}-2yy9to95id-2yy9to95id.gz

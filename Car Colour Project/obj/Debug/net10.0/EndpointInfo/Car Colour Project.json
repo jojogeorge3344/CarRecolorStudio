@@ -17,6 +17,76 @@
         }
       }
     },
+    "/api/car-details/{carId}": {
+      "get": {
+        "tags": [
+          "CarDetails"
+        ],
+        "parameters": [
+          {
+            "name": "carId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CarDetails"
+        ],
+        "parameters": [
+          {
+            "name": "carId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CarDetailSection"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CarDetailSection"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CarDetailSection"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Cars": {
       "get": {
         "tags": [
@@ -134,6 +204,34 @@
   },
   "components": {
     "schemas": {
+      "CarDetailSection": {
+        "required": [
+          "description",
+          "fontStyle",
+          "heading",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "heading": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fontStyle": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "RecolorRequest": {
         "required": [
           "carId",
@@ -175,6 +273,9 @@
   "tags": [
     {
       "name": "Car Colour Project"
+    },
+    {
+      "name": "CarDetails"
     },
     {
       "name": "Cars"

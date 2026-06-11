@@ -6,8 +6,19 @@ const state = {
     colors: [],
     filteredColors: [],
     selectedCar: null,
+    selectedInfoCar: null,
     selectedColor: null,
-    recent: []
+    recent: [],
+    carDetailsByCar: {},
+    draftSections: [],
+    paint: {
+        tool: 'brush',
+        size: 12,
+        color: '#FF2800',
+        isDrawing: false,
+        lastX: 0,
+        lastY: 0
+    }
 };
 
 const MAX_RECENT = 20;
@@ -16,6 +27,10 @@ const MAX_RECENT = 20;
 //  Element references
 // ─────────────────────────────────────────────
 const el = {
+    recolorModuleBtn: document.getElementById('recolorModuleBtn'),
+    carInfoModuleBtn: document.getElementById('carInfoModuleBtn'),
+    recolorModule: document.getElementById('recolorModule'),
+    carInfoModule: document.getElementById('carInfoModule'),
     carSelect: document.getElementById('carSelect'),
     carInfo: document.getElementById('carInfo'),
     carBrandBadge: document.getElementById('carBrandBadge'),
@@ -36,10 +51,45 @@ const el = {
     compareSlider: document.getElementById('compareSlider'),
     zoomRange: document.getElementById('zoomRange'),
     viewer: document.getElementById('viewer'),
+    downloadRecoloredBtn: document.getElementById('downloadRecoloredBtn'),
+    paintBrushBtn: document.getElementById('paintBrushBtn'),
+    eraseBrushBtn: document.getElementById('eraseBrushBtn'),
+    paintSizeRange: document.getElementById('paintSizeRange'),
+    paintColorPicker: document.getElementById('paintColorPicker'),
+    clearPaintBtn: document.getElementById('clearPaintBtn'),
+    paintCanvas: document.getElementById('paintCanvas'),
     fullscreenBtn: document.getElementById('fullscreenBtn'),
     emptyState: document.getElementById('emptyState'),
     compareArea: document.getElementById('compareArea'),
-    recolorLoader: document.getElementById('recolorLoader')
+    recolorLoader: document.getElementById('recolorLoader'),
+    carNameSearch: document.getElementById('carNameSearch'),
+    carSearchResults: document.getElementById('carSearchResults'),
+    carInfoSelect: document.getElementById('carInfoSelect'),
+    carInfoImageWrap: document.getElementById('carInfoImageWrap'),
+    carInfoEmpty: document.getElementById('carInfoEmpty'),
+    carInfoImage: document.getElementById('carInfoImage'),
+    carInfoTitle: document.getElementById('carInfoTitle'),
+    carInfoActions: document.getElementById('carInfoActions'),
+    addCarDetailsBtn: document.getElementById('addCarDetailsBtn'),
+    viewCarInfoBtn: document.getElementById('viewCarInfoBtn'),
+    carDetailsEditorScreen: document.getElementById('carDetailsEditorScreen'),
+    detailHeading: document.getElementById('detailHeading'),
+    detailFontStyle: document.getElementById('detailFontStyle'),
+    detailDescription: document.getElementById('detailDescription'),
+    detailWordCount: document.getElementById('detailWordCount'),
+    addSectionBtn: document.getElementById('addSectionBtn'),
+    previewDetailsBtn: document.getElementById('previewDetailsBtn'),
+    backToCarInfoBtn: document.getElementById('backToCarInfoBtn'),
+    detailFormError: document.getElementById('detailFormError'),
+    detailSectionList: document.getElementById('detailSectionList'),
+    carDetailsPreviewScreen: document.getElementById('carDetailsPreviewScreen'),
+    previewSectionList: document.getElementById('previewSectionList'),
+    saveDetailsOrderBtn: document.getElementById('saveDetailsOrderBtn'),
+    backToEditorBtn: document.getElementById('backToEditorBtn'),
+    carDetailsViewScreen: document.getElementById('carDetailsViewScreen'),
+    savedDetailsList: document.getElementById('savedDetailsList'),
+    editDetailsBtn: document.getElementById('editDetailsBtn'),
+    closeDetailsViewBtn: document.getElementById('closeDetailsViewBtn')
 };
 
 // ─────────────────────────────────────────────
@@ -60,32 +110,35 @@ async function init() {
         state.cars = cars;
         state.colors = colors;
 
-        populateCarDropdown(cars);
+        populateRecolorCarDropdown(cars);
+        populateCarInfoDropdown(cars);
         renderCategoryFilter(colors);
         applyColorFilter();
 
-        // Auto-select the first car
         if (cars.length > 0) {
             el.carSelect.value = cars[0].id;
             selectCar(cars[0].id);
+
+            el.carInfoSelect.value = cars[0].id;
+            renderCarInfo(cars[0].id);
         }
     } catch (err) {
         console.error('Failed to initialise:', err);
     }
 
     wireEvents();
+    setupPaintCanvas();
+    updateWordCount();
 }
 
 // ─────────────────────────────────────────────
-//  Populate car dropdown
+//  Populate car dropdowns
 // ─────────────────────────────────────────────
-function populateCarDropdown(cars) {
-    // Clear existing options (keep the placeholder)
+function populateRecolorCarDropdown(cars) {
     while (el.carSelect.options.length > 1) {
         el.carSelect.remove(1);
     }
 
-    // Group by brand
     const brands = [...new Set(cars.map(c => c.brand))].sort();
 
     brands.forEach(brand => {
@@ -103,23 +156,63 @@ function populateCarDropdown(cars) {
     });
 }
 
+function populateCarInfoDropdown(cars, searchTerm = '') {
+    while (el.carInfoSelect.options.length > 1) {
+        el.carInfoSelect.remove(1);
+    }
+
+    cars
+        .filter(car => matchesCarTerm(car, searchTerm))
+        .forEach(car => {
+            const option = document.createElement('option');
+            option.value = car.id;
+            option.textContent = `${car.brand} ${car.model}`;
+            el.carInfoSelect.appendChild(option);
+        });
+}
+
 // ─────────────────────────────────────────────
 //  Event wiring
 // ─────────────────────────────────────────────
 function wireEvents() {
-    // Car dropdown change → load car image
+    el.recolorModuleBtn.addEventListener('click', () => setActiveModule('recolor'));
+    el.carInfoModuleBtn.addEventListener('click', () => setActiveModule('carInfo'));
+
     el.carSelect.addEventListener('change', e => {
         const carId = e.target.value;
-        if (carId) {
-            selectCar(carId);
-        }
+        if (!carId) return;
+
+        selectCar(carId);
+        el.carInfoSelect.value = carId;
+        renderCarInfo(carId);
     });
 
-    // Colour search / filter
+    el.carNameSearch.addEventListener('input', debounce(applyCarInfoSearch, 120));
+
+    el.carInfoSelect.addEventListener('change', e => {
+        const carId = e.target.value;
+        if (!carId) {
+            clearCarInfoPreview();
+            return;
+        }
+
+        renderCarInfo(carId);
+    });
+
+    el.addCarDetailsBtn.addEventListener('click', openDetailsEditor);
+    el.viewCarInfoBtn.addEventListener('click', openDetailsViewer);
+    el.detailDescription.addEventListener('input', updateWordCount);
+    el.addSectionBtn.addEventListener('click', addDetailSection);
+    el.previewDetailsBtn.addEventListener('click', openPreviewScreen);
+    el.backToCarInfoBtn.addEventListener('click', showDefaultCarInfoScreen);
+    el.saveDetailsOrderBtn.addEventListener('click', savePreviewOrder);
+    el.backToEditorBtn.addEventListener('click', () => showScreen('editor'));
+    el.editDetailsBtn.addEventListener('click', openDetailsEditor);
+    el.closeDetailsViewBtn.addEventListener('click', showDefaultCarInfoScreen);
+
     el.colorSearch.addEventListener('input', debounce(applyColorFilter, 120));
     el.categoryFilter.addEventListener('change', applyColorFilter);
 
-    // Custom HEX text input
     el.customHex.addEventListener('input', e => {
         const value = e.target.value.trim();
         if (/^#(?:[0-9a-fA-F]{3}){1,2}$/.test(value)) {
@@ -128,29 +221,41 @@ function wireEvents() {
         }
     });
 
-    // Native colour picker
     el.customHexPicker.addEventListener('input', e => {
         const hex = e.target.value.toUpperCase();
         el.customHex.value = hex;
         applyColor({ name: `Custom ${hex}`, hex, category: 'Custom' });
     });
 
-    // Slider comparison
     el.compareSlider.addEventListener('input', e => {
         const pct = e.target.value;
         el.sliderOverlay.style.width = `${pct}%`;
         el.sliderDivider.style.left = `${pct}%`;
     });
 
-    // Zoom
     el.zoomRange.addEventListener('input', e => {
         const scale = Number(e.target.value);
-        [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+        [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored, el.paintCanvas].forEach(img => {
             img.style.transform = `scale(${scale})`;
         });
     });
 
-    // Full-screen toggle
+    el.paintBrushBtn.addEventListener('click', () => setPaintTool('brush'));
+    el.eraseBrushBtn.addEventListener('click', () => setPaintTool('eraser'));
+    el.paintSizeRange.addEventListener('input', e => {
+        state.paint.size = Number(e.target.value);
+    });
+    el.paintColorPicker.addEventListener('input', e => {
+        state.paint.color = e.target.value.toUpperCase();
+    });
+    el.clearPaintBtn.addEventListener('click', clearPaintCanvas);
+
+    window.addEventListener('resize', resizePaintCanvas);
+    document.addEventListener('fullscreenchange', resizePaintCanvas);
+    el.recoloredImage.addEventListener('load', resizePaintCanvas);
+
+    el.downloadRecoloredBtn.addEventListener('click', downloadRecoloredImage);
+
     el.fullscreenBtn.addEventListener('click', () => {
         if (!document.fullscreenElement) {
             el.viewer.requestFullscreen();
@@ -158,6 +263,16 @@ function wireEvents() {
             document.exitFullscreen();
         }
     });
+}
+
+function setActiveModule(module) {
+    const showRecolor = module === 'recolor';
+
+    el.recolorModuleBtn.classList.toggle('active', showRecolor);
+    el.carInfoModuleBtn.classList.toggle('active', !showRecolor);
+
+    el.recolorModule.classList.toggle('hidden', !showRecolor);
+    el.carInfoModule.classList.toggle('hidden', showRecolor);
 }
 
 // ─────────────────────────────────────────────
@@ -168,37 +283,408 @@ function selectCar(carId) {
     if (!car) return;
 
     state.selectedCar = car;
-    state.selectedColor = null;          // reset colour when switching car
+    state.selectedColor = null;
+    el.downloadRecoloredBtn.disabled = true;
+    clearPaintCanvas();
 
-    // Use the image path stored in car data (preserves correct extension per car)
     const src = `/${car.image}`;
 
-    // Show all four image elements with the original car image
     [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
         img.src = src;
         img.alt = `${car.brand} ${car.model}`;
     });
 
-    // Update status bar
     setStatusLabel(el.selectedCarLabel, '🚗', `${car.model}`);
     setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
 
-    // Show brand badge
     el.carBrandBadge.textContent = car.brand;
     el.carInfo.classList.remove('hidden');
 
-    // Reveal the comparison area, hide empty state
     el.emptyState.classList.add('hidden');
     el.compareArea.classList.remove('hidden');
 
-    // Reset slider and zoom
     el.compareSlider.value = 50;
     el.sliderOverlay.style.width = '50%';
     el.sliderDivider.style.left = '50%';
     el.zoomRange.value = 1;
-    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored, el.paintCanvas].forEach(img => {
         img.style.transform = 'scale(1)';
     });
+}
+
+async function renderCarInfo(carId) {
+    const car = state.cars.find(c => c.id === carId);
+    if (!car) {
+        clearCarInfoPreview();
+        return;
+    }
+
+    state.selectedInfoCar = car;
+
+    el.carInfoImage.src = `/${car.image}`;
+    el.carInfoImage.alt = `${car.brand} ${car.model}`;
+    el.carInfoTitle.textContent = `${car.brand} ${car.model}`;
+
+    await syncCarDetailsForCar(car.id);
+
+    el.carInfoEmpty.classList.add('hidden');
+    el.carInfoImageWrap.classList.remove('hidden');
+    el.carInfoActions.classList.remove('hidden');
+
+    showDefaultCarInfoScreen();
+}
+
+function clearCarInfoPreview() {
+    state.selectedInfoCar = null;
+    el.carInfoImage.src = '';
+    el.carInfoTitle.textContent = '';
+    el.carInfoImageWrap.classList.add('hidden');
+    el.carInfoEmpty.classList.remove('hidden');
+    el.carInfoActions.classList.add('hidden');
+    hideDetailScreens();
+}
+
+function applyCarInfoSearch() {
+    const term = el.carNameSearch.value.trim();
+    const previous = el.carInfoSelect.value;
+    const matchingCars = state.cars.filter(car => matchesCarTerm(car, term));
+
+    populateCarInfoDropdown(state.cars, term);
+    renderCarSearchResults(matchingCars, term);
+
+    const canKeepPrevious = !!previous && [...el.carInfoSelect.options].some(option => option.value === previous);
+
+    if (canKeepPrevious) {
+        el.carInfoSelect.value = previous;
+        renderCarInfo(previous);
+        return;
+    }
+
+    clearCarInfoPreview();
+    el.carInfoSelect.value = '';
+}
+
+function matchesCarTerm(car, term) {
+    const t = term.trim().toLowerCase();
+    if (!t) return true;
+
+    return `${car.brand} ${car.model}`.toLowerCase().includes(t)
+        || car.model.toLowerCase().includes(t)
+        || car.brand.toLowerCase().includes(t);
+}
+
+function renderCarSearchResults(cars, term) {
+    el.carSearchResults.innerHTML = '';
+
+    if (!term) {
+        el.carSearchResults.classList.add('hidden');
+        return;
+    }
+
+    if (cars.length === 0) {
+        el.carSearchResults.innerHTML = '<p class="car-search-empty">No matching cars found</p>';
+        el.carSearchResults.classList.remove('hidden');
+        return;
+    }
+
+    cars.forEach(car => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'car-search-item';
+        item.textContent = `${car.brand} ${car.model}`;
+        item.addEventListener('click', () => {
+            el.carInfoSelect.value = car.id;
+            el.carNameSearch.value = `${car.brand} ${car.model}`;
+            renderCarInfo(car.id);
+            el.carSearchResults.classList.add('hidden');
+        });
+        el.carSearchResults.appendChild(item);
+    });
+
+    el.carSearchResults.classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+//  Car details screens
+// ─────────────────────────────────────────────
+function showDefaultCarInfoScreen() {
+    hideDetailScreens();
+    clearDetailFormError();
+}
+
+function hideDetailScreens() {
+    el.carDetailsEditorScreen.classList.add('hidden');
+    el.carDetailsPreviewScreen.classList.add('hidden');
+    el.carDetailsViewScreen.classList.add('hidden');
+}
+
+function showScreen(screen) {
+    hideDetailScreens();
+
+    if (screen === 'editor') el.carDetailsEditorScreen.classList.remove('hidden');
+    if (screen === 'preview') el.carDetailsPreviewScreen.classList.remove('hidden');
+    if (screen === 'view') el.carDetailsViewScreen.classList.remove('hidden');
+}
+
+async function openDetailsEditor() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) return;
+
+    await syncCarDetailsForCar(carId);
+    state.draftSections = cloneSections(getSavedSections(carId));
+    renderDraftSections();
+    resetDetailForm();
+    updateWordCount();
+    clearDetailFormError();
+    showScreen('editor');
+}
+
+function addDetailSection() {
+    const result = validateSectionInputs();
+    if (!result.success) {
+        showDetailFormError(result.message);
+        return;
+    }
+
+    clearDetailFormError();
+    state.draftSections.push({
+        id: crypto.randomUUID(),
+        heading: el.detailHeading.value.trim(),
+        description: el.detailDescription.value.trim(),
+        fontStyle: el.detailFontStyle.value
+    });
+
+    renderDraftSections();
+    resetDetailForm();
+    updateWordCount();
+}
+
+function openPreviewScreen() {
+    if (state.draftSections.length === 0) {
+        showDetailFormError('Add at least one heading and description before preview.');
+        showScreen('editor');
+        return;
+    }
+
+    clearDetailFormError();
+    showScreen('preview');
+    renderPreviewSections();
+}
+
+async function openDetailsViewer() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) return;
+
+    await syncCarDetailsForCar(carId);
+    const saved = getSavedSections(carId);
+    renderSavedDetails(saved);
+    showScreen('view');
+}
+
+async function savePreviewOrder() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) return;
+
+    const payload = cloneSections(state.draftSections);
+
+    try {
+        const response = await fetch(`/api/car-details/${encodeURIComponent(carId)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Save failed');
+        }
+
+        state.carDetailsByCar[carId] = payload;
+        renderSavedDetails(state.carDetailsByCar[carId]);
+        showScreen('view');
+    } catch (err) {
+        showDetailFormError('Failed to save car details. Please try again.');
+        console.error('Save car details failed:', err);
+    }
+}
+
+function renderDraftSections() {
+    el.detailSectionList.innerHTML = '';
+
+    if (state.draftSections.length === 0) {
+        el.detailSectionList.innerHTML = '<p class="car-search-empty">No sections added yet.</p>';
+        return;
+    }
+
+    state.draftSections.forEach(section => {
+        const card = document.createElement('div');
+        card.className = 'detail-item';
+
+        const heading = document.createElement('h4');
+        heading.textContent = section.heading;
+        applyFont(heading, section.fontStyle);
+
+        const description = document.createElement('p');
+        description.textContent = section.description;
+        applyFont(description, section.fontStyle);
+
+        card.append(heading, description);
+        el.detailSectionList.appendChild(card);
+    });
+}
+
+function renderPreviewSections() {
+    el.previewSectionList.innerHTML = '';
+
+    state.draftSections.forEach((section, index) => {
+        const card = document.createElement('article');
+        card.className = 'preview-item';
+        card.draggable = true;
+        card.dataset.index = String(index);
+
+        const dragLabel = document.createElement('div');
+        dragLabel.className = 'drag-label';
+        dragLabel.textContent = 'Drag to reorder';
+
+        const heading = document.createElement('h4');
+        heading.textContent = section.heading;
+        applyFont(heading, section.fontStyle);
+
+        const description = document.createElement('p');
+        description.textContent = section.description;
+        applyFont(description, section.fontStyle);
+
+        card.append(dragLabel, heading, description);
+
+        card.addEventListener('dragstart', e => {
+            card.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', card.dataset.index);
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+        });
+
+        card.addEventListener('dragover', e => {
+            e.preventDefault();
+        });
+
+        card.addEventListener('drop', e => {
+            e.preventDefault();
+            const sourceIndex = Number(e.dataTransfer.getData('text/plain'));
+            const targetIndex = Number(card.dataset.index);
+            reorderDraftSections(sourceIndex, targetIndex);
+            renderPreviewSections();
+        });
+
+        el.previewSectionList.appendChild(card);
+    });
+}
+
+function renderSavedDetails(sections) {
+    el.savedDetailsList.innerHTML = '';
+
+    if (sections.length === 0) {
+        el.savedDetailsList.innerHTML = '<p class="car-search-empty">No details saved for this car yet.</p>';
+        return;
+    }
+
+    sections.forEach(section => {
+        const card = document.createElement('article');
+        card.className = 'saved-item';
+
+        const heading = document.createElement('h4');
+        heading.textContent = section.heading;
+        applyFont(heading, section.fontStyle);
+
+        const description = document.createElement('p');
+        description.textContent = section.description;
+        applyFont(description, section.fontStyle);
+
+        card.append(heading, description);
+        el.savedDetailsList.appendChild(card);
+    });
+}
+
+function reorderDraftSections(sourceIndex, targetIndex) {
+    if (sourceIndex === targetIndex || sourceIndex < 0 || targetIndex < 0) return;
+
+    const moved = state.draftSections[sourceIndex];
+    const next = state.draftSections.filter((_, i) => i !== sourceIndex);
+    next.splice(targetIndex, 0, moved);
+    state.draftSections = next;
+}
+
+function validateSectionInputs() {
+    const heading = el.detailHeading.value.trim();
+    const description = el.detailDescription.value.trim();
+    const words = countWords(description);
+
+    if (!heading) return { success: false, message: 'Heading is required.' };
+    if (!description) return { success: false, message: 'Description is required.' };
+    if (words > 1000) return { success: false, message: 'Description cannot exceed 1000 words.' };
+
+    return { success: true };
+}
+
+function updateWordCount() {
+    const words = countWords(el.detailDescription.value);
+    el.detailWordCount.textContent = `${words} / 1000 words`;
+    el.detailWordCount.classList.toggle('limit', words > 1000);
+}
+
+function countWords(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+}
+
+function resetDetailForm() {
+    el.detailHeading.value = '';
+    el.detailDescription.value = '';
+    el.detailFontStyle.value = 'inter';
+}
+
+function showDetailFormError(message) {
+    el.detailFormError.textContent = message;
+    el.detailFormError.classList.remove('hidden');
+}
+
+function clearDetailFormError() {
+    el.detailFormError.textContent = '';
+    el.detailFormError.classList.add('hidden');
+}
+
+function getCurrentInfoCarId() {
+    return el.carInfoSelect.value || state.selectedInfoCar?.id || null;
+}
+
+function getSavedSections(carId) {
+    return cloneSections(state.carDetailsByCar[carId] || []);
+}
+
+function cloneSections(sections) {
+    return sections.map(section => ({ ...section }));
+}
+
+function applyFont(element, fontStyle) {
+    if (fontStyle === 'serif') element.style.fontFamily = "Georgia, 'Times New Roman', serif";
+    else if (fontStyle === 'mono') element.style.fontFamily = "'Courier New', monospace";
+    else if (fontStyle === 'classic') element.style.fontFamily = "Cambria, 'Times New Roman', serif";
+    else element.style.fontFamily = "'Inter', 'Segoe UI', Arial, sans-serif";
+}
+
+async function syncCarDetailsForCar(carId) {
+    if (!carId) {
+        return;
+    }
+
+    try {
+        const sections = await fetchJson(`/api/car-details/${encodeURIComponent(carId)}`);
+        state.carDetailsByCar[carId] = Array.isArray(sections) ? sections : [];
+    } catch (err) {
+        console.error('Load car details failed:', err);
+        state.carDetailsByCar[carId] = [];
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -211,13 +697,14 @@ async function applyColor(color) {
     }
 
     state.selectedColor = color;
+    state.paint.color = color.hex.toUpperCase();
+    el.paintColorPicker.value = state.paint.color;
     setStatusLabel(el.selectedColorLabel, '🎨', `${color.name} (${color.hex})`);
 
     pushRecent(color);
     renderRecent();
     renderColorList(state.filteredColors.slice(0, 1000));
 
-    // Show loading spinner on the recolored panel
     el.recolorLoader.classList.remove('hidden');
 
     try {
@@ -233,6 +720,7 @@ async function applyColor(color) {
             const imageUrl = `${result.imageUrl}?v=${Date.now()}`;
             el.recoloredImage.src = imageUrl;
             el.sliderRecolored.src = imageUrl;
+            el.downloadRecoloredBtn.disabled = false;
         } else {
             alert(result.message || 'Recolor failed.');
         }
@@ -345,12 +833,138 @@ function loadRecent() {
 // ─────────────────────────────────────────────
 //  Helpers
 // ─────────────────────────────────────────────
-function toImageKey(car) {
-    return `${car.brand}-${car.model}`.toLowerCase().replace(/\s+/g, '-');
+function setupPaintCanvas() {
+    const canvas = el.paintCanvas;
+
+    canvas.addEventListener('pointerdown', startPaint);
+    canvas.addEventListener('pointermove', movePaint);
+    canvas.addEventListener('pointerup', stopPaint);
+    canvas.addEventListener('pointerleave', stopPaint);
+
+    state.paint.size = Number(el.paintSizeRange.value);
+    state.paint.color = el.paintColorPicker.value.toUpperCase();
+    setPaintTool('brush');
+    resizePaintCanvas();
 }
 
-function setStatusLabel(el, icon, text) {
-    el.innerHTML = `<span class="status-icon">${icon}</span><span>${text}</span>`;
+function resizePaintCanvas() {
+    const canvas = el.paintCanvas;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+        return;
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+}
+
+function setPaintTool(tool) {
+    state.paint.tool = tool;
+    el.paintBrushBtn.classList.toggle('active', tool === 'brush');
+    el.eraseBrushBtn.classList.toggle('active', tool === 'eraser');
+    el.paintCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+function startPaint(event) {
+    event.preventDefault();
+    state.paint.isDrawing = true;
+    const point = getPaintPoint(event);
+    state.paint.lastX = point.x;
+    state.paint.lastY = point.y;
+}
+
+function movePaint(event) {
+    if (!state.paint.isDrawing) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const ctx = el.paintCanvas.getContext('2d');
+    const point = getPaintPoint(event);
+
+    ctx.save();
+    ctx.lineWidth = state.paint.size;
+
+    if (state.paint.tool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = state.paint.color;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(state.paint.lastX, state.paint.lastY);
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+    ctx.restore();
+
+    state.paint.lastX = point.x;
+    state.paint.lastY = point.y;
+}
+
+function stopPaint() {
+    state.paint.isDrawing = false;
+}
+
+function clearPaintCanvas() {
+    const canvas = el.paintCanvas;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function getPaintPoint(event) {
+    const rect = el.paintCanvas.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    };
+}
+
+async function downloadRecoloredImage() {
+    if (!state.selectedCar || !state.selectedColor) {
+        alert('Please recolor a car first.');
+        return;
+    }
+
+    const imageUrl = el.recoloredImage.src;
+    if (!imageUrl) {
+        alert('No recolored image available to download.');
+        return;
+    }
+
+    try {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+            throw new Error('Failed to download image.');
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const colorHex = state.selectedColor.hex.replace('#', '').toLowerCase();
+
+        link.href = objectUrl;
+        link.download = `${state.selectedCar.id}-${colorHex}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+        console.error('Download failed:', err);
+        alert('Unable to download recolored image. Please try again.');
+    }
+}
+
+function setStatusLabel(element, icon, text) {
+    element.innerHTML = `<span class="status-icon">${icon}</span><span>${text}</span>`;
 }
 
 async function fetchJson(url) {

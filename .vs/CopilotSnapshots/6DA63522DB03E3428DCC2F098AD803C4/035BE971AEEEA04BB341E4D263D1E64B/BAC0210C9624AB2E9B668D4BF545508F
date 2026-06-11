@@ -1,0 +1,254 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Color Visualizer</title>
+    <meta name="description" content="Select a car from the dropdown and change its colour in real time using our interactive Car Color Visualizer.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <span class="brand-icon">🚗</span>
+                <span class="brand-name">CarColour<span class="brand-accent">Studio</span></span>
+            </div>
+
+            <nav class="module-nav" aria-label="Application modules">
+                <button id="recolorModuleBtn" type="button" class="module-btn active">Recolor Studio</button>
+                <button id="carInfoModuleBtn" type="button" class="module-btn">Car Info</button>
+            </nav>
+
+            <p class="brand-tagline">Select a car &amp; paint it your colour</p>
+        </div>
+    </header>
+
+    <main id="recolorModule" class="layout module-view">
+
+        <!-- ===== LEFT PANEL: Controls ===== -->
+        <section class="panel left-panel" aria-label="Controls">
+
+            <!-- Car Selector -->
+            <div class="section-block">
+                <h2 class="section-title">🚙 Select Car</h2>
+                <label for="carSelect" class="field-label">Car Model</label>
+                <div class="select-wrapper">
+                    <select id="carSelect" aria-label="Choose a car model">
+                        <option value="">— Choose a car —</option>
+                    </select>
+                    <span class="select-arrow">▾</span>
+                </div>
+                <div id="carInfo" class="car-info-badge hidden">
+                    <span id="carBrandBadge" class="badge"></span>
+                </div>
+            </div>
+
+            <!-- Colour Search -->
+            <div class="section-block">
+                <h2 class="section-title">🎨 Choose Colour</h2>
+
+                <label for="colorSearch" class="field-label">Search by name or HEX</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔍</span>
+                    <input id="colorSearch" type="text" placeholder="e.g. Red, #FF2800" autocomplete="off">
+                </div>
+
+                <label for="categoryFilter" class="field-label">Category</label>
+                <div class="select-wrapper">
+                    <select id="categoryFilter" aria-label="Filter by colour category">
+                        <option value="">All Categories</option>
+                    </select>
+                    <span class="select-arrow">▾</span>
+                </div>
+
+                <label for="customHex" class="field-label">Custom HEX Colour</label>
+                <div class="hex-row">
+                    <input id="customHexPicker" type="color" value="#FF2800" title="Pick a colour" aria-label="Colour picker">
+                    <input id="customHex" type="text" placeholder="#FF2800" maxlength="7">
+                </div>
+            </div>
+
+            <!-- Recently Used -->
+            <div class="section-block">
+                <h3 class="section-subtitle">🕑 Recently Used</h3>
+                <div id="recentColors" class="recent-list" aria-label="Recently used colours"></div>
+            </div>
+
+            <!-- Colour Library -->
+            <div class="section-block flex-grow">
+                <h3 class="section-subtitle">📚 Colour Library</h3>
+                <div id="colorList" class="color-list" aria-live="polite" role="list"></div>
+            </div>
+        </section>
+
+        <!-- ===== RIGHT PANEL: Viewer ===== -->
+        <section class="panel right-panel" aria-label="Car viewer">
+
+            <!-- Status bar -->
+            <div class="status-bar">
+                <div class="status-chip" id="selectedCarLabel">
+                    <span class="status-icon">🚗</span>
+                    <span>No car selected</span>
+                </div>
+                <div class="status-chip" id="selectedColorLabel">
+                    <span class="status-icon">🎨</span>
+                    <span>No colour selected</span>
+                </div>
+            </div>
+
+            <!-- Viewer controls -->
+            <div class="viewer-controls">
+                <label for="zoomRange" class="field-label">Zoom</label>
+                <input id="zoomRange" type="range" min="1" max="2" step="0.1" value="1" aria-label="Zoom level">
+                <button id="fullscreenBtn" type="button" class="btn-primary" aria-label="Toggle full screen">⛶ Full Screen</button>
+            </div>
+
+            <!-- Car image viewer -->
+            <div id="viewer" class="viewer">
+
+                <!-- Empty state -->
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">🚗</div>
+                    <p>Select a car from the dropdown to get started</p>
+                </div>
+
+                <!-- Side-by-side comparison -->
+                <div id="compareArea" class="compare-area hidden">
+                    <div class="compare-side-by-side">
+                        <div class="image-box">
+                            <h4 class="image-label">Original</h4>
+                            <div class="img-frame">
+                                <img id="originalImage" alt="Original car image">
+                            </div>
+                        </div>
+                        <div class="image-box">
+                            <h4 class="image-label">Recoloured</h4>
+                            <div class="img-frame recolored-frame">
+                                <img id="recoloredImage" alt="Recoloured car image">
+                                <div id="recolorLoader" class="img-loader hidden">
+                                    <div class="spinner"></div>
+                                    <span>Applying colour…</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slider comparison -->
+                    <div class="slider-section">
+                        <h4 class="image-label">⇔ Slider Comparison</h4>
+                        <div class="slider-wrap">
+                            <img id="sliderOriginal" class="slider-base" alt="Original comparison image">
+                            <div id="sliderOverlay" class="slider-overlay">
+                                <img id="sliderRecolored" class="slider-top" alt="Recoloured comparison image">
+                            </div>
+                            <div class="slider-divider" id="sliderDivider"></div>
+                            <input id="compareSlider" type="range" min="0" max="100" value="50" aria-label="Comparison slider">
+                        </div>
+                        <div class="slider-labels">
+                            <span>Original</span>
+                            <span>Recoloured</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <main id="carInfoModule" class="car-info-layout module-view hidden">
+        <section class="car-info-card" aria-label="Car information module">
+            <h2 class="section-title">🚘 Car Info</h2>
+
+            <label for="carNameSearch" class="field-label">Search by car name</label>
+            <div class="input-wrapper">
+                <span class="input-icon">🔍</span>
+                <input id="carNameSearch" type="text" placeholder="Type model or brand (e.g. X5, Audi)">
+            </div>
+            <div id="carSearchResults" class="car-search-results hidden" aria-live="polite"></div>
+
+            <label for="carInfoSelect" class="field-label">Car Selection</label>
+            <div class="select-wrapper">
+                <select id="carInfoSelect" aria-label="Choose a car for info module">
+                    <option value="">— Choose a car —</option>
+                </select>
+                <span class="select-arrow">▾</span>
+            </div>
+
+            <div id="carInfoViewer" class="car-info-viewer">
+                <div id="carInfoEmpty" class="empty-state car-info-empty">
+                    <div class="empty-icon">🚙</div>
+                    <p>Select a car to view its image</p>
+                </div>
+                <div id="carInfoImageWrap" class="car-info-image-wrap hidden">
+                    <img id="carInfoImage" alt="Selected car image preview">
+                    <p id="carInfoTitle" class="car-info-title"></p>
+                </div>
+            </div>
+
+            <div id="carInfoActions" class="car-info-actions hidden">
+                <button id="addCarDetailsBtn" type="button" class="btn-primary">Add Car Details</button>
+                <button id="viewCarInfoBtn" type="button" class="icon-btn" aria-label="View car info" title="View car info">ℹ️</button>
+            </div>
+
+            <section id="carDetailsEditorScreen" class="car-details-screen hidden" aria-label="Add car details">
+                <h3 class="section-subtitle">Add Car Details</h3>
+
+                <label for="detailHeading" class="field-label">Heading</label>
+                <input id="detailHeading" type="text" placeholder="Enter heading">
+
+                <label for="detailFontStyle" class="field-label">Font Style</label>
+                <div class="select-wrapper">
+                    <select id="detailFontStyle" aria-label="Choose heading and description font style">
+                        <option value="inter">Inter</option>
+                        <option value="serif">Serif</option>
+                        <option value="mono">Monospace</option>
+                        <option value="classic">Classic</option>
+                    </select>
+                    <span class="select-arrow">▾</span>
+                </div>
+
+                <label for="detailDescription" class="field-label">Description (max 1000 words)</label>
+                <textarea id="detailDescription" class="details-description" rows="8" placeholder="Write description here..."></textarea>
+                <p id="detailWordCount" class="word-count">0 / 1000 words</p>
+
+                <div class="detail-actions-row">
+                    <button id="addSectionBtn" type="button" class="btn-secondary">Add Section</button>
+                    <button id="previewDetailsBtn" type="button" class="btn-primary">Preview</button>
+                    <button id="backToCarInfoBtn" type="button" class="btn-secondary">Back</button>
+                </div>
+
+                <p id="detailFormError" class="detail-error hidden"></p>
+
+                <div class="details-list-wrap">
+                    <h4 class="image-label">Added Sections</h4>
+                    <div id="detailSectionList" class="detail-section-list"></div>
+                </div>
+            </section>
+
+            <section id="carDetailsPreviewScreen" class="car-details-screen hidden" aria-label="Preview and reorder car details">
+                <h3 class="section-subtitle">Preview &amp; Reorder</h3>
+                <p class="preview-hint">Drag and drop sections to change order.</p>
+                <div id="previewSectionList" class="preview-section-list"></div>
+                <div class="detail-actions-row">
+                    <button id="saveDetailsOrderBtn" type="button" class="btn-primary">Save Order</button>
+                    <button id="backToEditorBtn" type="button" class="btn-secondary">Back to Editor</button>
+                </div>
+            </section>
+
+            <section id="carDetailsViewScreen" class="car-details-screen hidden" aria-label="Saved car details view">
+                <h3 class="section-subtitle">Saved Car Details</h3>
+                <div id="savedDetailsList" class="saved-details-list"></div>
+                <div class="detail-actions-row">
+                    <button id="closeDetailsViewBtn" type="button" class="btn-secondary">Close</button>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>

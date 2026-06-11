@@ -1,0 +1,16 @@
+# Visual Studio
+.vs/
+
+# Build output
+bin/
+obj/
+
+# User files
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Generated images
+wwwroot/generated/

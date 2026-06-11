@@ -16,6 +16,43 @@
     ]
   },
   {
+    "ContainingType": "Car_Colour_Project.Controllers.CarDetailsController",
+    "Method": "GetByCarId",
+    "RelativePath": "api/car-details/{carId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "carId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Car_Colour_Project.Controllers.CarDetailsController",
+    "Method": "SaveByCarId",
+    "RelativePath": "api/car-details/{carId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "carId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "sections",
+        "Type": "System.Collections.Generic.List\u00601[[Car_Colour_Project.Models.CarDetailSection, Car Colour Project, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Car_Colour_Project.Controllers.CarsController",
     "Method": "GetAll",
     "RelativePath": "api/Cars",

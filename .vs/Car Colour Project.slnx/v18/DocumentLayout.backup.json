@@ -3,111 +3,137 @@
   "WorkspaceRootPath": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\data\\cars.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\data\\cars.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\data\\cars.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\data\\cars.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Jojo George\\.copilot\\plans\\plan-persist-car-details-in-local-database-file.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\car.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\car.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Jojo George\\.copilot\\plans\\plan-car-info-details-builder-and-viewer.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\imagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\imagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\colorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\colorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\carrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\carrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\recolorrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\recolorrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\recolorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\recolorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\recolorresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\recolorresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\jsondataloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\jsondataloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Jojo George\\.copilot\\plans\\plan-car-color-visualizer-initial-implementation.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\styles.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\styles.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\styles.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\styles.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\colorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\colorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\carscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\carscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\colorinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\colorinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\car colour project.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\car colour project.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\icarrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\icarrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\masks\\.gitkeep||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\masks\\.gitkeep||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\icolorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\icolorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\recolorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\recolorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\iimagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\iimagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\colorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\colorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\data\\colors.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\data\\colors.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\icarrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\icarrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\masks\\.gitkeep||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\masks\\.gitkeep||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\icolorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\icolorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\car colour project.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\car colour project.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\iimagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\iimagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{204BA785-B1FC-40CF-8B00-E499D9B72F34}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\jsondataloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\jsondataloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\colorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\colorrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\data\\colors.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\data\\colors.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\carscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\carscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\imagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\imagerecolorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\recolorresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\recolorresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\recolorrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\recolorrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\colorinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\colorinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\car.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\car.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\carrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\carrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\icardetailsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\icardetailsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\models\\cardetailsection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\models\\cardetailsection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\services\\cardetailsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\services\\cardetailsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\cardetailscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\cardetailscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\data\\car-details-db.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\data\\car-details-db.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -117,7 +143,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 26,
+          "SelectedChildIndex": 48,
           "Children": [
             {
               "$type": "Bookmark",
@@ -209,7 +235,92 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 33,
+              "Title": "car-details-db.json",
+              "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\data\\car-details-db.json",
+              "RelativeDocumentMoniker": "Car Colour Project\\data\\car-details-db.json",
+              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\data\\car-details-db.json",
+              "RelativeToolTip": "Car Colour Project\\data\\car-details-db.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-11T07:09:56.784Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "CarDetailsController.cs",
+              "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\CarDetailsController.cs",
+              "RelativeDocumentMoniker": "Car Colour Project\\Controllers\\CarDetailsController.cs",
+              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\CarDetailsController.cs",
+              "RelativeToolTip": "Car Colour Project\\Controllers\\CarDetailsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T07:08:55.43Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "CarDetailsRepository.cs",
+              "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\CarDetailsRepository.cs",
+              "RelativeDocumentMoniker": "Car Colour Project\\Services\\CarDetailsRepository.cs",
+              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\CarDetailsRepository.cs",
+              "RelativeToolTip": "Car Colour Project\\Services\\CarDetailsRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T07:08:37.253Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "CarDetailSection.cs",
+              "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Models\\CarDetailSection.cs",
+              "RelativeDocumentMoniker": "Car Colour Project\\Models\\CarDetailSection.cs",
+              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Models\\CarDetailSection.cs",
+              "RelativeToolTip": "Car Colour Project\\Models\\CarDetailSection.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T07:08:20.425Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "ICarDetailsRepository.cs",
+              "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\ICarDetailsRepository.cs",
+              "RelativeDocumentMoniker": "Car Colour Project\\Services\\ICarDetailsRepository.cs",
+              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\ICarDetailsRepository.cs",
+              "RelativeToolTip": "Car Colour Project\\Services\\ICarDetailsRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T07:08:20.319Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "plan-persist-car-details-in-local-database-file.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\Jojo George\\.copilot\\plans\\plan-persist-car-details-in-local-database-file.md",
+              "ToolTip": "C:\\Users\\Jojo George\\.copilot\\plans\\plan-persist-car-details-in-local-database-file.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-06-11T07:04:58.298Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "plan-car-info-details-builder-and-viewer.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\Jojo George\\.copilot\\plans\\plan-car-info-details-builder-and-viewer.md",
+              "ToolTip": "C:\\Users\\Jojo George\\.copilot\\plans\\plan-car-info-details-builder-and-viewer.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-06-11T06:54:21.52Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "plan-car-color-visualizer-initial-implementation.md [Preview]",
               "DocumentMoniker": "C:\\Users\\Jojo George\\.copilot\\plans\\plan-car-color-visualizer-initial-implementation.md",
               "ToolTip": "C:\\Users\\Jojo George\\.copilot\\plans\\plan-car-color-visualizer-initial-implementation.md [Preview]",
@@ -219,7 +330,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 5,
               "Title": "launchSettings.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Car Colour Project\\Properties\\launchSettings.json",
@@ -227,12 +338,11 @@
               "RelativeToolTip": "Car Colour Project\\Properties\\launchSettings.json",
               "ViewState": "AgIAAAcAAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-11T03:54:21.927Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T03:54:21.927Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 6,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\appsettings.Development.json",
               "RelativeDocumentMoniker": "Car Colour Project\\appsettings.Development.json",
@@ -240,12 +350,11 @@
               "RelativeToolTip": "Car Colour Project\\appsettings.Development.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-11T03:54:15.148Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T03:54:15.148Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\appsettings.json",
               "RelativeDocumentMoniker": "Car Colour Project\\appsettings.json",
@@ -253,25 +362,24 @@
               "RelativeToolTip": "Car Colour Project\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-11T03:54:15.014Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T03:54:15.014Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Program.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Program.cs",
-              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Program.cs*",
-              "RelativeToolTip": "Car Colour Project\\Program.cs*",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAnwBIAAAABAAAAAAAAAA==",
+              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Program.cs",
+              "RelativeToolTip": "Car Colour Project\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvxsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-11T03:53:24.543Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 8,
               "Title": "Dockerfile",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Dockerfile",
               "RelativeDocumentMoniker": "Car Colour Project\\Dockerfile",
@@ -279,64 +387,62 @@
               "RelativeToolTip": "Car Colour Project\\Dockerfile",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-06-11T03:53:19.182Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T03:53:19.182Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 9,
               "Title": "styles.css",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\styles.css",
               "RelativeDocumentMoniker": "Car Colour Project\\wwwroot\\styles.css",
               "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\styles.css",
               "RelativeToolTip": "Car Colour Project\\wwwroot\\styles.css",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAKYCAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2026-06-11T03:53:04.337Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 10,
               "Title": "index.html",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\index.html",
               "RelativeDocumentMoniker": "Car Colour Project\\wwwroot\\index.html",
               "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\index.html",
               "RelativeToolTip": "Car Colour Project\\wwwroot\\index.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAHMAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2026-06-11T03:53:01.978Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 11,
               "Title": "app.js",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\app.js",
               "RelativeDocumentMoniker": "Car Colour Project\\wwwroot\\app.js",
               "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\app.js",
               "RelativeToolTip": "Car Colour Project\\wwwroot\\app.js",
-              "ViewState": "AgIAAFoBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAGkDAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-06-10T08:42:59.498Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
-              "Title": "Car Colour Project",
+              "DocumentIndex": 12,
+              "Title": "Car Colour Project.csproj",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Car Colour Project.csproj",
               "RelativeDocumentMoniker": "Car Colour Project\\Car Colour Project.csproj",
               "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Car Colour Project.csproj",
               "RelativeToolTip": "Car Colour Project\\Car Colour Project.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-06-10T08:42:59.426Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T08:42:59.426Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 13,
               "Title": ".gitkeep",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\masks\\.gitkeep",
               "RelativeDocumentMoniker": "Car Colour Project\\wwwroot\\masks\\.gitkeep",
@@ -344,12 +450,11 @@
               "RelativeToolTip": "Car Colour Project\\wwwroot\\masks\\.gitkeep",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-06-10T08:41:44.557Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T08:41:44.557Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 14,
               "Title": "RecolorController.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\RecolorController.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Controllers\\RecolorController.cs",
@@ -357,12 +462,11 @@
               "RelativeToolTip": "Car Colour Project\\Controllers\\RecolorController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T07:20:07.903Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T07:20:07.903Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 15,
               "Title": "ColorsController.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\ColorsController.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Controllers\\ColorsController.cs",
@@ -370,12 +474,11 @@
               "RelativeToolTip": "Car Colour Project\\Controllers\\ColorsController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T07:20:06.7Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T07:20:06.7Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 16,
               "Title": "ICarRepository.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\ICarRepository.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\ICarRepository.cs",
@@ -383,12 +486,11 @@
               "RelativeToolTip": "Car Colour Project\\Services\\ICarRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T07:19:20.742Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T07:19:20.742Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 17,
               "Title": "IColorRepository.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\IColorRepository.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\IColorRepository.cs",
@@ -396,12 +498,11 @@
               "RelativeToolTip": "Car Colour Project\\Services\\IColorRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T07:19:19.902Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T07:19:19.902Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 18,
               "Title": "IImageRecolorService.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\IImageRecolorService.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\IImageRecolorService.cs",
@@ -409,12 +510,11 @@
               "RelativeToolTip": "Car Colour Project\\Services\\IImageRecolorService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T07:19:18.892Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T07:19:18.892Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 19,
               "Title": "JsonDataLoader.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\JsonDataLoader.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\JsonDataLoader.cs",
@@ -422,12 +522,11 @@
               "RelativeToolTip": "Car Colour Project\\Services\\JsonDataLoader.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T07:19:08.165Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T07:19:08.165Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 20,
               "Title": "ColorRepository.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\ColorRepository.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\ColorRepository.cs",
@@ -435,12 +534,11 @@
               "RelativeToolTip": "Car Colour Project\\Services\\ColorRepository.cs",
               "ViewState": "AgIAADYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:52:52.814Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:52:52.814Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 21,
               "Title": "colors.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\data\\colors.json",
               "RelativeDocumentMoniker": "Car Colour Project\\data\\colors.json",
@@ -448,25 +546,24 @@
               "RelativeToolTip": "Car Colour Project\\data\\colors.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-10T06:52:36.953Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:52:36.953Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "cars.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\data\\cars.json",
               "RelativeDocumentMoniker": "Car Colour Project\\data\\cars.json",
               "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\data\\cars.json",
               "RelativeToolTip": "Car Colour Project\\data\\cars.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABcAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAABcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-06-10T06:51:08.284Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 22,
               "Title": "CarsController.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\CarsController.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Controllers\\CarsController.cs",
@@ -474,12 +571,11 @@
               "RelativeToolTip": "Car Colour Project\\Controllers\\CarsController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:51:04.308Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:51:04.308Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 23,
               "Title": "ImageRecolorService.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\ImageRecolorService.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\ImageRecolorService.cs",
@@ -487,12 +583,11 @@
               "RelativeToolTip": "Car Colour Project\\Services\\ImageRecolorService.cs",
               "ViewState": "AgIAAHAAAAAAAAAAAAAAAIQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:47:52.617Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:47:52.617Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 24,
               "Title": "RecolorResponse.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Models\\RecolorResponse.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Models\\RecolorResponse.cs",
@@ -500,12 +595,11 @@
               "RelativeToolTip": "Car Colour Project\\Models\\RecolorResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:47:45.968Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:47:45.968Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 25,
               "Title": "RecolorRequest.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Models\\RecolorRequest.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Models\\RecolorRequest.cs",
@@ -513,12 +607,11 @@
               "RelativeToolTip": "Car Colour Project\\Models\\RecolorRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:47:45.177Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:47:45.177Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 26,
               "Title": "ColorInfo.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Models\\ColorInfo.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Models\\ColorInfo.cs",
@@ -526,12 +619,11 @@
               "RelativeToolTip": "Car Colour Project\\Models\\ColorInfo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:47:44.306Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:47:44.306Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 27,
               "Title": "Car.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Models\\Car.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Models\\Car.cs",
@@ -539,12 +631,11 @@
               "RelativeToolTip": "Car Colour Project\\Models\\Car.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:47:43.261Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:47:43.261Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 28,
               "Title": "CarRepository.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Services\\CarRepository.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Services\\CarRepository.cs",
@@ -552,8 +643,7 @@
               "RelativeToolTip": "Car Colour Project\\Services\\CarRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADMAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-10T06:47:35.203Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-10T06:47:35.203Z"
             }
           ]
         }
