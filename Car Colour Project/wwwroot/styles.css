@@ -905,11 +905,45 @@ input[type="range"] {
     font-size: .8rem;
 }
 
+.add-car-card {
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    padding: 1rem;
+}
+
+.add-car-actions {
+    margin-top: 1rem;
+}
+
+.add-car-feedback {
+    margin-top: .6rem;
+    font-size: .82rem;
+}
+
+.add-car-feedback.success {
+    color: var(--success);
+}
+
+.add-car-feedback.error {
+    color: #ef4444;
+}
+
 .car-info-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: .6rem;
     margin-top: 1rem;
+}
+
+.update-image-label {
+    margin: 0;
+}
+
+#updateCarImageInput {
+    max-width: 260px;
 }
 
 .car-details-screen {

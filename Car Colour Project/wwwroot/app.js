@@ -70,6 +70,14 @@ const el = {
     carInfoImage: document.getElementById('carInfoImage'),
     carInfoTitle: document.getElementById('carInfoTitle'),
     carInfoActions: document.getElementById('carInfoActions'),
+    updateCarImageInput: document.getElementById('updateCarImageInput'),
+    saveCarImageBtn: document.getElementById('saveCarImageBtn'),
+    updateCarImageFeedback: document.getElementById('updateCarImageFeedback'),
+    newCarBrand: document.getElementById('newCarBrand'),
+    newCarModel: document.getElementById('newCarModel'),
+    newCarImage: document.getElementById('newCarImage'),
+    addCarBtn: document.getElementById('addCarBtn'),
+    addCarFeedback: document.getElementById('addCarFeedback'),
     addCarDetailsBtn: document.getElementById('addCarDetailsBtn'),
     viewCarInfoBtn: document.getElementById('viewCarInfoBtn'),
     carDetailsEditorScreen: document.getElementById('carDetailsEditorScreen'),
@@ -199,6 +207,8 @@ function wireEvents() {
         renderCarInfo(carId);
     });
 
+    el.addCarBtn.addEventListener('click', handleAddCar);
+    el.saveCarImageBtn.addEventListener('click', handleUpdateCarImage);
     el.addCarDetailsBtn.addEventListener('click', openDetailsEditor);
     el.viewCarInfoBtn.addEventListener('click', openDetailsViewer);
     el.detailDescription.addEventListener('input', updateWordCount);
@@ -330,6 +340,7 @@ async function renderCarInfo(carId) {
     el.carInfoEmpty.classList.add('hidden');
     el.carInfoImageWrap.classList.remove('hidden');
     el.carInfoActions.classList.remove('hidden');
+    setUpdateCarImageFeedback('', false, true);
 
     showDefaultCarInfoScreen();
 }
@@ -341,6 +352,8 @@ function clearCarInfoPreview() {
     el.carInfoImageWrap.classList.add('hidden');
     el.carInfoEmpty.classList.remove('hidden');
     el.carInfoActions.classList.add('hidden');
+    el.updateCarImageInput.value = '';
+    setUpdateCarImageFeedback('', false, true);
     hideDetailScreens();
 }
 
@@ -402,6 +415,154 @@ function renderCarSearchResults(cars, term) {
     });
 
     el.carSearchResults.classList.remove('hidden');
+}
+
+async function handleAddCar() {
+    const brand = el.newCarBrand.value.trim();
+    const model = el.newCarModel.value.trim();
+    const image = el.newCarImage.files?.[0];
+
+    if (!brand || !model || !image) {
+        setAddCarFeedback('Brand, model, and image are required.', true);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('brand', brand);
+    formData.append('model', model);
+    formData.append('image', image);
+
+    el.addCarBtn.disabled = true;
+    setAddCarFeedback('Adding car...', false);
+
+    try {
+        const response = await fetch('/api/cars', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(message || 'Failed to add car.');
+        }
+
+        const createdCar = await response.json();
+        state.cars = [...state.cars, createdCar].sort((a, b) => `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`));
+
+        populateRecolorCarDropdown(state.cars);
+        populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
+
+        el.carSelect.value = createdCar.id;
+        selectCar(createdCar.id);
+
+        el.carInfoSelect.value = createdCar.id;
+        el.carNameSearch.value = `${createdCar.brand} ${createdCar.model}`;
+        await renderCarInfo(createdCar.id);
+        el.carSearchResults.classList.add('hidden');
+
+        resetAddCarForm();
+        setAddCarFeedback('Car added successfully.', false);
+    } catch (err) {
+        console.error('Add car failed:', err);
+        setAddCarFeedback(err.message || 'Failed to add car. Please try again.', true);
+    } finally {
+        el.addCarBtn.disabled = false;
+    }
+}
+
+function resetAddCarForm() {
+    el.newCarBrand.value = '';
+    el.newCarModel.value = '';
+    el.newCarImage.value = '';
+}
+
+function setAddCarFeedback(message, isError) {
+    el.addCarFeedback.textContent = message;
+    el.addCarFeedback.classList.remove('hidden', 'error', 'success');
+    el.addCarFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+async function handleUpdateCarImage() {
+    const carId = getCurrentInfoCarId();
+    const image = el.updateCarImageInput.files?.[0];
+
+    if (!carId) {
+        setUpdateCarImageFeedback('Select a car first.', true);
+        return;
+    }
+
+    if (!image) {
+        setUpdateCarImageFeedback('Select a new image file first.', true);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', image);
+
+    el.saveCarImageBtn.disabled = true;
+    setUpdateCarImageFeedback('Saving new image...', false);
+
+    try {
+        const response = await fetch(`/api/cars/${encodeURIComponent(carId)}/image`, {
+            method: 'PUT',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(message || 'Failed to update car image.');
+        }
+
+        const updatedCar = await response.json();
+        state.cars = state.cars.map(car => car.id === updatedCar.id ? updatedCar : car);
+
+        const cacheBust = Date.now();
+        if (state.selectedInfoCar?.id === updatedCar.id) {
+            state.selectedInfoCar = updatedCar;
+            el.carInfoImage.src = `/${updatedCar.image}?v=${cacheBust}`;
+            el.carInfoImage.alt = `${updatedCar.brand} ${updatedCar.model}`;
+            el.carInfoTitle.textContent = `${updatedCar.brand} ${updatedCar.model}`;
+        }
+
+        if (state.selectedCar?.id === updatedCar.id) {
+            state.selectedCar = updatedCar;
+            const src = `/${updatedCar.image}?v=${cacheBust}`;
+            [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+                img.src = src;
+                img.alt = `${updatedCar.brand} ${updatedCar.model}`;
+            });
+            setStatusLabel(el.selectedCarLabel, '🚗', `${updatedCar.model}`);
+            setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
+            el.downloadRecoloredBtn.disabled = true;
+            state.selectedColor = null;
+            clearPaintCanvas();
+        }
+
+        populateRecolorCarDropdown(state.cars);
+        populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
+        el.carSelect.value = updatedCar.id;
+        el.carInfoSelect.value = updatedCar.id;
+        el.updateCarImageInput.value = '';
+        setUpdateCarImageFeedback('Car image updated successfully.', false);
+    } catch (err) {
+        console.error('Update car image failed:', err);
+        setUpdateCarImageFeedback(err.message || 'Failed to update car image. Please try again.', true);
+    } finally {
+        el.saveCarImageBtn.disabled = false;
+    }
+}
+
+function setUpdateCarImageFeedback(message, isError, hide = false) {
+    if (hide) {
+        el.updateCarImageFeedback.textContent = '';
+        el.updateCarImageFeedback.classList.add('hidden');
+        el.updateCarImageFeedback.classList.remove('error', 'success');
+        return;
+    }
+
+    el.updateCarImageFeedback.textContent = message;
+    el.updateCarImageFeedback.classList.remove('hidden', 'error', 'success');
+    el.updateCarImageFeedback.classList.add(isError ? 'error' : 'success');
 }
 
 // ─────────────────────────────────────────────

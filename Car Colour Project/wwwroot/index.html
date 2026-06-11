@@ -189,6 +189,24 @@
                 <span class="select-arrow">▾</span>
             </div>
 
+            <section class="add-car-card" aria-label="Add new car">
+                <h3 class="section-subtitle">Add New Car</h3>
+
+                <label for="newCarBrand" class="field-label">Brand</label>
+                <input id="newCarBrand" type="text" placeholder="e.g. Mercedes">
+
+                <label for="newCarModel" class="field-label">Model</label>
+                <input id="newCarModel" type="text" placeholder="e.g. GLC 300">
+
+                <label for="newCarImage" class="field-label">Car Image</label>
+                <input id="newCarImage" type="file" accept=".png,.jpg,.jpeg,.webp">
+
+                <div class="detail-actions-row add-car-actions">
+                    <button id="addCarBtn" type="button" class="btn-primary">Add Car</button>
+                </div>
+                <p id="addCarFeedback" class="add-car-feedback hidden"></p>
+            </section>
+
             <div id="carInfoViewer" class="car-info-viewer">
                 <div id="carInfoEmpty" class="empty-state car-info-empty">
                     <div class="empty-icon">🚙</div>
@@ -201,9 +219,13 @@
             </div>
 
             <div id="carInfoActions" class="car-info-actions hidden">
+                <label for="updateCarImageInput" class="field-label update-image-label">Update Car Image</label>
+                <input id="updateCarImageInput" type="file" accept=".png,.jpg,.jpeg,.webp">
+                <button id="saveCarImageBtn" type="button" class="btn-secondary">Save New Image</button>
                 <button id="addCarDetailsBtn" type="button" class="btn-primary">Add Car Details</button>
                 <button id="viewCarInfoBtn" type="button" class="icon-btn" aria-label="View car info" title="View car info">ℹ️</button>
             </div>
+            <p id="updateCarImageFeedback" class="add-car-feedback hidden"></p>
 
             <section id="carDetailsEditorScreen" class="car-details-screen hidden" aria-label="Add car details">
                 <h3 class="section-subtitle">Add Car Details</h3>

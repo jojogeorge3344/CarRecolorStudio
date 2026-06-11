@@ -1,0 +1,30 @@
+﻿using Car_Colour_Project.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Car_Colour_Project.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public sealed class CarsController : ControllerBase
+{
+    private readonly ICarRepository _carRepository;
+
+    public CarsController(ICarRepository carRepository)
+    {
+        _carRepository = carRepository;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var cars = await _carRepository.GetAllAsync(cancellationToken);
+        return Ok(cars);
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string term, CancellationToken cancellationToken)
+    {
+        var cars = await _carRepository.SearchAsync(term, cancellationToken);
+        return Ok(cars);
+    }
+}

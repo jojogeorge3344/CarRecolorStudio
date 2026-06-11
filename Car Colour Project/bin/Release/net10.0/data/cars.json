@@ -1,0 +1,80 @@
+[
+  {
+    "Id": "bmw-x1",
+    "Brand": "BMW",
+    "Model": "X1",
+    "Image": "images/bmw-x1.jpg"
+  },
+  {
+    "Id": "bmw-x2",
+    "Brand": "BMW",
+    "Model": "X2",
+    "Image": "images/bmw-x2.jpg"
+  },
+  {
+    "Id": "bmw-x3",
+    "Brand": "BMW",
+    "Model": "X3",
+    "Image": "images/bmw-x3.png"
+  },
+  {
+    "Id": "bmw-x5",
+    "Brand": "BMW",
+    "Model": "X5",
+    "Image": "images/bmw-x5.png"
+  },
+  {
+    "Id": "bmw-x7",
+    "Brand": "BMW",
+    "Model": "X7",
+    "Image": "images/bmw-x7.png"
+  },
+  {
+    "Id": "bmw-m5",
+    "Brand": "BMW",
+    "Model": "M5",
+    "Image": "images/bmw-m5.png"
+  },
+  {
+    "Id": "audi-q7",
+    "Brand": "Audi",
+    "Model": "Q7",
+    "Image": "images/audi-q7.jpg"
+  },
+  {
+    "Id": "toyota-fortuner",
+    "Brand": "Toyota",
+    "Model": "Fortuner",
+    "Image": "images/toyota-fortuner.png"
+  },
+  {
+    "Id": "hyundai-creta",
+    "Brand": "Hyundai",
+    "Model": "Creta",
+    "Image": "images/hyundai-creta.png"
+  },
+  {
+    "Id": "kia-seltos",
+    "Brand": "Kia",
+    "Model": "Seltos",
+    "Image": "images/kia-seltos.png"
+  },
+  {
+    "Id": "mahindra-scorpio",
+    "Brand": "Mahindra",
+    "Model": "Scorpio",
+    "Image": "images/mahindra-scorpio.png"
+  },
+  {
+    "Id": "baleno",
+    "Brand": "Maruthi",
+    "Model": "Baleno Sigma",
+    "Image": "images/baleno.png"
+  },
+  {
+    "Id": "volkswagen-vento-highline-1-6",
+    "Brand": "Volkswagen",
+    "Model": "vento Highline 1.6",
+    "Image": "images/volkswagen-vento-highline-1-6.png"
+  }
+]

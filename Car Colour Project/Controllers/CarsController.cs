@@ -1,3 +1,4 @@
+using Car_Colour_Project.Models;
 using Car_Colour_Project.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +8,14 @@ namespace Car_Colour_Project.Controllers;
 [Route("api/[controller]")]
 public sealed class CarsController : ControllerBase
 {
+    private static readonly HashSet<string> AllowedImageExtensions = [".png", ".jpg", ".jpeg", ".webp"];
     private readonly ICarRepository _carRepository;
+    private readonly IWebHostEnvironment _environment;
 
-    public CarsController(ICarRepository carRepository)
+    public CarsController(ICarRepository carRepository, IWebHostEnvironment environment)
     {
         _carRepository = carRepository;
+        _environment = environment;
     }
 
     [HttpGet]
@@ -26,5 +30,161 @@ public sealed class CarsController : ControllerBase
     {
         var cars = await _carRepository.SearchAsync(term, cancellationToken);
         return Ok(cars);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromForm] CreateCarRequest request, CancellationToken cancellationToken)
+    {
+        var brand = request.Brand?.Trim();
+        var model = request.Model?.Trim();
+
+        if (string.IsNullOrWhiteSpace(brand) || string.IsNullOrWhiteSpace(model))
+        {
+            return BadRequest("Brand and model are required.");
+        }
+
+        if (request.Image is null || request.Image.Length == 0)
+        {
+            return BadRequest("Car image is required.");
+        }
+
+        var extension = ValidateImageExtension(request.Image);
+        if (extension is null)
+        {
+            return BadRequest("Unsupported image format. Use PNG, JPG, JPEG, or WEBP.");
+        }
+
+        var idBase = BuildSlug($"{brand}-{model}");
+        if (string.IsNullOrWhiteSpace(idBase))
+        {
+            return BadRequest("Unable to generate a valid car id from brand and model.");
+        }
+
+        var carId = await EnsureUniqueCarIdAsync(idBase, cancellationToken);
+        var imageFileName = $"{carId}{extension}";
+        await SaveImageAsync(request.Image, imageFileName, cancellationToken);
+
+        var car = new Car
+        {
+            Id = carId,
+            Brand = brand,
+            Model = model,
+            Image = $"images/{imageFileName}"
+        };
+
+        var created = await _carRepository.AddAsync(car, cancellationToken);
+        return Created($"/api/cars/{created.Id}", created);
+    }
+
+    [HttpPut("{id}/image")]
+    public async Task<IActionResult> UpdateImage(string id, [FromForm] UpdateCarImageRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return BadRequest("Car id is required.");
+        }
+
+        var existing = await _carRepository.GetByIdAsync(id, cancellationToken);
+        if (existing is null)
+        {
+            return NotFound("Car not found.");
+        }
+
+        if (request.Image is null || request.Image.Length == 0)
+        {
+            return BadRequest("New car image is required.");
+        }
+
+        var extension = ValidateImageExtension(request.Image);
+        if (extension is null)
+        {
+            return BadRequest("Unsupported image format. Use PNG, JPG, JPEG, or WEBP.");
+        }
+
+        var fileName = $"{existing.Id}-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}{extension}";
+        await SaveImageAsync(request.Image, fileName, cancellationToken);
+
+        var newImageRelativePath = $"images/{fileName}";
+        var updated = await _carRepository.UpdateImageAsync(existing.Id, newImageRelativePath, cancellationToken);
+        if (updated is null)
+        {
+            return NotFound("Car not found.");
+        }
+
+        TryDeleteOldImage(existing.Image, updated.Image);
+        return Ok(updated);
+    }
+
+    private async Task<string> EnsureUniqueCarIdAsync(string idBase, CancellationToken cancellationToken)
+    {
+        var suffix = 1;
+        var candidate = idBase;
+
+        while (await _carRepository.GetByIdAsync(candidate, cancellationToken) is not null)
+        {
+            candidate = $"{idBase}-{suffix}";
+            suffix++;
+        }
+
+        return candidate;
+    }
+
+    private string? ValidateImageExtension(IFormFile image)
+    {
+        var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+        return AllowedImageExtensions.Contains(extension) ? extension : null;
+    }
+
+    private async Task SaveImageAsync(IFormFile image, string imageFileName, CancellationToken cancellationToken)
+    {
+        var imagesFolder = Path.Combine(_environment.WebRootPath, "images");
+        Directory.CreateDirectory(imagesFolder);
+
+        var imagePath = Path.Combine(imagesFolder, imageFileName);
+        await using var imageStream = System.IO.File.Create(imagePath);
+        await image.CopyToAsync(imageStream, cancellationToken);
+    }
+
+    private void TryDeleteOldImage(string oldImageRelativePath, string newImageRelativePath)
+    {
+        if (string.IsNullOrWhiteSpace(oldImageRelativePath)
+            || string.Equals(oldImageRelativePath, newImageRelativePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var oldImagePath = Path.Combine(_environment.WebRootPath, oldImageRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (System.IO.File.Exists(oldImagePath))
+        {
+            System.IO.File.Delete(oldImagePath);
+        }
+    }
+
+    private static string BuildSlug(string input)
+    {
+        var chars = input
+            .Trim()
+            .ToLowerInvariant()
+            .Select(ch => char.IsLetterOrDigit(ch) ? ch : '-');
+
+        var normalized = new string(chars.ToArray());
+        while (normalized.Contains("--", StringComparison.Ordinal))
+        {
+            normalized = normalized.Replace("--", "-", StringComparison.Ordinal);
+        }
+
+        return normalized.Trim('-');
+    }
+
+    public sealed class CreateCarRequest
+    {
+        public string? Brand { get; init; }
+        public string? Model { get; init; }
+        public IFormFile? Image { get; init; }
+    }
+
+    public sealed class UpdateCarImageRequest
+    {
+        public IFormFile? Image { get; init; }
     }
 }
