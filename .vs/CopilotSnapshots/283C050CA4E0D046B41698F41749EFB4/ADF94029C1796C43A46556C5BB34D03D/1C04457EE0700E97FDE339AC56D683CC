@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "Car Colour Project": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

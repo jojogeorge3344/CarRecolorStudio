@@ -1,0 +1,366 @@
+﻿// ─────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────
+const state = {
+    cars: [],
+    colors: [],
+    filteredColors: [],
+    selectedCar: null,
+    selectedColor: null,
+    recent: []
+};
+
+const MAX_RECENT = 20;
+
+// ─────────────────────────────────────────────
+//  Element references
+// ─────────────────────────────────────────────
+const el = {
+    carSelect: document.getElementById('carSelect'),
+    carInfo: document.getElementById('carInfo'),
+    carBrandBadge: document.getElementById('carBrandBadge'),
+    colorSearch: document.getElementById('colorSearch'),
+    customHex: document.getElementById('customHex'),
+    customHexPicker: document.getElementById('customHexPicker'),
+    categoryFilter: document.getElementById('categoryFilter'),
+    colorList: document.getElementById('colorList'),
+    recentColors: document.getElementById('recentColors'),
+    selectedCarLabel: document.getElementById('selectedCarLabel'),
+    selectedColorLabel: document.getElementById('selectedColorLabel'),
+    originalImage: document.getElementById('originalImage'),
+    recoloredImage: document.getElementById('recoloredImage'),
+    sliderOriginal: document.getElementById('sliderOriginal'),
+    sliderRecolored: document.getElementById('sliderRecolored'),
+    sliderOverlay: document.getElementById('sliderOverlay'),
+    sliderDivider: document.getElementById('sliderDivider'),
+    compareSlider: document.getElementById('compareSlider'),
+    zoomRange: document.getElementById('zoomRange'),
+    viewer: document.getElementById('viewer'),
+    fullscreenBtn: document.getElementById('fullscreenBtn'),
+    emptyState: document.getElementById('emptyState'),
+    compareArea: document.getElementById('compareArea'),
+    recolorLoader: document.getElementById('recolorLoader')
+};
+
+// ─────────────────────────────────────────────
+//  Boot
+// ─────────────────────────────────────────────
+init();
+
+async function init() {
+    state.recent = loadRecent();
+    renderRecent();
+
+    try {
+        const [cars, colors] = await Promise.all([
+            fetchJson('/api/cars'),
+            fetchJson('/api/colors')
+        ]);
+
+        state.cars = cars;
+        state.colors = colors;
+
+        populateCarDropdown(cars);
+        renderCategoryFilter(colors);
+        applyColorFilter();
+
+        // Auto-select the first car
+        if (cars.length > 0) {
+            el.carSelect.value = cars[0].id;
+            selectCar(cars[0].id);
+        }
+    } catch (err) {
+        console.error('Failed to initialise:', err);
+    }
+
+    wireEvents();
+}
+
+// ─────────────────────────────────────────────
+//  Populate car dropdown
+// ─────────────────────────────────────────────
+function populateCarDropdown(cars) {
+    // Clear existing options (keep the placeholder)
+    while (el.carSelect.options.length > 1) {
+        el.carSelect.remove(1);
+    }
+
+    // Group by brand
+    const brands = [...new Set(cars.map(c => c.brand))].sort();
+
+    brands.forEach(brand => {
+        const group = document.createElement('optgroup');
+        group.label = brand;
+
+        cars.filter(c => c.brand === brand).forEach(car => {
+            const option = document.createElement('option');
+            option.value = car.id;
+            option.textContent = `${car.model}`;
+            group.appendChild(option);
+        });
+
+        el.carSelect.appendChild(group);
+    });
+}
+
+// ─────────────────────────────────────────────
+//  Event wiring
+// ─────────────────────────────────────────────
+function wireEvents() {
+    // Car dropdown change → load car image
+    el.carSelect.addEventListener('change', e => {
+        const carId = e.target.value;
+        if (carId) {
+            selectCar(carId);
+        }
+    });
+
+    // Colour search / filter
+    el.colorSearch.addEventListener('input', debounce(applyColorFilter, 120));
+    el.categoryFilter.addEventListener('change', applyColorFilter);
+
+    // Custom HEX text input
+    el.customHex.addEventListener('input', e => {
+        const value = e.target.value.trim();
+        if (/^#(?:[0-9a-fA-F]{3}){1,2}$/.test(value)) {
+            el.customHexPicker.value = value;
+            applyColor({ name: `Custom ${value.toUpperCase()}`, hex: value.toUpperCase(), category: 'Custom' });
+        }
+    });
+
+    // Native colour picker
+    el.customHexPicker.addEventListener('input', e => {
+        const hex = e.target.value.toUpperCase();
+        el.customHex.value = hex;
+        applyColor({ name: `Custom ${hex}`, hex, category: 'Custom' });
+    });
+
+    // Slider comparison
+    el.compareSlider.addEventListener('input', e => {
+        const pct = e.target.value;
+        el.sliderOverlay.style.width = `${pct}%`;
+        el.sliderDivider.style.left = `${pct}%`;
+    });
+
+    // Zoom
+    el.zoomRange.addEventListener('input', e => {
+        const scale = Number(e.target.value);
+        [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+            img.style.transform = `scale(${scale})`;
+        });
+    });
+
+    // Full-screen toggle
+    el.fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            el.viewer.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    });
+}
+
+// ─────────────────────────────────────────────
+//  Car selection → display image
+// ─────────────────────────────────────────────
+function selectCar(carId) {
+    const car = state.cars.find(c => c.id === carId);
+    if (!car) return;
+
+    state.selectedCar = car;
+    state.selectedColor = null;          // reset colour when switching car
+
+    // Use the image path stored in car data (preserves correct extension per car)
+    const src = `/${car.image}`;
+
+    // Show all four image elements with the original car image
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+        img.src = src;
+        img.alt = `${car.brand} ${car.model}`;
+    });
+
+    // Update status bar
+    setStatusLabel(el.selectedCarLabel, '🚗', `${car.model}`);
+    setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
+
+    // Show brand badge
+    el.carBrandBadge.textContent = car.brand;
+    el.carInfo.classList.remove('hidden');
+
+    // Reveal the comparison area, hide empty state
+    el.emptyState.classList.add('hidden');
+    el.compareArea.classList.remove('hidden');
+
+    // Reset slider and zoom
+    el.compareSlider.value = 50;
+    el.sliderOverlay.style.width = '50%';
+    el.sliderDivider.style.left = '50%';
+    el.zoomRange.value = 1;
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+        img.style.transform = 'scale(1)';
+    });
+}
+
+// ─────────────────────────────────────────────
+//  Colour application → recolor API
+// ─────────────────────────────────────────────
+async function applyColor(color) {
+    if (!state.selectedCar) {
+        alert('Please select a car first!');
+        return;
+    }
+
+    state.selectedColor = color;
+    setStatusLabel(el.selectedColorLabel, '🎨', `${color.name} (${color.hex})`);
+
+    pushRecent(color);
+    renderRecent();
+    renderColorList(state.filteredColors.slice(0, 1000));
+
+    // Show loading spinner on the recolored panel
+    el.recolorLoader.classList.remove('hidden');
+
+    try {
+        const response = await fetch('/api/recolor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ carId: state.selectedCar.id, hexColor: color.hex })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const imageUrl = `${result.imageUrl}?v=${Date.now()}`;
+            el.recoloredImage.src = imageUrl;
+            el.sliderRecolored.src = imageUrl;
+        }
+    } catch (err) {
+        console.error('Recolor failed:', err);
+    } finally {
+        el.recolorLoader.classList.add('hidden');
+    }
+}
+
+// ─────────────────────────────────────────────
+//  Category filter
+// ─────────────────────────────────────────────
+function renderCategoryFilter(colors) {
+    const categories = [...new Set(colors.map(c => c.category).filter(Boolean))].sort();
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        el.categoryFilter.appendChild(option);
+    });
+}
+
+function applyColorFilter() {
+    const term = el.colorSearch.value.trim().toLowerCase();
+    const category = el.categoryFilter.value;
+
+    state.filteredColors = state.colors.filter(c => {
+        const matchesTerm = !term || c.name.toLowerCase().includes(term) || c.hex.toLowerCase().includes(term);
+        const matchesCategory = !category || c.category === category;
+        return matchesTerm && matchesCategory;
+    });
+
+    renderColorList(state.filteredColors.slice(0, 1000));
+}
+
+// ─────────────────────────────────────────────
+//  Colour list rendering
+// ─────────────────────────────────────────────
+function renderColorList(colors) {
+    el.colorList.innerHTML = '';
+
+    if (colors.length === 0) {
+        el.colorList.innerHTML = '<p class="no-results">No colours found</p>';
+        return;
+    }
+
+    colors.forEach(color => {
+        const row = document.createElement('div');
+        row.className = `color-item${state.selectedColor?.hex === color.hex ? ' active' : ''}`;
+        row.setAttribute('role', 'listitem');
+
+        const swatch = document.createElement('span');
+        swatch.className = 'swatch';
+        swatch.style.background = color.hex;
+        swatch.style.boxShadow = `0 0 0 2px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.2)`;
+
+        const label = document.createElement('span');
+        label.className = 'color-label';
+        label.textContent = `${color.name}`;
+
+        const hex = document.createElement('span');
+        hex.className = 'color-hex';
+        hex.textContent = color.hex;
+
+        row.append(swatch, label, hex);
+        row.addEventListener('click', () => applyColor(color));
+
+        el.colorList.appendChild(row);
+    });
+}
+
+// ─────────────────────────────────────────────
+//  Recently used
+// ─────────────────────────────────────────────
+function renderRecent() {
+    el.recentColors.innerHTML = '';
+
+    if (state.recent.length === 0) {
+        el.recentColors.innerHTML = '<span class="no-recent">None yet</span>';
+        return;
+    }
+
+    state.recent.forEach(item => {
+        const chip = document.createElement('button');
+        chip.className = 'recent-chip';
+        chip.title = `${item.name} (${item.hex})`;
+        chip.style.background = item.hex;
+        chip.setAttribute('aria-label', `Apply colour ${item.name}`);
+        chip.addEventListener('click', () => applyColor(item));
+        el.recentColors.appendChild(chip);
+    });
+}
+
+function pushRecent(color) {
+    const n = { name: color.name, hex: color.hex.toUpperCase(), category: color.category || 'Custom' };
+    state.recent = [n, ...state.recent.filter(c => c.hex !== n.hex)].slice(0, MAX_RECENT);
+    localStorage.setItem('recentColors', JSON.stringify(state.recent));
+}
+
+function loadRecent() {
+    try {
+        const v = localStorage.getItem('recentColors');
+        return v ? JSON.parse(v) : [];
+    } catch {
+        return [];
+    }
+}
+
+// ─────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────
+function toImageKey(car) {
+    return `${car.brand}-${car.model}`.toLowerCase().replace(/\s+/g, '-');
+}
+
+function setStatusLabel(el, icon, text) {
+    el.innerHTML = `<span class="status-icon">${icon}</span><span>${text}</span>`;
+}
+
+async function fetchJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Request failed: ${url}`);
+    return response.json();
+}
+
+function debounce(fn, delay) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+}

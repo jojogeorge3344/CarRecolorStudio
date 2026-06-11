@@ -1,0 +1,133 @@
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+namespace Car_Colour_Project.Services;
+
+public sealed class ImageRecolorService : IImageRecolorService
+{
+    private readonly IWebHostEnvironment _environment;
+
+    public ImageRecolorService(IWebHostEnvironment environment)
+    {
+        _environment = environment;
+    }
+
+    public async Task<string> RecolorAsync(string carId, string sourceRelativePath, string hexColor, CancellationToken cancellationToken = default)
+    {
+        var sourcePath = Path.Combine(_environment.WebRootPath, sourceRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourcePath))
+        {
+            throw new FileNotFoundException($"Source image not found: {sourceRelativePath}");
+        }
+
+        var generatedFolder = Path.Combine(_environment.WebRootPath, "generated");
+        Directory.CreateDirectory(generatedFolder);
+
+        var outputFile = $"{Sanitize(carId)}-{hexColor.TrimStart('#').ToLowerInvariant()}.png";
+        var outputPath = Path.Combine(generatedFolder, outputFile);
+
+        var target = ParseHex(hexColor);
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath, cancellationToken);
+
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = 0; y < accessor.Height; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                for (var x = 0; x < row.Length; x++)
+                {
+                    var pixel = row[x];
+                    if (pixel.A < 10)
+                    {
+                        continue;
+                    }
+
+                    var (h, s, v) = RgbToHsv(pixel.R, pixel.G, pixel.B);
+                    if (s < 0.1f || v < 0.1f)
+                    {
+                        continue;
+                    }
+
+                    var maskWeight = s * 0.9f;
+                    var recoloredR = (byte)Math.Clamp((target.R * v) * maskWeight + pixel.R * (1f - maskWeight), 0, 255);
+                    var recoloredG = (byte)Math.Clamp((target.G * v) * maskWeight + pixel.G * (1f - maskWeight), 0, 255);
+                    var recoloredB = (byte)Math.Clamp((target.B * v) * maskWeight + pixel.B * (1f - maskWeight), 0, 255);
+
+                    row[x] = new Rgba32(recoloredR, recoloredG, recoloredB, pixel.A);
+                }
+            }
+        });
+
+        await image.SaveAsPngAsync(outputPath, cancellationToken);
+        return $"/generated/{outputFile}";
+    }
+
+    private static string Sanitize(string input)
+    {
+        var safeChars = input.Where(char.IsLetterOrDigit).ToArray();
+        return safeChars.Length == 0 ? "car" : new string(safeChars);
+    }
+
+    private static Rgba32 ParseHex(string hex)
+    {
+        hex = hex.Trim();
+        if (!hex.StartsWith('#'))
+        {
+            throw new ArgumentException("HEX must start with #", nameof(hex));
+        }
+
+        var value = hex[1..];
+        if (value.Length == 3)
+        {
+            value = string.Concat(value.Select(c => $"{c}{c}"));
+        }
+
+        if (value.Length != 6)
+        {
+            throw new ArgumentException("HEX must be #RGB or #RRGGBB", nameof(hex));
+        }
+
+        var r = Convert.ToByte(value[..2], 16);
+        var g = Convert.ToByte(value.Substring(2, 2), 16);
+        var b = Convert.ToByte(value.Substring(4, 2), 16);
+
+        return new Rgba32(r, g, b);
+    }
+
+    private static (float h, float s, float v) RgbToHsv(byte r, byte g, byte b)
+    {
+        var rf = r / 255f;
+        var gf = g / 255f;
+        var bf = b / 255f;
+
+        var max = Math.Max(rf, Math.Max(gf, bf));
+        var min = Math.Min(rf, Math.Min(gf, bf));
+        var delta = max - min;
+
+        var h = 0f;
+        if (delta > 0)
+        {
+            if (max == rf)
+            {
+                h = 60f * (((gf - bf) / delta) % 6f);
+            }
+            else if (max == gf)
+            {
+                h = 60f * (((bf - rf) / delta) + 2f);
+            }
+            else
+            {
+                h = 60f * (((rf - gf) / delta) + 4f);
+            }
+        }
+
+        if (h < 0)
+        {
+            h += 360f;
+        }
+
+        var s = max == 0 ? 0 : delta / max;
+        var v = max;
+        return (h, s, v);
+    }
+}

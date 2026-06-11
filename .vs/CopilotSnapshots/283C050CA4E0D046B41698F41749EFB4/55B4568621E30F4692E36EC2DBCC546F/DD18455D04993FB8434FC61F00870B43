@@ -1,0 +1,12 @@
+﻿[
+  { "id": "bmw-x1", "brand": "BMW", "model": "X1", "image": "images/bmw-x1.png" },
+  { "id": "bmw-x3", "brand": "BMW", "model": "X3", "image": "images/bmw-x3.png" },
+  { "id": "bmw-x5", "brand": "BMW", "model": "X5", "image": "images/bmw-x5.png" },
+  { "id": "bmw-x7", "brand": "BMW", "model": "X7", "image": "images/bmw-x7.png" },
+  { "id": "bmw-m5", "brand": "BMW", "model": "M5", "image": "images/bmw-m5.png" },
+  { "id": "audi-q7", "brand": "Audi", "model": "Q7", "image": "images/audi-q7.png" },
+  { "id": "toyota-fortuner", "brand": "Toyota", "model": "Fortuner", "image": "images/toyota-fortuner.png" },
+  { "id": "hyundai-creta", "brand": "Hyundai", "model": "Creta", "image": "images/hyundai-creta.png" },
+  { "id": "kia-seltos", "brand": "Kia", "model": "Seltos", "image": "images/kia-seltos.png" },
+  { "id": "mahindra-scorpio", "brand": "Mahindra", "model": "Scorpio", "image": "images/mahindra-scorpio.png" }
+]

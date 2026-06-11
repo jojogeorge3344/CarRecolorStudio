@@ -1,0 +1,216 @@
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+namespace Car_Colour_Project.Services;
+
+public sealed class ImageRecolorService : IImageRecolorService
+{
+    private readonly IWebHostEnvironment _environment;
+
+    public ImageRecolorService(IWebHostEnvironment environment)
+    {
+        _environment = environment;
+    }
+
+    public async Task<string> RecolorAsync(string carId, string sourceRelativePath, string hexColor, CancellationToken cancellationToken = default)
+    {
+        var sourcePath = Path.Combine(_environment.WebRootPath, sourceRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourcePath))
+        {
+            throw new FileNotFoundException($"Source image not found: {sourceRelativePath}");
+        }
+
+        var generatedFolder = Path.Combine(_environment.WebRootPath, "generated");
+        Directory.CreateDirectory(generatedFolder);
+
+        var outputFile = $"{Sanitize(carId)}-{hexColor.TrimStart('#').ToLowerInvariant()}.png";
+        var outputPath = Path.Combine(generatedFolder, outputFile);
+
+        var target = ParseHex(hexColor);
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath, cancellationToken);
+        using var maskImage = await TryLoadMaskAsync(carId, sourcePath, image.Width, image.Height, cancellationToken);
+
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = 0; y < accessor.Height; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                var maskRow = maskImage?.DangerousGetPixelRowMemory(y).Span;
+
+                for (var x = 0; x < row.Length; x++)
+                {
+                    var pixel = row[x];
+                    if (pixel.A < 10)
+                    {
+                        continue;
+                    }
+
+                    var (_, s, v) = RgbToHsv(pixel.R, pixel.G, pixel.B);
+
+                    var maskWeight = maskImage is null
+                        ? GetFallbackMaskWeight(pixel, x, y, accessor.Width, accessor.Height)
+                        : GetMaskWeight(maskRow![x]);
+
+                    if (maskWeight <= 0f)
+                    {
+                        continue;
+                    }
+
+                    var blend = Math.Clamp((0.35f + (s * 0.65f)) * maskWeight, 0f, 0.95f);
+                    var recoloredR = (byte)Math.Clamp((target.R * v) * blend + pixel.R * (1f - blend), 0, 255);
+                    var recoloredG = (byte)Math.Clamp((target.G * v) * blend + pixel.G * (1f - blend), 0, 255);
+                    var recoloredB = (byte)Math.Clamp((target.B * v) * blend + pixel.B * (1f - blend), 0, 255);
+
+                    row[x] = new Rgba32(recoloredR, recoloredG, recoloredB, pixel.A);
+                }
+            }
+        });
+
+        await image.SaveAsPngAsync(outputPath, cancellationToken);
+        return $"/generated/{outputFile}";
+    }
+
+    private async Task<Image<L8>?> TryLoadMaskAsync(string carId, string sourcePath, int width, int height, CancellationToken cancellationToken)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(sourcePath).ToLowerInvariant();
+        var candidates = new[]
+        {
+            Path.Combine(_environment.WebRootPath, "masks", $"{Sanitize(carId).ToLowerInvariant()}.png"),
+            Path.Combine(_environment.WebRootPath, "masks", $"{fileName}.png")
+        };
+
+        foreach (var path in candidates.Distinct())
+        {
+            if (!File.Exists(path))
+            {
+                continue;
+            }
+
+            var mask = await Image.LoadAsync<L8>(path, cancellationToken);
+            if (mask.Width == width && mask.Height == height)
+            {
+                return mask;
+            }
+
+            mask.Dispose();
+        }
+
+        return null;
+    }
+
+    private static float GetMaskWeight(L8 maskPixel)
+    {
+        var value = maskPixel.PackedValue / 255f;
+        return value < 0.15f ? 0f : value;
+    }
+
+    private static float GetFallbackMaskWeight(Rgba32 pixel, int x, int y, int width, int height)
+    {
+        var (h, s, v) = RgbToHsv(pixel.R, pixel.G, pixel.B);
+        if (v < 0.12f || (v > 0.97f && s < 0.08f))
+        {
+            return 0f;
+        }
+
+        var nx = x / (float)Math.Max(1, width - 1);
+        var ny = y / (float)Math.Max(1, height - 1);
+
+        var centerBand = nx > 0.08f && nx < 0.92f && ny > 0.2f && ny < 0.9f;
+        if (!centerBand)
+        {
+            return 0f;
+        }
+
+        var dx = (nx - 0.5f) / 0.42f;
+        var dy = (ny - 0.58f) / 0.33f;
+        var ellipseScore = (dx * dx) + (dy * dy);
+        if (ellipseScore > 1.2f)
+        {
+            return 0f;
+        }
+
+        var likelySky = ny < 0.55f && h is >= 175f and <= 260f && s > 0.12f;
+        if (likelySky)
+        {
+            return 0f;
+        }
+
+        var likelyRoadOrTyre = ny > 0.72f && v < 0.35f;
+        if (likelyRoadOrTyre)
+        {
+            return 0f;
+        }
+
+        var weight = 1f - (ellipseScore / 1.2f);
+        return Math.Clamp(weight, 0f, 1f);
+    }
+
+    private static string Sanitize(string input)
+    {
+        var safeChars = input.Where(char.IsLetterOrDigit).ToArray();
+        return safeChars.Length == 0 ? "car" : new string(safeChars);
+    }
+
+    private static Rgba32 ParseHex(string hex)
+    {
+        hex = hex.Trim();
+        if (!hex.StartsWith('#'))
+        {
+            throw new ArgumentException("HEX must start with #", nameof(hex));
+        }
+
+        var value = hex[1..];
+        if (value.Length == 3)
+        {
+            value = string.Concat(value.Select(c => $"{c}{c}"));
+        }
+
+        if (value.Length != 6)
+        {
+            throw new ArgumentException("HEX must be #RGB or #RRGGBB", nameof(hex));
+        }
+
+        var r = Convert.ToByte(value[..2], 16);
+        var g = Convert.ToByte(value.Substring(2, 2), 16);
+        var b = Convert.ToByte(value.Substring(4, 2), 16);
+
+        return new Rgba32(r, g, b);
+    }
+
+    private static (float h, float s, float v) RgbToHsv(byte r, byte g, byte b)
+    {
+        var rf = r / 255f;
+        var gf = g / 255f;
+        var bf = b / 255f;
+
+        var max = Math.Max(rf, Math.Max(gf, bf));
+        var min = Math.Min(rf, Math.Min(gf, bf));
+        var delta = max - min;
+
+        var h = 0f;
+        if (delta > 0)
+        {
+            if (max == rf)
+            {
+                h = 60f * (((gf - bf) / delta) % 6f);
+            }
+            else if (max == gf)
+            {
+                h = 60f * (((bf - rf) / delta) + 2f);
+            }
+            else
+            {
+                h = 60f * (((rf - gf) / delta) + 4f);
+            }
+        }
+
+        if (h < 0)
+        {
+            h += 360f;
+        }
+
+        var s = max == 0 ? 0 : delta / max;
+        var v = max;
+        return (h, s, v);
+    }
+}

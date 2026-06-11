@@ -1,0 +1,396 @@
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+namespace Car_Colour_Project.Services;
+
+public sealed class ImageRecolorService : IImageRecolorService
+{
+    private readonly IWebHostEnvironment _environment;
+
+    public ImageRecolorService(IWebHostEnvironment environment)
+    {
+        _environment = environment;
+    }
+
+    public async Task<string> RecolorAsync(string carId, string sourceRelativePath, string hexColor, CancellationToken cancellationToken = default)
+    {
+        var sourcePath = Path.Combine(_environment.WebRootPath, sourceRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourcePath))
+        {
+            throw new FileNotFoundException($"Source image not found: {sourceRelativePath}");
+        }
+
+        var generatedFolder = Path.Combine(_environment.WebRootPath, "generated");
+        Directory.CreateDirectory(generatedFolder);
+
+        var outputFile = $"{Sanitize(carId)}-{hexColor.TrimStart('#').ToLowerInvariant()}.png";
+        var outputPath = Path.Combine(generatedFolder, outputFile);
+
+        var target = ParseHex(hexColor);
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath, cancellationToken);
+        using var maskImage = await TryLoadMaskAsync(carId, sourcePath, image.Width, image.Height, cancellationToken);
+        var autoMaskWeights = maskImage is null ? BuildAutoMaskWeights(image) : null;
+
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = 0; y < accessor.Height; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+
+                for (var x = 0; x < row.Length; x++)
+                {
+                    var pixel = row[x];
+                    if (pixel.A < 10)
+                    {
+                        continue;
+                    }
+
+                    var (_, s, v) = RgbToHsv(pixel.R, pixel.G, pixel.B);
+                    var index = (y * accessor.Width) + x;
+
+                    var maskWeight = maskImage is null
+                        ? autoMaskWeights![index]
+                        : GetMaskWeight(maskImage[x, y]);
+
+                    if (maskWeight <= 0f)
+                    {
+                        continue;
+                    }
+
+                    var blend = Math.Clamp((0.55f + (s * 0.35f)) * maskWeight, 0f, 0.92f);
+                    var recoloredR = (byte)Math.Clamp((target.R * v) * blend + pixel.R * (1f - blend), 0, 255);
+                    var recoloredG = (byte)Math.Clamp((target.G * v) * blend + pixel.G * (1f - blend), 0, 255);
+                    var recoloredB = (byte)Math.Clamp((target.B * v) * blend + pixel.B * (1f - blend), 0, 255);
+
+                    row[x] = new Rgba32(recoloredR, recoloredG, recoloredB, pixel.A);
+                }
+            }
+        });
+
+        await image.SaveAsPngAsync(outputPath, cancellationToken);
+        return $"/generated/{outputFile}";
+    }
+
+    private async Task<Image<L8>?> TryLoadMaskAsync(string carId, string sourcePath, int width, int height, CancellationToken cancellationToken)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(sourcePath).ToLowerInvariant();
+        var candidates = new[]
+        {
+            Path.Combine(_environment.WebRootPath, "masks", $"{Sanitize(carId).ToLowerInvariant()}.png"),
+            Path.Combine(_environment.WebRootPath, "masks", $"{fileName}.png")
+        };
+
+        foreach (var path in candidates.Distinct())
+        {
+            if (!File.Exists(path))
+            {
+                continue;
+            }
+
+            var mask = await Image.LoadAsync<L8>(path, cancellationToken);
+            if (mask.Width == width && mask.Height == height)
+            {
+                return mask;
+            }
+
+            mask.Dispose();
+        }
+
+        return null;
+    }
+
+    private static float GetMaskWeight(L8 maskPixel)
+    {
+        var value = maskPixel.PackedValue / 255f;
+        return value < 0.15f ? 0f : value;
+    }
+
+    private static float[] BuildAutoMaskWeights(Image<Rgba32> image)
+    {
+        var width = image.Width;
+        var height = image.Height;
+        var size = width * height;
+
+        var candidateMask = new bool[size];
+        var selectedMask = new bool[size];
+        var weights = new float[size];
+
+        var bodySeeds = CollectSeeds(image, new[]
+        {
+            (0.50f, 0.58f),
+            (0.42f, 0.58f),
+            (0.58f, 0.58f),
+            (0.34f, 0.54f),
+            (0.66f, 0.54f),
+            (0.50f, 0.50f)
+        });
+
+        var backgroundSeeds = CollectSeeds(image, new[]
+        {
+            (0.02f, 0.02f),
+            (0.98f, 0.02f),
+            (0.02f, 0.98f),
+            (0.98f, 0.98f),
+            (0.50f, 0.05f)
+        });
+
+        if (bodySeeds.Count == 0 || backgroundSeeds.Count == 0)
+        {
+            return weights;
+        }
+
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                var idx = (y * width) + x;
+                var pixel = image[x, y];
+                if (pixel.A < 20)
+                {
+                    continue;
+                }
+
+                var nx = x / (float)Math.Max(1, width - 1);
+                var ny = y / (float)Math.Max(1, height - 1);
+                if (ny < 0.18f || ny > 0.9f)
+                {
+                    continue;
+                }
+
+                var dx = (nx - 0.5f) / 0.48f;
+                var dy = (ny - 0.58f) / 0.38f;
+                var ellipse = (dx * dx) + (dy * dy);
+                if (ellipse > 1.28f)
+                {
+                    continue;
+                }
+
+                var (_, s, v) = RgbToHsv(pixel.R, pixel.G, pixel.B);
+                if (v < 0.08f || (v > 0.985f && s < 0.08f))
+                {
+                    continue;
+                }
+
+                var bodyDistance = MinColorDistance(pixel, bodySeeds);
+                var bgDistance = MinColorDistance(pixel, backgroundSeeds);
+
+                var grayBoost = (1f - s) * 22f;
+                if (bodyDistance + grayBoost >= bgDistance)
+                {
+                    continue;
+                }
+
+                candidateMask[idx] = true;
+            }
+        }
+
+        var centerStart = FindNearestCandidateToCenter(candidateMask, width, height);
+        if (centerStart < 0)
+        {
+            return weights;
+        }
+
+        var queue = new Queue<int>();
+        queue.Enqueue(centerStart);
+        selectedMask[centerStart] = true;
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            var x = current % width;
+            var y = current / width;
+
+            foreach (var (nx, ny) in GetNeighbors(x, y, width, height))
+            {
+                var nIdx = (ny * width) + nx;
+                if (!candidateMask[nIdx] || selectedMask[nIdx])
+                {
+                    continue;
+                }
+
+                selectedMask[nIdx] = true;
+                queue.Enqueue(nIdx);
+            }
+        }
+
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                var idx = (y * width) + x;
+                if (selectedMask[idx])
+                {
+                    weights[idx] = 1f;
+                    continue;
+                }
+
+                if (!candidateMask[idx])
+                {
+                    continue;
+                }
+
+                var selectedNeighbors = 0;
+                foreach (var (nx, ny) in GetNeighbors(x, y, width, height))
+                {
+                    if (selectedMask[(ny * width) + nx])
+                    {
+                        selectedNeighbors++;
+                    }
+                }
+
+                if (selectedNeighbors >= 2)
+                {
+                    weights[idx] = 0.6f;
+                }
+            }
+        }
+
+        return weights;
+    }
+
+    private static List<Rgba32> CollectSeeds(Image<Rgba32> image, IEnumerable<(float X, float Y)> points)
+    {
+        var seeds = new List<Rgba32>();
+        var width = image.Width;
+        var height = image.Height;
+
+        foreach (var (sx, sy) in points)
+        {
+            var x = Math.Clamp((int)Math.Round((width - 1) * sx), 0, width - 1);
+            var y = Math.Clamp((int)Math.Round((height - 1) * sy), 0, height - 1);
+            var pixel = image[x, y];
+            if (pixel.A > 20)
+            {
+                seeds.Add(pixel);
+            }
+        }
+
+        return seeds;
+    }
+
+    private static IEnumerable<(int X, int Y)> GetNeighbors(int x, int y, int width, int height)
+    {
+        if (x > 0) yield return (x - 1, y);
+        if (x < width - 1) yield return (x + 1, y);
+        if (y > 0) yield return (x, y - 1);
+        if (y < height - 1) yield return (x, y + 1);
+    }
+
+    private static int FindNearestCandidateToCenter(bool[] candidateMask, int width, int height)
+    {
+        var cx = width * 0.5f;
+        var cy = height * 0.58f;
+        var bestDistance = float.MaxValue;
+        var bestIndex = -1;
+
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                var idx = (y * width) + x;
+                if (!candidateMask[idx])
+                {
+                    continue;
+                }
+
+                var dx = x - cx;
+                var dy = y - cy;
+                var distance = (dx * dx) + (dy * dy);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestIndex = idx;
+                }
+            }
+        }
+
+        return bestIndex;
+    }
+
+    private static float MinColorDistance(Rgba32 pixel, IEnumerable<Rgba32> seeds)
+    {
+        var minDistance = float.MaxValue;
+        foreach (var seed in seeds)
+        {
+            var dr = pixel.R - seed.R;
+            var dg = pixel.G - seed.G;
+            var db = pixel.B - seed.B;
+            var distance = MathF.Sqrt((dr * dr) + (dg * dg) + (db * db));
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+            }
+        }
+
+        return minDistance;
+    }
+
+    private static string Sanitize(string input)
+    {
+        var safeChars = input.Where(char.IsLetterOrDigit).ToArray();
+        return safeChars.Length == 0 ? "car" : new string(safeChars);
+    }
+
+    private static Rgba32 ParseHex(string hex)
+    {
+        hex = hex.Trim();
+        if (!hex.StartsWith('#'))
+        {
+            throw new ArgumentException("HEX must start with #", nameof(hex));
+        }
+
+        var value = hex[1..];
+        if (value.Length == 3)
+        {
+            value = string.Concat(value.Select(c => $"{c}{c}"));
+        }
+
+        if (value.Length != 6)
+        {
+            throw new ArgumentException("HEX must be #RGB or #RRGGBB", nameof(hex));
+        }
+
+        var r = Convert.ToByte(value[..2], 16);
+        var g = Convert.ToByte(value.Substring(2, 2), 16);
+        var b = Convert.ToByte(value.Substring(4, 2), 16);
+
+        return new Rgba32(r, g, b);
+    }
+
+    private static (float h, float s, float v) RgbToHsv(byte r, byte g, byte b)
+    {
+        var rf = r / 255f;
+        var gf = g / 255f;
+        var bf = b / 255f;
+
+        var max = Math.Max(rf, Math.Max(gf, bf));
+        var min = Math.Min(rf, Math.Min(gf, bf));
+        var delta = max - min;
+
+        var h = 0f;
+        if (delta > 0)
+        {
+            if (max == rf)
+            {
+                h = 60f * (((gf - bf) / delta) % 6f);
+            }
+            else if (max == gf)
+            {
+                h = 60f * (((bf - rf) / delta) + 2f);
+            }
+            else
+            {
+                h = 60f * (((rf - gf) / delta) + 4f);
+            }
+        }
+
+        if (h < 0)
+        {
+            h += 360f;
+        }
+
+        var s = max == 0 ? 0 : delta / max;
+        var v = max;
+        return (h, s, v);
+    }
+}
