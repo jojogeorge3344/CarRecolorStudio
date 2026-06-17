@@ -12,31 +12,40 @@
 </head>
 <body>
     <section id="loginScreen" class="login-screen" aria-label="Login screen">
-        <div id="loginRoamingCar" class="login-roaming-car">🏎️</div>
-        <div class="login-card">
-            <h1>CarColourStudio Login</h1>
-            <p class="login-note">Enter username and password to continue.</p>
-            <form id="loginForm" class="login-form" autocomplete="off">
-                <label for="loginUsername" class="field-label">Username</label>
-                <input id="loginUsername" type="email" placeholder="Enter username" required>
+        <!-- Dynamic Flying Error Message -->
+        <div id="dynamicErrorMessage" class="dynamic-error-message"></div>
 
-                <label for="loginPassword" class="field-label">Password</label>
-                <input id="loginPassword" type="password" placeholder="Enter password" required>
+        <div class="login-car-image-container">
+            <!-- The car image -->
+            <img src="/images/Logincar.jpg" class="login-car-img" alt="BMW Car Front View">
+            
+            <!-- Real Video Fire for Animation -->
+            <video id="fireVideo" class="fire-video hidden" src="/videos/fire.mp4" muted playsinline loop></video>
 
-                <button id="loginSubmitBtn" type="submit" class="btn-primary login-btn">Login</button>
-                <p id="loginError" class="login-error hidden"></p>
-            </form>
-        </div>
-    </section>
+            <!-- 3D Car for the Blast Animation -->
+            <img id="blastCar" src="/images/3d_hypercar.png" class="blast-car hidden" alt="3D Hypercar">
 
-    <section id="loginAnimationOverlay" class="login-animation-overlay hidden" aria-live="polite" aria-label="Login animation result">
-        <div id="animationScene" class="animation-scene">
-            <div id="animationCar" class="animation-car">
-                <span class="car-body">🏎️</span>
+            <!-- Centered Login Form -->
+            <div class="centered-login-container" id="loginFormContainer">
+                <div class="login-branding">
+                    <h2>CarColour<span class="brand-accent">Studio</span></h2>
+                    <p>Enter credentials to continue</p>
+                </div>
+                <form id="loginForm" class="centered-login-form" autocomplete="off">
+                    <div class="input-wrapper">
+                        <label for="loginUsername">User name</label>
+                        <input id="loginUsername" type="email" placeholder="jojogeorge3344@gmail.com" required>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="loginPassword">Password</label>
+                        <input id="loginPassword" type="password" placeholder="jojo3344" required>
+                    </div>
+
+                    <button id="loginSubmitBtn" type="submit" class="btn-primary">Login</button>
+                    <p id="loginError" class="login-error hidden"></p>
+                </form>
             </div>
-            <div id="blastPieces" class="blast-pieces"></div>
-            <div id="animationFog" class="animation-fog"></div>
-            <div id="animationResultText" class="animation-result-text"></div>
         </div>
     </section>
 

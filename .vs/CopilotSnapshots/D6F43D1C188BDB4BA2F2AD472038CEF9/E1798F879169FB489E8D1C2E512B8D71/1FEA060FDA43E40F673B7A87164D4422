@@ -1,0 +1,1693 @@
+﻿// ─────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────
+const state = {
+    cars: [],
+    colors: [],
+    filteredColors: [],
+    selectedCar: null,
+    selectedInfoCar: null,
+    selectedColor: null,
+    recent: [],
+    carDetailsByCar: {},
+    draftSections: [],
+    paint: {
+        tool: 'brush',
+        size: 12,
+        color: '#FF2800',
+        isDrawing: false,
+        lastX: 0,
+        lastY: 0
+    }
+};
+
+const MAX_RECENT = 20;
+
+let appInitialized = false;
+let engineAudioContext = null;
+let engineOscillator = null;
+let engineGain = null;
+let loginSuccessAudio = null;
+let smokeAudioContext = null;
+let smokeNoiseSource = null;
+let smokeGain = null;
+let roamingCarTimer = null;
+
+// Rectangle path state for login car
+let roamingCarEdge = 0; // 0: top, 1: right, 2: bottom, 3: left
+let roamingCarPos = 0; // position along the current edge (in px)
+let roamingCarDirection = 1; // 1: clockwise, -1: counterclockwise
+
+// ─────────────────────────────────────────────
+//  Element references
+// ─────────────────────────────────────────────
+const el = {
+    appShell: document.getElementById('appShell'),
+    loginScreen: document.getElementById('loginScreen'),
+    loginRoamingCar: document.getElementById('loginRoamingCar'),
+    loginForm: document.getElementById('loginForm'),
+    loginUsername: document.getElementById('loginUsername'),
+    loginPassword: document.getElementById('loginPassword'),
+    loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+    loginError: document.getElementById('loginError'),
+    loginAnimationOverlay: document.getElementById('loginAnimationOverlay'),
+    animationScene: document.getElementById('animationScene'),
+    animationCar: document.getElementById('animationCar'),
+    blastPieces: document.getElementById('blastPieces'),
+    animationFog: document.getElementById('animationFog'),
+    animationResultText: document.getElementById('animationResultText'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    recolorModuleBtn: document.getElementById('recolorModuleBtn'),
+    carInfoModuleBtn: document.getElementById('carInfoModuleBtn'),
+    recolorModule: document.getElementById('recolorModule'),
+    carInfoModule: document.getElementById('carInfoModule'),
+    carSelect: document.getElementById('carSelect'),
+    carInfo: document.getElementById('carInfo'),
+    carBrandBadge: document.getElementById('carBrandBadge'),
+    colorSearch: document.getElementById('colorSearch'),
+    customHex: document.getElementById('customHex'),
+    customHexPicker: document.getElementById('customHexPicker'),
+    categoryFilter: document.getElementById('categoryFilter'),
+    colorList: document.getElementById('colorList'),
+    recentColors: document.getElementById('recentColors'),
+    selectedCarLabel: document.getElementById('selectedCarLabel'),
+    selectedColorLabel: document.getElementById('selectedColorLabel'),
+    originalImage: document.getElementById('originalImage'),
+    recoloredImage: document.getElementById('recoloredImage'),
+    sliderOriginal: document.getElementById('sliderOriginal'),
+    sliderRecolored: document.getElementById('sliderRecolored'),
+    sliderOverlay: document.getElementById('sliderOverlay'),
+    sliderDivider: document.getElementById('sliderDivider'),
+    compareSlider: document.getElementById('compareSlider'),
+    zoomRange: document.getElementById('zoomRange'),
+    viewer: document.getElementById('viewer'),
+    downloadRecoloredBtn: document.getElementById('downloadRecoloredBtn'),
+    paintBrushBtn: document.getElementById('paintBrushBtn'),
+    eraseBrushBtn: document.getElementById('eraseBrushBtn'),
+    paintSizeRange: document.getElementById('paintSizeRange'),
+    paintColorPicker: document.getElementById('paintColorPicker'),
+    clearPaintBtn: document.getElementById('clearPaintBtn'),
+    paintCanvas: document.getElementById('paintCanvas'),
+    fullscreenBtn: document.getElementById('fullscreenBtn'),
+    emptyState: document.getElementById('emptyState'),
+    compareArea: document.getElementById('compareArea'),
+    recolorLoader: document.getElementById('recolorLoader'),
+    carNameSearch: document.getElementById('carNameSearch'),
+    carSearchResults: document.getElementById('carSearchResults'),
+    carInfoSelect: document.getElementById('carInfoSelect'),
+    carInfoImageWrap: document.getElementById('carInfoImageWrap'),
+    carInfoEmpty: document.getElementById('carInfoEmpty'),
+    carInfoImage: document.getElementById('carInfoImage'),
+    carInfoTitle: document.getElementById('carInfoTitle'),
+    carInfoActions: document.getElementById('carInfoActions'),
+    updateCarImageInput: document.getElementById('updateCarImageInput'),
+    saveCarImageBtn: document.getElementById('saveCarImageBtn'),
+    deleteCarBtn: document.getElementById('deleteCarBtn'),
+    updateCarImageFeedback: document.getElementById('updateCarImageFeedback'),
+    deleteCarFeedback: document.getElementById('deleteCarFeedback'),
+    newCarBrand: document.getElementById('newCarBrand'),
+    newCarModel: document.getElementById('newCarModel'),
+    newCarImage: document.getElementById('newCarImage'),
+    addCarBtn: document.getElementById('addCarBtn'),
+    addCarFeedback: document.getElementById('addCarFeedback'),
+    addCarDetailsBtn: document.getElementById('addCarDetailsBtn'),
+    viewCarInfoBtn: document.getElementById('viewCarInfoBtn'),
+    carDetailsEditorScreen: document.getElementById('carDetailsEditorScreen'),
+    detailHeading: document.getElementById('detailHeading'),
+    detailFontStyle: document.getElementById('detailFontStyle'),
+    detailDescription: document.getElementById('detailDescription'),
+    detailWordCount: document.getElementById('detailWordCount'),
+    addSectionBtn: document.getElementById('addSectionBtn'),
+    previewDetailsBtn: document.getElementById('previewDetailsBtn'),
+    backToCarInfoBtn: document.getElementById('backToCarInfoBtn'),
+    detailFormError: document.getElementById('detailFormError'),
+    detailSectionList: document.getElementById('detailSectionList'),
+    carDetailsPreviewScreen: document.getElementById('carDetailsPreviewScreen'),
+    previewSectionList: document.getElementById('previewSectionList'),
+    saveDetailsOrderBtn: document.getElementById('saveDetailsOrderBtn'),
+    backToEditorBtn: document.getElementById('backToEditorBtn'),
+    carDetailsViewScreen: document.getElementById('carDetailsViewScreen'),
+    savedDetailsList: document.getElementById('savedDetailsList'),
+    editDetailsBtn: document.getElementById('editDetailsBtn'),
+    closeDetailsViewBtn: document.getElementById('closeDetailsViewBtn')
+};
+
+// ─────────────────────────────────────────────
+//  Boot
+// ─────────────────────────────────────────────
+bootLogin();
+
+function bootLogin() {
+    el.loginForm.addEventListener('submit', handleLoginSubmit);
+    el.logoutBtn.addEventListener('click', handleLogoutClick);
+    window.addEventListener('resize', moveRoamingCar);
+    el.loginUsername.value = '';
+    el.loginPassword.value = '';
+    startRoamingLoginCar();
+}
+
+async function handleLoginSubmit(event) {
+    event.preventDefault();
+
+    const username = el.loginUsername.value.trim();
+    const password = el.loginPassword.value;
+
+    el.loginSubmitBtn.disabled = true;
+    setLoginError('');
+
+    let isSuccess = false;
+    try {
+        isSuccess = await authenticateLogin(username, password);
+    } catch (error) {
+        console.error('Login validation failed:', error);
+        setLoginError('Unable to validate login right now. Please try again.');
+        el.loginSubmitBtn.disabled = false;
+        return;
+    }
+
+    if (!isSuccess) {
+        setLoginError('Login failed. Username or password is incorrect.');
+        el.loginPassword.value = '';
+        el.loginUsername.focus();
+        el.loginSubmitBtn.disabled = false;
+        return;
+    }
+
+    stopRoamingLoginCar();
+    await playLoginAnimation();
+
+    el.loginScreen.classList.add('hidden');
+    el.appShell.classList.remove('hidden');
+    await startApp();
+
+    el.loginSubmitBtn.disabled = false;
+}
+
+async function startApp() {
+    if (appInitialized) {
+        setActiveModule('recolor');
+        return;
+    }
+
+    appInitialized = true;
+    await init();
+    setActiveModule('recolor');
+}
+
+function startRoamingLoginCar() {
+    if (roamingCarTimer) {
+        return;
+    }
+
+    el.loginRoamingCar.classList.remove('hidden');
+    moveRoamingCar();
+    roamingCarTimer = window.setInterval(moveRoamingCar, 900);
+}
+
+function stopRoamingLoginCar() {
+    if (roamingCarTimer) {
+        window.clearInterval(roamingCarTimer);
+        roamingCarTimer = null;
+    }
+
+    el.loginRoamingCar.classList.add('hidden');
+}
+
+function moveRoamingCar() {
+    if (el.loginScreen.classList.contains('hidden')) {
+        return;
+    }
+
+    // Car size (should match .login-roaming-car font-size and padding)
+    const carWidth = 60;
+    const carHeight = 60;
+    const margin = 8;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const maxX = width - carWidth - margin;
+    const maxY = height - carHeight - margin;
+    const minX = margin;
+    const minY = margin;
+    const speed = 24; // px per move
+    // Rectangle edges: 0=top, 1=right, 2=bottom, 3=left
+    let x, y;
+    switch (roamingCarEdge) {
+        case 0: // top edge, left to right
+            x = minX + roamingCarPos;
+            y = minY;
+            roamingCarPos += speed * roamingCarDirection;
+            if (roamingCarPos >= (maxX - minX)) { roamingCarEdge = 1; roamingCarPos = 0; }
+            break;
+        case 1: // right edge, top to bottom
+            x = maxX;
+            y = minY + roamingCarPos;
+            roamingCarPos += speed * roamingCarDirection;
+            if (roamingCarPos >= (maxY - minY)) { roamingCarEdge = 2; roamingCarPos = 0; }
+            break;
+        case 2: // bottom edge, right to left
+            x = maxX - roamingCarPos;
+            y = maxY;
+            roamingCarPos += speed * roamingCarDirection;
+            if (roamingCarPos >= (maxX - minX)) { roamingCarEdge = 3; roamingCarPos = 0; }
+            break;
+        case 3: // left edge, bottom to top
+        default:
+            x = minX;
+            y = maxY - roamingCarPos;
+            roamingCarPos += speed * roamingCarDirection;
+            if (roamingCarPos >= (maxY - minY)) { roamingCarEdge = 0; roamingCarPos = 0; }
+            break;
+    }
+    el.loginRoamingCar.style.left = `${x}px`;
+    el.loginRoamingCar.style.top = `${y}px`;
+    el.loginRoamingCar.style.transform = '';
+}
+
+async function playLoginAnimation() {
+    el.animationScene.classList.remove('logout-mode');
+    el.loginAnimationOverlay.classList.remove('hidden');
+    el.animationFog.classList.remove('show');
+    el.animationResultText.classList.remove('show', 'logout-cloud', 'blast-out');
+    el.animationResultText.textContent = '';
+    el.animationCar.classList.remove('car-blast');
+    el.blastPieces.classList.remove('active');
+    el.blastPieces.innerHTML = buildBlastPiecesMarkup(18);
+
+    playLoginSuccessSound();
+
+    return new Promise(resolve => {
+        window.setTimeout(() => {
+            el.animationCar.classList.add('car-blast');
+            el.blastPieces.classList.add('active');
+        }, 250);
+
+        window.setTimeout(() => {
+            el.animationResultText.textContent = 'LOGIN SUCCESS';
+            el.animationResultText.classList.add('show');
+        }, 950);
+
+        window.setTimeout(() => {
+            stopLoginSuccessSound();
+            el.loginAnimationOverlay.classList.add('hidden');
+            el.animationResultText.classList.remove('show');
+            el.animationResultText.textContent = '';
+            el.blastPieces.classList.remove('active');
+            el.blastPieces.innerHTML = '';
+            resolve();
+        }, 2600);
+    });
+}
+
+function buildBlastPiecesMarkup(count) {
+    let markup = '';
+    for (let i = 0; i < count; i++) {
+        const tx = Math.floor((Math.random() * 360) - 180);
+        const ty = Math.floor((Math.random() * 280) - 140);
+        const rot = Math.floor((Math.random() * 720) - 360);
+        const delay = (Math.random() * 0.22).toFixed(2);
+        markup += `<span class="blast-piece" style="--tx:${tx}px;--ty:${ty}px;--rot:${rot}deg;--delay:${delay}s"></span>`;
+    }
+
+    return markup;
+}
+
+async function handleLogoutClick() {
+    el.logoutBtn.disabled = true;
+
+    await playLogoutAnimation();
+
+    setActiveModule('recolor');
+    setLoginError('');
+    el.loginPassword.value = '';
+    el.loginScreen.classList.remove('hidden');
+    el.appShell.classList.add('hidden');
+    startRoamingLoginCar();
+    el.loginUsername.focus();
+
+    el.logoutBtn.disabled = false;
+}
+
+async function playLogoutAnimation() {
+    el.animationScene.classList.add('logout-mode');
+    el.loginAnimationOverlay.classList.remove('hidden');
+    el.animationFog.classList.remove('show');
+    el.animationResultText.classList.remove('show', 'blast-out');
+    el.animationResultText.classList.add('logout-cloud');
+    el.animationResultText.innerHTML = '';
+
+    const logoutMessage = 'LOGOUT SUCCESS';
+    const timing = getLogoutBlastTiming(logoutMessage.length);
+
+    startSmokeSound();
+
+    return new Promise(resolve => {
+        window.setTimeout(() => {
+            el.animationFog.classList.add('show');
+            el.animationResultText.innerHTML = `<span class="logout-cloud-bubble">${buildLogoutLettersMarkup(logoutMessage)}</span>`;
+            el.animationResultText.classList.add('show', 'blast-out');
+        }, 220);
+
+        window.setTimeout(() => {
+            stopSmokeSound();
+            el.loginAnimationOverlay.classList.add('hidden');
+            el.animationScene.classList.remove('logout-mode');
+            el.animationResultText.classList.remove('logout-cloud', 'blast-out');
+            el.animationResultText.innerHTML = '';
+            resolve();
+        }, 220 + timing.totalMs);
+    });
+}
+
+function buildLogoutLettersMarkup(message) {
+    return [...message]
+        .map((character, index) => {
+            const content = character === ' ' ? '&nbsp;' : character;
+            return `<span class="logout-letter" style="--i:${index};">${content}</span>`;
+        })
+        .join('');
+}
+
+function getLogoutBlastTiming(charCount) {
+    const delayMs = 70;
+    const burnMs = 280;
+    const blastMs = 360;
+    const tailMs = 80;
+    const totalMs = Math.max(1200, (Math.max(1, charCount) - 1) * delayMs + burnMs + blastMs + tailMs);
+
+    return { totalMs };
+}
+
+async function authenticateLogin(username, password) {
+    const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+
+    if (!response.ok) {
+        throw new Error('Login API failed');
+    }
+
+    const result = await response.json();
+    return !!result.success;
+}
+
+function setLoginError(message) {
+    el.loginError.textContent = message;
+    el.loginError.classList.toggle('hidden', !message);
+}
+
+function startEngineSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return;
+        }
+
+        stopEngineSound();
+
+        engineAudioContext = new AudioContextClass();
+        engineOscillator = engineAudioContext.createOscillator();
+        engineGain = engineAudioContext.createGain();
+
+        engineOscillator.type = 'sawtooth';
+        engineOscillator.frequency.setValueAtTime(110, engineAudioContext.currentTime);
+        engineOscillator.frequency.linearRampToValueAtTime(180, engineAudioContext.currentTime + 2.6);
+
+        engineGain.gain.setValueAtTime(0.001, engineAudioContext.currentTime);
+        engineGain.gain.linearRampToValueAtTime(0.06, engineAudioContext.currentTime + 0.25);
+
+        engineOscillator.connect(engineGain);
+        engineGain.connect(engineAudioContext.destination);
+        engineOscillator.start();
+    } catch (error) {
+        console.error('Engine sound start failed:', error);
+    }
+}
+
+function stopEngineSound() {
+    try {
+        if (engineGain && engineAudioContext) {
+            engineGain.gain.cancelScheduledValues(engineAudioContext.currentTime);
+            engineGain.gain.setTargetAtTime(0.0001, engineAudioContext.currentTime, 0.12);
+        }
+
+        if (engineOscillator) {
+            engineOscillator.stop();
+            engineOscillator.disconnect();
+        }
+
+        if (engineGain) {
+            engineGain.disconnect();
+        }
+
+        if (engineAudioContext) {
+            engineAudioContext.close();
+        }
+    } catch (error) {
+        console.error('Engine sound stop failed:', error);
+    } finally {
+        engineAudioContext = null;
+        engineOscillator = null;
+        engineGain = null;
+    }
+}
+
+function playLoginSuccessSound() {
+    try {
+        stopLoginSuccessSound();
+        loginSuccessAudio = new Audio('/sounds/login-success.mp3');
+        loginSuccessAudio.volume = 1;
+        loginSuccessAudio.currentTime = 0;
+        loginSuccessAudio.play().catch(() => {});
+    } catch (error) {
+        console.error('Login success audio start failed:', error);
+    }
+}
+
+function stopLoginSuccessSound() {
+    try {
+        if (!loginSuccessAudio) {
+            return;
+        }
+
+        loginSuccessAudio.pause();
+        loginSuccessAudio.currentTime = 0;
+    } catch (error) {
+        console.error('Login success audio stop failed:', error);
+    } finally {
+        loginSuccessAudio = null;
+    }
+}
+
+function startSmokeSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return;
+        }
+
+        stopSmokeSound();
+
+        smokeAudioContext = new AudioContextClass();
+        const now = smokeAudioContext.currentTime;
+
+        const bufferSize = smokeAudioContext.sampleRate * 2;
+        const noiseBuffer = smokeAudioContext.createBuffer(1, bufferSize, smokeAudioContext.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = (Math.random() * 2 - 1) * 0.34;
+        }
+
+        smokeNoiseSource = smokeAudioContext.createBufferSource();
+        smokeNoiseSource.buffer = noiseBuffer;
+        smokeNoiseSource.loop = true;
+
+        const smokeFilter = smokeAudioContext.createBiquadFilter();
+        smokeFilter.type = 'bandpass';
+        smokeFilter.frequency.setValueAtTime(540, now);
+
+        const whooshOscillator = smokeAudioContext.createOscillator();
+        whooshOscillator.type = 'triangle';
+        whooshOscillator.frequency.setValueAtTime(180, now);
+        whooshOscillator.frequency.exponentialRampToValueAtTime(52, now + 1.4);
+
+        smokeGain = smokeAudioContext.createGain();
+        smokeGain.gain.setValueAtTime(0.001, now);
+        smokeGain.gain.linearRampToValueAtTime(0.2, now + 0.16);
+
+        const whooshGain = smokeAudioContext.createGain();
+        whooshGain.gain.setValueAtTime(0.0001, now);
+        whooshGain.gain.linearRampToValueAtTime(0.12, now + 0.18);
+
+        smokeNoiseSource.connect(smokeFilter);
+        smokeFilter.connect(smokeGain);
+        smokeGain.connect(smokeAudioContext.destination);
+
+        whooshOscillator.connect(whooshGain);
+        whooshGain.connect(smokeAudioContext.destination);
+
+        smokeNoiseSource.start();
+        whooshOscillator.start();
+        whooshOscillator.stop(now + 1.5);
+    } catch (error) {
+        console.error('Smoke sound start failed:', error);
+    }
+}
+
+function stopSmokeSound() {
+    try {
+        if (smokeGain && smokeAudioContext) {
+            smokeGain.gain.cancelScheduledValues(smokeAudioContext.currentTime);
+            smokeGain.gain.setTargetAtTime(0.0001, smokeAudioContext.currentTime, 0.18);
+        }
+
+        if (smokeNoiseSource) {
+            smokeNoiseSource.stop();
+            smokeNoiseSource.disconnect();
+        }
+
+        if (smokeGain) {
+            smokeGain.disconnect();
+        }
+
+        if (smokeAudioContext) {
+            smokeAudioContext.close();
+        }
+    } catch (error) {
+        console.error('Smoke sound stop failed:', error);
+    } finally {
+        smokeAudioContext = null;
+        smokeNoiseSource = null;
+        smokeGain = null;
+    }
+}
+
+async function init() {
+    state.recent = loadRecent();
+    renderRecent();
+
+    try {
+        const [cars, colors] = await Promise.all([
+            fetchJson('/api/cars'),
+            fetchJson('/api/colors')
+        ]);
+
+        state.cars = cars;
+        state.colors = colors;
+
+        populateRecolorCarDropdown(cars);
+        populateCarInfoDropdown(cars);
+        renderCategoryFilter(colors);
+        applyColorFilter();
+
+        if (cars.length > 0) {
+            el.carSelect.value = cars[0].id;
+            selectCar(cars[0].id);
+
+            el.carInfoSelect.value = cars[0].id;
+            renderCarInfo(cars[0].id);
+        }
+    } catch (err) {
+        console.error('Failed to initialise:', err);
+    }
+
+    wireEvents();
+    setupPaintCanvas();
+    updateWordCount();
+}
+
+// ─────────────────────────────────────────────
+//  Populate car dropdowns
+// ─────────────────────────────────────────────
+function populateRecolorCarDropdown(cars) {
+    while (el.carSelect.options.length > 1) {
+        el.carSelect.remove(1);
+    }
+
+    const brands = [...new Set(cars.map(c => c.brand))].sort();
+
+    brands.forEach(brand => {
+        const group = document.createElement('optgroup');
+        group.label = brand;
+
+        cars.filter(c => c.brand === brand).forEach(car => {
+            const option = document.createElement('option');
+            option.value = car.id;
+            option.textContent = `${car.model}`;
+            group.appendChild(option);
+        });
+
+        el.carSelect.appendChild(group);
+    });
+}
+
+function populateCarInfoDropdown(cars, searchTerm = '') {
+    while (el.carInfoSelect.options.length > 1) {
+        el.carInfoSelect.remove(1);
+    }
+
+    cars
+        .filter(car => matchesCarTerm(car, searchTerm))
+        .forEach(car => {
+            const option = document.createElement('option');
+            option.value = car.id;
+            option.textContent = `${car.brand} ${car.model}`;
+            el.carInfoSelect.appendChild(option);
+        });
+}
+
+// ─────────────────────────────────────────────
+//  Event wiring
+// ─────────────────────────────────────────────
+function wireEvents() {
+    el.recolorModuleBtn.addEventListener('click', () => setActiveModule('recolor'));
+    el.carInfoModuleBtn.addEventListener('click', () => setActiveModule('carInfo'));
+
+    el.carSelect.addEventListener('change', e => {
+        const carId = e.target.value;
+        if (!carId) return;
+
+        selectCar(carId);
+        el.carInfoSelect.value = carId;
+        renderCarInfo(carId);
+    });
+
+    el.carNameSearch.addEventListener('input', debounce(applyCarInfoSearch, 120));
+
+    el.carInfoSelect.addEventListener('change', e => {
+        const carId = e.target.value;
+        if (!carId) {
+            clearCarInfoPreview();
+            return;
+        }
+
+        renderCarInfo(carId);
+    });
+
+    el.addCarBtn.addEventListener('click', handleAddCar);
+    el.saveCarImageBtn.addEventListener('click', handleUpdateCarImage);
+    el.deleteCarBtn.addEventListener('click', handleDeleteCar);
+    el.addCarDetailsBtn.addEventListener('click', openDetailsEditor);
+    el.viewCarInfoBtn.addEventListener('click', openDetailsViewer);
+    el.detailDescription.addEventListener('input', updateWordCount);
+    el.addSectionBtn.addEventListener('click', addDetailSection);
+    el.previewDetailsBtn.addEventListener('click', openPreviewScreen);
+    el.backToCarInfoBtn.addEventListener('click', showDefaultCarInfoScreen);
+    el.saveDetailsOrderBtn.addEventListener('click', savePreviewOrder);
+    el.backToEditorBtn.addEventListener('click', () => showScreen('editor'));
+    el.editDetailsBtn.addEventListener('click', openDetailsEditor);
+    el.closeDetailsViewBtn.addEventListener('click', showDefaultCarInfoScreen);
+
+    el.colorSearch.addEventListener('input', debounce(applyColorFilter, 120));
+    el.categoryFilter.addEventListener('change', applyColorFilter);
+
+    el.customHex.addEventListener('input', e => {
+        const value = e.target.value.trim();
+        if (/^#(?:[0-9a-fA-F]{3}){1,2}$/.test(value)) {
+            el.customHexPicker.value = value;
+            applyColor({ name: `Custom ${value.toUpperCase()}`, hex: value.toUpperCase(), category: 'Custom' });
+        }
+    });
+
+    el.customHexPicker.addEventListener('input', e => {
+        const hex = e.target.value.toUpperCase();
+        el.customHex.value = hex;
+        applyColor({ name: `Custom ${hex}`, hex, category: 'Custom' });
+    });
+
+    el.compareSlider.addEventListener('input', e => {
+        const pct = e.target.value;
+        el.sliderOverlay.style.width = `${pct}%`;
+        el.sliderDivider.style.left = `${pct}%`;
+    });
+
+    el.zoomRange.addEventListener('input', e => {
+        const scale = Number(e.target.value);
+        [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored, el.paintCanvas].forEach(img => {
+            img.style.transform = `scale(${scale})`;
+        });
+    });
+
+    el.paintBrushBtn.addEventListener('click', () => setPaintTool('brush'));
+    el.eraseBrushBtn.addEventListener('click', () => setPaintTool('eraser'));
+    el.paintSizeRange.addEventListener('input', e => {
+        state.paint.size = Number(e.target.value);
+    });
+    el.paintColorPicker.addEventListener('input', e => {
+        state.paint.color = e.target.value.toUpperCase();
+    });
+    el.clearPaintBtn.addEventListener('click', clearPaintCanvas);
+
+    window.addEventListener('resize', resizePaintCanvas);
+    document.addEventListener('fullscreenchange', resizePaintCanvas);
+    el.recoloredImage.addEventListener('load', resizePaintCanvas);
+
+    el.downloadRecoloredBtn.addEventListener('click', downloadRecoloredImage);
+
+    el.fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            el.viewer.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    });
+}
+
+function setActiveModule(module) {
+    const showRecolor = module === 'recolor';
+
+    el.recolorModuleBtn.classList.toggle('active', showRecolor);
+    el.carInfoModuleBtn.classList.toggle('active', !showRecolor);
+
+    el.recolorModule.classList.toggle('hidden', !showRecolor);
+    el.carInfoModule.classList.toggle('hidden', showRecolor);
+}
+
+// ─────────────────────────────────────────────
+//  Car selection → display image
+// ─────────────────────────────────────────────
+function selectCar(carId) {
+    const car = state.cars.find(c => c.id === carId);
+    if (!car) return;
+
+    state.selectedCar = car;
+    state.selectedColor = null;
+    el.downloadRecoloredBtn.disabled = true;
+    clearPaintCanvas();
+
+    const src = `/${car.image}`;
+
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+        img.src = src;
+        img.alt = `${car.brand} ${car.model}`;
+    });
+
+    setStatusLabel(el.selectedCarLabel, '🚗', `${car.model}`);
+    setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
+
+    el.carBrandBadge.textContent = car.brand;
+    el.carInfo.classList.remove('hidden');
+
+    el.emptyState.classList.add('hidden');
+    el.compareArea.classList.remove('hidden');
+
+    el.compareSlider.value = 50;
+    el.sliderOverlay.style.width = '50%';
+    el.sliderDivider.style.left = '50%';
+    el.zoomRange.value = 1;
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored, el.paintCanvas].forEach(img => {
+        img.style.transform = 'scale(1)';
+    });
+}
+
+async function renderCarInfo(carId) {
+    const car = state.cars.find(c => c.id === carId);
+    if (!car) {
+        clearCarInfoPreview();
+        return;
+    }
+
+    state.selectedInfoCar = car;
+
+    el.carInfoImage.src = `/${car.image}`;
+    el.carInfoImage.alt = `${car.brand} ${car.model}`;
+    el.carInfoTitle.textContent = `${car.brand} ${car.model}`;
+
+    await syncCarDetailsForCar(car.id);
+
+    el.carInfoEmpty.classList.add('hidden');
+    el.carInfoImageWrap.classList.remove('hidden');
+    el.carInfoActions.classList.remove('hidden');
+    setUpdateCarImageFeedback('', false, true);
+    setDeleteCarFeedback('', false, true);
+
+    showDefaultCarInfoScreen();
+}
+
+function clearCarInfoPreview() {
+    state.selectedInfoCar = null;
+    el.carInfoImage.src = '';
+    el.carInfoTitle.textContent = '';
+    el.carInfoImageWrap.classList.add('hidden');
+    el.carInfoEmpty.classList.remove('hidden');
+    el.carInfoActions.classList.add('hidden');
+    el.updateCarImageInput.value = '';
+    setUpdateCarImageFeedback('', false, true);
+    setDeleteCarFeedback('', false, true);
+    hideDetailScreens();
+}
+
+function applyCarInfoSearch() {
+    const term = el.carNameSearch.value.trim();
+    const previous = el.carInfoSelect.value;
+    const matchingCars = state.cars.filter(car => matchesCarTerm(car, term));
+
+    populateCarInfoDropdown(state.cars, term);
+    renderCarSearchResults(matchingCars, term);
+
+    const canKeepPrevious = !!previous && [...el.carInfoSelect.options].some(option => option.value === previous);
+
+    if (canKeepPrevious) {
+        el.carInfoSelect.value = previous;
+        renderCarInfo(previous);
+        return;
+    }
+
+    clearCarInfoPreview();
+    el.carInfoSelect.value = '';
+}
+
+function matchesCarTerm(car, term) {
+    const t = term.trim().toLowerCase();
+    if (!t) return true;
+
+    return `${car.brand} ${car.model}`.toLowerCase().includes(t)
+        || car.model.toLowerCase().includes(t)
+        || car.brand.toLowerCase().includes(t);
+}
+
+function renderCarSearchResults(cars, term) {
+    el.carSearchResults.innerHTML = '';
+
+    if (!term) {
+        el.carSearchResults.classList.add('hidden');
+        return;
+    }
+
+    if (cars.length === 0) {
+        el.carSearchResults.innerHTML = '<p class="car-search-empty">No matching cars found</p>';
+        el.carSearchResults.classList.remove('hidden');
+        return;
+    }
+
+    cars.forEach(car => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'car-search-item';
+        item.textContent = `${car.brand} ${car.model}`;
+        item.addEventListener('click', () => {
+            el.carInfoSelect.value = car.id;
+            el.carNameSearch.value = `${car.brand} ${car.model}`;
+            renderCarInfo(car.id);
+            el.carSearchResults.classList.add('hidden');
+        });
+        el.carSearchResults.appendChild(item);
+    });
+
+    el.carSearchResults.classList.remove('hidden');
+}
+
+async function handleAddCar() {
+    const brand = el.newCarBrand.value.trim();
+    const model = el.newCarModel.value.trim();
+    const image = el.newCarImage.files?.[0];
+
+    if (!brand || !model || !image) {
+        setAddCarFeedback('Brand, model, and image are required.', true);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('brand', brand);
+    formData.append('model', model);
+    formData.append('image', image);
+
+    el.addCarBtn.disabled = true;
+    setAddCarFeedback('Adding car...', false);
+
+    try {
+        const response = await fetch('/api/cars', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(message || 'Failed to add car.');
+        }
+
+        const createdCar = await response.json();
+        state.cars = [...state.cars, createdCar].sort((a, b) => `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`));
+
+        populateRecolorCarDropdown(state.cars);
+        populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
+
+        el.carSelect.value = createdCar.id;
+        selectCar(createdCar.id);
+
+        el.carInfoSelect.value = createdCar.id;
+        el.carNameSearch.value = `${createdCar.brand} ${createdCar.model}`;
+        await renderCarInfo(createdCar.id);
+        el.carSearchResults.classList.add('hidden');
+
+        resetAddCarForm();
+        setAddCarFeedback('Car added successfully.', false);
+    } catch (err) {
+        console.error('Add car failed:', err);
+        setAddCarFeedback(err.message || 'Failed to add car. Please try again.', true);
+    } finally {
+        el.addCarBtn.disabled = false;
+    }
+}
+
+function resetAddCarForm() {
+    el.newCarBrand.value = '';
+    el.newCarModel.value = '';
+    el.newCarImage.value = '';
+}
+
+function setAddCarFeedback(message, isError) {
+    el.addCarFeedback.textContent = message;
+    el.addCarFeedback.classList.remove('hidden', 'error', 'success');
+    el.addCarFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+async function handleUpdateCarImage() {
+    const carId = getCurrentInfoCarId();
+    const image = el.updateCarImageInput.files?.[0];
+
+    if (!carId) {
+        setUpdateCarImageFeedback('Select a car first.', true);
+        return;
+    }
+
+    if (!image) {
+        setUpdateCarImageFeedback('Select a new image file first.', true);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', image);
+
+    el.saveCarImageBtn.disabled = true;
+    setUpdateCarImageFeedback('Saving new image...', false);
+
+    try {
+        const response = await fetch(`/api/cars/${encodeURIComponent(carId)}/image`, {
+            method: 'PUT',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(message || 'Failed to update car image.');
+        }
+
+        const updatedCar = await response.json();
+        state.cars = state.cars.map(car => car.id === updatedCar.id ? updatedCar : car);
+
+        const cacheBust = Date.now();
+        if (state.selectedInfoCar?.id === updatedCar.id) {
+            state.selectedInfoCar = updatedCar;
+            el.carInfoImage.src = `/${updatedCar.image}?v=${cacheBust}`;
+            el.carInfoImage.alt = `${updatedCar.brand} ${updatedCar.model}`;
+            el.carInfoTitle.textContent = `${updatedCar.brand} ${updatedCar.model}`;
+        }
+
+        if (state.selectedCar?.id === updatedCar.id) {
+            state.selectedCar = updatedCar;
+            const src = `/${updatedCar.image}?v=${cacheBust}`;
+            [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+                img.src = src;
+                img.alt = `${updatedCar.brand} ${updatedCar.model}`;
+            });
+            setStatusLabel(el.selectedCarLabel, '🚗', `${updatedCar.model}`);
+            setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
+            el.downloadRecoloredBtn.disabled = true;
+            state.selectedColor = null;
+            clearPaintCanvas();
+        }
+
+        populateRecolorCarDropdown(state.cars);
+        populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
+        el.carSelect.value = updatedCar.id;
+        el.carInfoSelect.value = updatedCar.id;
+        el.updateCarImageInput.value = '';
+        setUpdateCarImageFeedback('Car image updated successfully.', false);
+    } catch (err) {
+        console.error('Update car image failed:', err);
+        setUpdateCarImageFeedback(err.message || 'Failed to update car image. Please try again.', true);
+    } finally {
+        el.saveCarImageBtn.disabled = false;
+    }
+}
+
+async function handleDeleteCar() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) {
+        setDeleteCarFeedback('Select a car first.', true);
+        return;
+    }
+
+    const car = state.cars.find(c => c.id === carId);
+    if (!car) {
+        setDeleteCarFeedback('Car not found in current list.', true);
+        return;
+    }
+
+    const confirmed = window.confirm(`Delete ${car.brand} ${car.model}? This removes image and details permanently.`);
+    if (!confirmed) {
+        return;
+    }
+
+    el.deleteCarBtn.disabled = true;
+    setDeleteCarFeedback('Deleting car...', false);
+
+    try {
+        const response = await fetch(`/api/cars/${encodeURIComponent(carId)}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(message || 'Failed to delete car.');
+        }
+
+        state.cars = state.cars.filter(item => item.id !== carId);
+        delete state.carDetailsByCar[carId];
+
+        populateRecolorCarDropdown(state.cars);
+        populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
+
+        if (state.cars.length === 0) {
+            el.carSelect.value = '';
+            el.carInfoSelect.value = '';
+            clearCarInfoPreview();
+            resetRecolorViewerForNoCars();
+            setDeleteCarFeedback('Car deleted successfully.', false);
+            return;
+        }
+
+        const fallbackCar = state.cars[0];
+        el.carSelect.value = fallbackCar.id;
+        el.carInfoSelect.value = fallbackCar.id;
+        selectCar(fallbackCar.id);
+        await renderCarInfo(fallbackCar.id);
+        setDeleteCarFeedback('Car deleted successfully.', false);
+    } catch (err) {
+        console.error('Delete car failed:', err);
+        setDeleteCarFeedback(err.message || 'Failed to delete car. Please try again.', true);
+    } finally {
+        el.deleteCarBtn.disabled = false;
+    }
+}
+
+function setUpdateCarImageFeedback(message, isError, hide = false) {
+    if (hide) {
+        el.updateCarImageFeedback.textContent = '';
+        el.updateCarImageFeedback.classList.add('hidden');
+        el.updateCarImageFeedback.classList.remove('error', 'success');
+        return;
+    }
+
+    el.updateCarImageFeedback.textContent = message;
+    el.updateCarImageFeedback.classList.remove('hidden', 'error', 'success');
+    el.updateCarImageFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+function setDeleteCarFeedback(message, isError, hide = false) {
+    if (hide) {
+        el.deleteCarFeedback.textContent = '';
+        el.deleteCarFeedback.classList.add('hidden');
+        el.deleteCarFeedback.classList.remove('error', 'success');
+        return;
+    }
+
+    el.deleteCarFeedback.textContent = message;
+    el.deleteCarFeedback.classList.remove('hidden', 'error', 'success');
+    el.deleteCarFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+function resetRecolorViewerForNoCars() {
+    state.selectedCar = null;
+    state.selectedColor = null;
+    el.downloadRecoloredBtn.disabled = true;
+    clearPaintCanvas();
+
+    [el.originalImage, el.recoloredImage, el.sliderOriginal, el.sliderRecolored].forEach(img => {
+        img.src = '';
+        img.alt = '';
+    });
+
+    el.carInfo.classList.add('hidden');
+    el.compareArea.classList.add('hidden');
+    el.emptyState.classList.remove('hidden');
+    setStatusLabel(el.selectedCarLabel, '🚗', 'No car selected');
+    setStatusLabel(el.selectedColorLabel, '🎨', 'No colour selected');
+}
+
+// ─────────────────────────────────────────────
+//  Car details screens
+// ─────────────────────────────────────────────
+function showDefaultCarInfoScreen() {
+    hideDetailScreens();
+    clearDetailFormError();
+}
+
+function hideDetailScreens() {
+    el.carDetailsEditorScreen.classList.add('hidden');
+    el.carDetailsPreviewScreen.classList.add('hidden');
+    el.carDetailsViewScreen.classList.add('hidden');
+}
+
+function showScreen(screen) {
+    hideDetailScreens();
+
+    if (screen === 'editor') el.carDetailsEditorScreen.classList.remove('hidden');
+    if (screen === 'preview') el.carDetailsPreviewScreen.classList.remove('hidden');
+    if (screen === 'view') el.carDetailsViewScreen.classList.remove('hidden');
+}
+
+async function openDetailsEditor() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) return;
+
+    await syncCarDetailsForCar(carId);
+    state.draftSections = cloneSections(getSavedSections(carId));
+    renderDraftSections();
+    resetDetailForm();
+    updateWordCount();
+    clearDetailFormError();
+    showScreen('editor');
+}
+
+function addDetailSection() {
+    const result = validateSectionInputs();
+    if (!result.success) {
+        showDetailFormError(result.message);
+        return;
+    }
+
+    clearDetailFormError();
+    state.draftSections.push({
+        id: crypto.randomUUID(),
+        heading: el.detailHeading.value.trim(),
+        description: el.detailDescription.value.trim(),
+        fontStyle: el.detailFontStyle.value
+    });
+
+    renderDraftSections();
+    resetDetailForm();
+    updateWordCount();
+}
+
+function openPreviewScreen() {
+    if (state.draftSections.length === 0) {
+        showDetailFormError('Add at least one heading and description before preview.');
+        showScreen('editor');
+        return;
+    }
+
+    clearDetailFormError();
+    showScreen('preview');
+    renderPreviewSections();
+}
+
+async function openDetailsViewer() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) return;
+
+    await syncCarDetailsForCar(carId);
+    const saved = getSavedSections(carId);
+    renderSavedDetails(saved);
+    showScreen('view');
+}
+
+async function savePreviewOrder() {
+    const carId = getCurrentInfoCarId();
+    if (!carId) return;
+
+    const payload = cloneSections(state.draftSections);
+
+    try {
+        const response = await fetch(`/api/car-details/${encodeURIComponent(carId)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Save failed');
+        }
+
+        state.carDetailsByCar[carId] = payload;
+        renderSavedDetails(state.carDetailsByCar[carId]);
+        showScreen('view');
+    } catch (err) {
+        showDetailFormError('Failed to save car details. Please try again.');
+        console.error('Save car details failed:', err);
+    }
+}
+
+function renderDraftSections() {
+    el.detailSectionList.innerHTML = '';
+
+    if (state.draftSections.length === 0) {
+        el.detailSectionList.innerHTML = '<p class="car-search-empty">No sections added yet.</p>';
+        return;
+    }
+
+    state.draftSections.forEach(section => {
+        const card = document.createElement('div');
+        card.className = 'detail-item';
+
+        const heading = document.createElement('h4');
+        heading.textContent = section.heading;
+        applyFont(heading, section.fontStyle);
+
+        const description = document.createElement('p');
+        description.textContent = section.description;
+        applyFont(description, section.fontStyle);
+
+        card.append(heading, description);
+        el.detailSectionList.appendChild(card);
+    });
+}
+
+function renderPreviewSections() {
+    el.previewSectionList.innerHTML = '';
+
+    state.draftSections.forEach((section, index) => {
+        const card = document.createElement('article');
+        card.className = 'preview-item';
+        card.draggable = true;
+        card.dataset.index = String(index);
+
+        const dragLabel = document.createElement('div');
+        dragLabel.className = 'drag-label';
+        dragLabel.textContent = 'Drag to reorder';
+
+        const heading = document.createElement('h4');
+        heading.textContent = section.heading;
+        applyFont(heading, section.fontStyle);
+
+        const description = document.createElement('p');
+        description.textContent = section.description;
+        applyFont(description, section.fontStyle);
+
+        card.append(dragLabel, heading, description);
+
+        card.addEventListener('dragstart', e => {
+            card.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', card.dataset.index);
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+        });
+
+        card.addEventListener('dragover', e => {
+            e.preventDefault();
+        });
+
+        card.addEventListener('drop', e => {
+            e.preventDefault();
+            const sourceIndex = Number(e.dataTransfer.getData('text/plain'));
+            const targetIndex = Number(card.dataset.index);
+            reorderDraftSections(sourceIndex, targetIndex);
+            renderPreviewSections();
+        });
+
+        el.previewSectionList.appendChild(card);
+    });
+}
+
+function renderSavedDetails(sections) {
+    el.savedDetailsList.innerHTML = '';
+
+    if (sections.length === 0) {
+        el.savedDetailsList.innerHTML = '<p class="car-search-empty">No details saved for this car yet.</p>';
+        return;
+    }
+
+    sections.forEach(section => {
+        const card = document.createElement('article');
+        card.className = 'saved-item';
+
+        const heading = document.createElement('h4');
+        heading.textContent = section.heading;
+        applyFont(heading, section.fontStyle);
+
+        const description = document.createElement('p');
+        description.textContent = section.description;
+        applyFont(description, section.fontStyle);
+
+        card.append(heading, description);
+        el.savedDetailsList.appendChild(card);
+    });
+}
+
+function reorderDraftSections(sourceIndex, targetIndex) {
+    if (sourceIndex === targetIndex || sourceIndex < 0 || targetIndex < 0) return;
+
+    const moved = state.draftSections[sourceIndex];
+    const next = state.draftSections.filter((_, i) => i !== sourceIndex);
+    next.splice(targetIndex, 0, moved);
+    state.draftSections = next;
+}
+
+function validateSectionInputs() {
+    const heading = el.detailHeading.value.trim();
+    const description = el.detailDescription.value.trim();
+    const words = countWords(description);
+
+    if (!heading) return { success: false, message: 'Heading is required.' };
+    if (!description) return { success: false, message: 'Description is required.' };
+    if (words > 1000) return { success: false, message: 'Description cannot exceed 1000 words.' };
+
+    return { success: true };
+}
+
+function updateWordCount() {
+    const words = countWords(el.detailDescription.value);
+    el.detailWordCount.textContent = `${words} / 1000 words`;
+    el.detailWordCount.classList.toggle('limit', words > 1000);
+}
+
+function countWords(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+}
+
+function resetDetailForm() {
+    el.detailHeading.value = '';
+    el.detailDescription.value = '';
+    el.detailFontStyle.value = 'inter';
+}
+
+function showDetailFormError(message) {
+    el.detailFormError.textContent = message;
+    el.detailFormError.classList.remove('hidden');
+}
+
+function clearDetailFormError() {
+    el.detailFormError.textContent = '';
+    el.detailFormError.classList.add('hidden');
+}
+
+function getCurrentInfoCarId() {
+    return el.carInfoSelect.value || state.selectedInfoCar?.id || null;
+}
+
+function getSavedSections(carId) {
+    return cloneSections(state.carDetailsByCar[carId] || []);
+}
+
+function cloneSections(sections) {
+    return sections.map(section => ({ ...section }));
+}
+
+function applyFont(element, fontStyle) {
+    if (fontStyle === 'serif') element.style.fontFamily = "Georgia, 'Times New Roman', serif";
+    else if (fontStyle === 'mono') element.style.fontFamily = "'Courier New', monospace";
+    else if (fontStyle === 'classic') element.style.fontFamily = "Cambria, 'Times New Roman', serif";
+    else element.style.fontFamily = "'Inter', 'Segoe UI', Arial, sans-serif";
+}
+
+async function syncCarDetailsForCar(carId) {
+    if (!carId) {
+        return;
+    }
+
+    try {
+        const sections = await fetchJson(`/api/car-details/${encodeURIComponent(carId)}`);
+        state.carDetailsByCar[carId] = Array.isArray(sections) ? sections : [];
+    } catch (err) {
+        console.error('Load car details failed:', err);
+        state.carDetailsByCar[carId] = [];
+    }
+}
+
+// ─────────────────────────────────────────────
+//  Colour application → recolor API
+// ─────────────────────────────────────────────
+async function applyColor(color) {
+    if (!state.selectedCar) {
+        alert('Please select a car first!');
+        return;
+    }
+
+    state.selectedColor = color;
+    state.paint.color = color.hex.toUpperCase();
+    el.paintColorPicker.value = state.paint.color;
+    setStatusLabel(el.selectedColorLabel, '🎨', `${color.name} (${color.hex})`);
+
+    pushRecent(color);
+    renderRecent();
+    renderColorList(state.filteredColors.slice(0, 1000));
+
+    el.recolorLoader.classList.remove('hidden');
+
+    try {
+        const response = await fetch('/api/recolor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ carId: state.selectedCar.id, hexColor: color.hex })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const imageUrl = `${result.imageUrl}?v=${Date.now()}`;
+            el.recoloredImage.src = imageUrl;
+            el.sliderRecolored.src = imageUrl;
+            el.downloadRecoloredBtn.disabled = false;
+        } else {
+            alert(result.message || 'Recolor failed.');
+        }
+    } catch (err) {
+        console.error('Recolor failed:', err);
+    } finally {
+        el.recolorLoader.classList.add('hidden');
+    }
+}
+
+// ─────────────────────────────────────────────
+//  Category filter
+// ─────────────────────────────────────────────
+function renderCategoryFilter(colors) {
+    const categories = [...new Set(colors.map(c => c.category).filter(Boolean))].sort();
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        el.categoryFilter.appendChild(option);
+    });
+}
+
+function applyColorFilter() {
+    const term = el.colorSearch.value.trim().toLowerCase();
+    const category = el.categoryFilter.value;
+
+    state.filteredColors = state.colors.filter(c => {
+        const matchesTerm = !term || c.name.toLowerCase().includes(term) || c.hex.toLowerCase().includes(term);
+        const matchesCategory = !category || c.category === category;
+        return matchesTerm && matchesCategory;
+    });
+
+    renderColorList(state.filteredColors.slice(0, 1000));
+}
+
+// ─────────────────────────────────────────────
+//  Colour list rendering
+// ─────────────────────────────────────────────
+function renderColorList(colors) {
+    el.colorList.innerHTML = '';
+
+    if (colors.length === 0) {
+        el.colorList.innerHTML = '<p class="no-results">No colours found</p>';
+        return;
+    }
+
+    colors.forEach(color => {
+        const row = document.createElement('div');
+        row.className = `color-item${state.selectedColor?.hex === color.hex ? ' active' : ''}`;
+        row.setAttribute('role', 'listitem');
+
+        const swatch = document.createElement('span');
+        swatch.className = 'swatch';
+        swatch.style.background = color.hex;
+        swatch.style.boxShadow = `0 0 0 2px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.2)`;
+
+        const label = document.createElement('span');
+        label.className = 'color-label';
+        label.textContent = `${color.name}`;
+
+        const hex = document.createElement('span');
+        hex.className = 'color-hex';
+        hex.textContent = color.hex;
+
+        row.append(swatch, label, hex);
+        row.addEventListener('click', () => applyColor(color));
+
+        el.colorList.appendChild(row);
+    });
+}
+
+// ─────────────────────────────────────────────
+//  Recently used
+// ─────────────────────────────────────────────
+function renderRecent() {
+    el.recentColors.innerHTML = '';
+
+    if (state.recent.length === 0) {
+        el.recentColors.innerHTML = '<span class="no-recent">None yet</span>';
+        return;
+    }
+
+    state.recent.forEach(item => {
+        const chip = document.createElement('button');
+        chip.className = 'recent-chip';
+        chip.title = `${item.name} (${item.hex})`;
+        chip.style.background = item.hex;
+        chip.setAttribute('aria-label', `Apply colour ${item.name}`);
+        chip.addEventListener('click', () => applyColor(item));
+        el.recentColors.appendChild(chip);
+    });
+}
+
+function pushRecent(color) {
+    const n = { name: color.name, hex: color.hex.toUpperCase(), category: color.category || 'Custom' };
+    state.recent = [n, ...state.recent.filter(c => c.hex !== n.hex)].slice(0, MAX_RECENT);
+    localStorage.setItem('recentColors', JSON.stringify(state.recent));
+}
+
+function loadRecent() {
+    try {
+        const v = localStorage.getItem('recentColors');
+        return v ? JSON.parse(v) : [];
+    } catch {
+        return [];
+    }
+}
+
+// ─────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────
+function setupPaintCanvas() {
+    const canvas = el.paintCanvas;
+
+    canvas.addEventListener('pointerdown', startPaint);
+    canvas.addEventListener('pointermove', movePaint);
+    canvas.addEventListener('pointerup', stopPaint);
+    canvas.addEventListener('pointerleave', stopPaint);
+
+    state.paint.size = Number(el.paintSizeRange.value);
+    state.paint.color = el.paintColorPicker.value.toUpperCase();
+    setPaintTool('brush');
+    resizePaintCanvas();
+}
+
+function resizePaintCanvas() {
+    const canvas = el.paintCanvas;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+        return;
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+}
+
+function setPaintTool(tool) {
+    state.paint.tool = tool;
+    el.paintBrushBtn.classList.toggle('active', tool === 'brush');
+    el.eraseBrushBtn.classList.toggle('active', tool === 'eraser');
+    el.paintCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+function startPaint(event) {
+    event.preventDefault();
+    state.paint.isDrawing = true;
+    const point = getPaintPoint(event);
+    state.paint.lastX = point.x;
+    state.paint.lastY = point.y;
+}
+
+function movePaint(event) {
+    if (!state.paint.isDrawing) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const ctx = el.paintCanvas.getContext('2d');
+    const point = getPaintPoint(event);
+
+    ctx.save();
+    ctx.lineWidth = state.paint.size;
+
+    if (state.paint.tool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = state.paint.color;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(state.paint.lastX, state.paint.lastY);
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+    ctx.restore();
+
+    state.paint.lastX = point.x;
+    state.paint.lastY = point.y;
+}
+
+function stopPaint() {
+    state.paint.isDrawing = false;
+}
+
+function clearPaintCanvas() {
+    const canvas = el.paintCanvas;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function getPaintPoint(event) {
+    const rect = el.paintCanvas.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    };
+}
+
+async function downloadRecoloredImage() {
+    if (!state.selectedCar || !state.selectedColor) {
+        alert('Please recolor a car first.');
+        return;
+    }
+
+    const imageUrl = el.recoloredImage.src;
+    if (!imageUrl) {
+        alert('No recolored image available to download.');
+        return;
+    }
+
+    try {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+            throw new Error('Failed to download image.');
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const colorHex = state.selectedColor.hex.replace('#', '').toLowerCase();
+
+        link.href = objectUrl;
+        link.download = `${state.selectedCar.id}-${colorHex}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+        console.error('Download failed:', err);
+        alert('Unable to download recolored image. Please try again.');
+    }
+}
+
+function setStatusLabel(element, icon, text) {
+    element.innerHTML = `<span class="status-icon">${icon}</span><span>${text}</span>`;
+}
+
+async function fetchJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Request failed: ${url}`);
+    return response.json();
+}
+
+function debounce(fn, delay) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+}

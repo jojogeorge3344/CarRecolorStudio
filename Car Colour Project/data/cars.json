@@ -76,5 +76,11 @@
     "Brand": "Volkswagen",
     "Model": "vento Highline 1.6",
     "Image": "images/volkswagen-vento-highline-1-6-1781168690207.jpg"
+  },
+  {
+    "Id": "volkwagen-taigun",
+    "Brand": "Volkwagen",
+    "Model": "Taigun",
+    "Image": "images/volkwagen-taigun.jpg"
   }
 ]

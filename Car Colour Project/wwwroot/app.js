@@ -27,11 +27,7 @@ let appInitialized = false;
 let engineAudioContext = null;
 let engineOscillator = null;
 let engineGain = null;
-let loginSuccessAudio = null;
-let smokeAudioContext = null;
-let smokeNoiseSource = null;
-let smokeGain = null;
-let roamingCarTimer = null;
+
 
 // ─────────────────────────────────────────────
 //  Element references
@@ -39,18 +35,11 @@ let roamingCarTimer = null;
 const el = {
     appShell: document.getElementById('appShell'),
     loginScreen: document.getElementById('loginScreen'),
-    loginRoamingCar: document.getElementById('loginRoamingCar'),
     loginForm: document.getElementById('loginForm'),
     loginUsername: document.getElementById('loginUsername'),
     loginPassword: document.getElementById('loginPassword'),
     loginSubmitBtn: document.getElementById('loginSubmitBtn'),
     loginError: document.getElementById('loginError'),
-    loginAnimationOverlay: document.getElementById('loginAnimationOverlay'),
-    animationScene: document.getElementById('animationScene'),
-    animationCar: document.getElementById('animationCar'),
-    blastPieces: document.getElementById('blastPieces'),
-    animationFog: document.getElementById('animationFog'),
-    animationResultText: document.getElementById('animationResultText'),
     logoutBtn: document.getElementById('logoutBtn'),
     recolorModuleBtn: document.getElementById('recolorModuleBtn'),
     carInfoModuleBtn: document.getElementById('carInfoModuleBtn'),
@@ -135,10 +124,146 @@ bootLogin();
 function bootLogin() {
     el.loginForm.addEventListener('submit', handleLoginSubmit);
     el.logoutBtn.addEventListener('click', handleLogoutClick);
-    window.addEventListener('resize', moveRoamingCar);
+
     el.loginUsername.value = '';
     el.loginPassword.value = '';
-    startRoamingLoginCar();
+
+    // Initialize flying error message
+    const errorMessageContainer = document.getElementById('dynamicErrorMessage');
+    const errorText = "Please enter valid credentials";
+    window.errorSpans = [];
+    if (errorMessageContainer) {
+        errorText.split('').forEach(char => {
+            const span = document.createElement('span');
+            span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
+            
+            // Pick a random starting position far off-screen
+            const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+            let startX = 0;
+            let startY = 0;
+            const dist = 1500;
+            
+            if (side === 0) startY = -dist;
+            else if (side === 1) startX = dist;
+            else if (side === 2) startY = dist;
+            else startX = -dist;
+
+            // Store original transform string
+            span.dataset.startX = startX;
+            span.dataset.startY = startY;
+            span.style.transform = `translate(${startX}px, ${startY}px)`;
+            
+            errorMessageContainer.appendChild(span);
+            window.errorSpans.push(span);
+        });
+    }
+
+    let lastDodgeTime = 0;
+
+    // "Catch me if you can" button effect
+    const dodgeButton = (e) => {
+        const username = el.loginUsername.value.trim();
+        const password = el.loginPassword.value;
+        
+        // If not valid, make the button run away!
+        if (username !== 'jojogeorge3344@gmail.com' || password !== 'jojo3344') {
+            const btnRect = el.loginSubmitBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
+            
+            // If triggered by mouse, use mouse coords, else just pick a random direction
+            let dx = 0, dy = 0;
+            if (e && e.clientX) {
+                dx = btnCenterX - e.clientX;
+                dy = btnCenterY - e.clientY;
+            } else {
+                dx = Math.random() - 0.5;
+                dy = Math.random() - 0.5;
+            }
+            
+            let pushX = (dx > 0 ? 1 : -1) * (Math.random() * 80 + 60);
+            let pushY = (dy > 0 ? 1 : -1) * (Math.random() * 60 + 30);
+            
+            el.loginSubmitBtn.style.transform = `translate(${pushX}px, ${pushY}px)`;
+            
+            // Trigger Flying Error Message
+            triggerFlyingError();
+
+            // Play fail sound (throttled to avoid overlapping spam on rapid mouse movement)
+            const now = Date.now();
+            if (now - lastDodgeTime > 250) {
+                try {
+                    const failAudio = new Audio('/sounds/Login fail sound.mp3');
+                    failAudio.play().catch(e => console.warn('Fail audio prevented:', e));
+                    lastDodgeTime = now;
+                } catch(e) {}
+            }
+
+            return true; // dodged
+        } else {
+            el.loginSubmitBtn.style.transform = `translate(0, 0)`;
+            hideFlyingError();
+            return false; // didn't dodge
+        }
+    };
+
+    el.loginSubmitBtn.addEventListener('mousemove', dodgeButton);
+    el.loginSubmitBtn.addEventListener('mouseenter', dodgeButton);
+
+    // Reset button when mouse leaves the form entirely
+    el.loginForm.addEventListener('mouseleave', () => {
+        el.loginSubmitBtn.style.transform = `translate(0, 0)`;
+    });
+}
+
+window.isFlyingErrorShowing = false;
+window.flyingErrorTimeout = null;
+
+function triggerFlyingError() {
+    if (window.isFlyingErrorShowing || !window.errorSpans) return;
+    window.isFlyingErrorShowing = true;
+    
+    // Pick a random vibrant color each time
+    const colors = ['#ff3333', '#33ff33', '#3399ff', '#ff33ff', '#00ffff', '#ffff33', '#ff8800'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    const container = document.getElementById('dynamicErrorMessage');
+    if (container) {
+        container.style.color = randomColor;
+        container.style.textShadow = `0 0 20px ${randomColor}, 0 0 10px rgba(255, 255, 255, 0.3)`;
+    }
+
+    // Assemble the letters from different directions
+    window.errorSpans.forEach((span, index) => {
+        span.classList.remove('melting'); // Cancel any ongoing melt
+        setTimeout(() => {
+            span.classList.add('assembled');
+        }, index * 20); // 20ms stagger per letter
+    });
+    
+    if (window.flyingErrorTimeout) clearTimeout(window.flyingErrorTimeout);
+    window.flyingErrorTimeout = setTimeout(() => {
+        hideFlyingError();
+    }, 2500); // Melt after 2.5 seconds
+}
+
+function hideFlyingError() {
+    if (!window.isFlyingErrorShowing || !window.errorSpans) return;
+    window.isFlyingErrorShowing = false;
+    
+    // Melt and pour down to the screen
+    window.errorSpans.forEach((span, index) => {
+        setTimeout(() => {
+            span.classList.remove('assembled');
+            span.classList.add('melting');
+        }, index * 30); // Stagger the melting effect like a liquid
+    });
+
+    // Cleanup melting class after animation finishes so it can trigger again
+    setTimeout(() => {
+        window.errorSpans.forEach(span => {
+            span.classList.remove('melting');
+        });
+    }, 2000);
 }
 
 async function handleLoginSubmit(event) {
@@ -146,6 +271,15 @@ async function handleLoginSubmit(event) {
 
     const username = el.loginUsername.value.trim();
     const password = el.loginPassword.value;
+
+    // If they manage to submit via keyboard or fast clicking while invalid, force dodge and abort!
+    if (username !== 'jojogeorge3344@gmail.com' || password !== 'jojo3344') {
+        // Pick a random aggressive direction
+        const pushX = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 100 + 80);
+        const pushY = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
+        el.loginSubmitBtn.style.transform = `translate(${pushX}px, ${pushY}px)`;
+        return; 
+    }
 
     el.loginSubmitBtn.disabled = true;
     setLoginError('');
@@ -168,10 +302,60 @@ async function handleLoginSubmit(event) {
         return;
     }
 
-    stopRoamingLoginCar();
-    await playLoginAnimation();
+    // --- FIRE & 3D CAR BLAST SEQUENCE ---
+    // Play Audio IMMEDIATELY
+    try {
+        const audio = new Audio('/sounds/login-success.mp3');
+        audio.play().catch(e => console.warn('Audio play prevented:', e));
+    } catch(e) {}
+
+    // The real video fire starts, overlaying the login design
+    const fireVideo = document.getElementById('fireVideo');
+    if (fireVideo) {
+        fireVideo.classList.add('burning');
+        fireVideo.play().catch(e => console.warn('Video play prevented:', e));
+    }
+    
+    // The login form slowly dissolves over the 5 seconds while the fire burns it
+    const loginFormContainer = document.getElementById('loginFormContainer');
+    if (loginFormContainer) {
+        loginFormContainer.style.transition = 'opacity 5s ease-in';
+        loginFormContainer.style.opacity = '0';
+    }
+
+    // Let the fire burn the login design for 5 seconds
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Reveal the 3D car and start it driving towards the camera
+    const blastCar = document.getElementById('blastCar');
+    if (blastCar) {
+        blastCar.classList.remove('hidden');
+        blastCar.classList.add('blasting');
+    }
+    
+    // Trigger the screen white-out blast
+    el.loginScreen.classList.add('login-blast-animation');
+
+    // Wait for the car to drive past the camera (1.5s total animation)
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Cleanup and load app
+    if (fireVideo) {
+        fireVideo.pause();
+        fireVideo.currentTime = 0;
+        fireVideo.classList.remove('burning');
+    }
+    if (blastCar) {
+        blastCar.classList.add('hidden');
+        blastCar.classList.remove('blasting');
+    }
+    if (loginFormContainer) {
+        loginFormContainer.style.transition = '';
+        loginFormContainer.style.opacity = '1';
+    }
 
     el.loginScreen.classList.add('hidden');
+    el.loginScreen.classList.remove('login-blast-animation');
     el.appShell.classList.remove('hidden');
     await startApp();
 
@@ -189,153 +373,19 @@ async function startApp() {
     setActiveModule('recolor');
 }
 
-function startRoamingLoginCar() {
-    if (roamingCarTimer) {
-        return;
-    }
 
-    el.loginRoamingCar.classList.remove('hidden');
-    moveRoamingCar();
-    roamingCarTimer = window.setInterval(moveRoamingCar, 900);
-}
-
-function stopRoamingLoginCar() {
-    if (roamingCarTimer) {
-        window.clearInterval(roamingCarTimer);
-        roamingCarTimer = null;
-    }
-
-    el.loginRoamingCar.classList.add('hidden');
-}
-
-function moveRoamingCar() {
-    if (el.loginScreen.classList.contains('hidden')) {
-        return;
-    }
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const x = Math.max(16, Math.floor(Math.random() * (width - 120)));
-    const y = Math.max(16, Math.floor(Math.random() * (height - 120)));
-    const rotation = Math.floor(Math.random() * 360);
-
-    el.loginRoamingCar.style.left = `${x}px`;
-    el.loginRoamingCar.style.top = `${y}px`;
-    el.loginRoamingCar.style.transform = `rotate(${rotation}deg)`;
-}
-
-async function playLoginAnimation() {
-    el.animationScene.classList.remove('logout-mode');
-    el.loginAnimationOverlay.classList.remove('hidden');
-    el.animationFog.classList.remove('show');
-    el.animationResultText.classList.remove('show', 'logout-cloud', 'blast-out');
-    el.animationResultText.textContent = '';
-    el.animationCar.classList.remove('car-blast');
-    el.blastPieces.classList.remove('active');
-    el.blastPieces.innerHTML = buildBlastPiecesMarkup(18);
-
-    playLoginSuccessSound();
-
-    return new Promise(resolve => {
-        window.setTimeout(() => {
-            el.animationCar.classList.add('car-blast');
-            el.blastPieces.classList.add('active');
-        }, 250);
-
-        window.setTimeout(() => {
-            el.animationResultText.textContent = 'LOGIN SUCCESS';
-            el.animationResultText.classList.add('show');
-        }, 950);
-
-        window.setTimeout(() => {
-            stopLoginSuccessSound();
-            el.loginAnimationOverlay.classList.add('hidden');
-            el.animationResultText.classList.remove('show');
-            el.animationResultText.textContent = '';
-            el.blastPieces.classList.remove('active');
-            el.blastPieces.innerHTML = '';
-            resolve();
-        }, 2600);
-    });
-}
-
-function buildBlastPiecesMarkup(count) {
-    let markup = '';
-    for (let i = 0; i < count; i++) {
-        const tx = Math.floor((Math.random() * 360) - 180);
-        const ty = Math.floor((Math.random() * 280) - 140);
-        const rot = Math.floor((Math.random() * 720) - 360);
-        const delay = (Math.random() * 0.22).toFixed(2);
-        markup += `<span class="blast-piece" style="--tx:${tx}px;--ty:${ty}px;--rot:${rot}deg;--delay:${delay}s"></span>`;
-    }
-
-    return markup;
-}
 
 async function handleLogoutClick() {
     el.logoutBtn.disabled = true;
-
-    await playLogoutAnimation();
 
     setActiveModule('recolor');
     setLoginError('');
     el.loginPassword.value = '';
     el.loginScreen.classList.remove('hidden');
     el.appShell.classList.add('hidden');
-    startRoamingLoginCar();
     el.loginUsername.focus();
 
     el.logoutBtn.disabled = false;
-}
-
-async function playLogoutAnimation() {
-    el.animationScene.classList.add('logout-mode');
-    el.loginAnimationOverlay.classList.remove('hidden');
-    el.animationFog.classList.remove('show');
-    el.animationResultText.classList.remove('show', 'blast-out');
-    el.animationResultText.classList.add('logout-cloud');
-    el.animationResultText.innerHTML = '';
-
-    const logoutMessage = 'LOGOUT SUCCESS';
-    const timing = getLogoutBlastTiming(logoutMessage.length);
-
-    startSmokeSound();
-
-    return new Promise(resolve => {
-        window.setTimeout(() => {
-            el.animationFog.classList.add('show');
-            el.animationResultText.innerHTML = `<span class="logout-cloud-bubble">${buildLogoutLettersMarkup(logoutMessage)}</span>`;
-            el.animationResultText.classList.add('show', 'blast-out');
-        }, 220);
-
-        window.setTimeout(() => {
-            stopSmokeSound();
-            el.loginAnimationOverlay.classList.add('hidden');
-            el.animationScene.classList.remove('logout-mode');
-            el.animationResultText.classList.remove('logout-cloud', 'blast-out');
-            el.animationResultText.innerHTML = '';
-            resolve();
-        }, 220 + timing.totalMs);
-    });
-}
-
-function buildLogoutLettersMarkup(message) {
-    return [...message]
-        .map((character, index) => {
-            const content = character === ' ' ? '&nbsp;' : character;
-            return `<span class="logout-letter" style="--i:${index};">${content}</span>`;
-        })
-        .join('');
-}
-
-function getLogoutBlastTiming(charCount) {
-    const delayMs = 70;
-    const burnMs = 280;
-    const blastMs = 360;
-    const tailMs = 80;
-    const totalMs = Math.max(1200, (Math.max(1, charCount) - 1) * delayMs + burnMs + blastMs + tailMs);
-
-    return { totalMs };
 }
 
 async function authenticateLogin(username, password) {
@@ -414,116 +464,7 @@ function stopEngineSound() {
     }
 }
 
-function playLoginSuccessSound() {
-    try {
-        stopLoginSuccessSound();
-        loginSuccessAudio = new Audio('/sounds/login-success.mp3');
-        loginSuccessAudio.volume = 1;
-        loginSuccessAudio.currentTime = 0;
-        loginSuccessAudio.play().catch(() => {});
-    } catch (error) {
-        console.error('Login success audio start failed:', error);
-    }
-}
 
-function stopLoginSuccessSound() {
-    try {
-        if (!loginSuccessAudio) {
-            return;
-        }
-
-        loginSuccessAudio.pause();
-        loginSuccessAudio.currentTime = 0;
-    } catch (error) {
-        console.error('Login success audio stop failed:', error);
-    } finally {
-        loginSuccessAudio = null;
-    }
-}
-
-function startSmokeSound() {
-    try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) {
-            return;
-        }
-
-        stopSmokeSound();
-
-        smokeAudioContext = new AudioContextClass();
-        const now = smokeAudioContext.currentTime;
-
-        const bufferSize = smokeAudioContext.sampleRate * 2;
-        const noiseBuffer = smokeAudioContext.createBuffer(1, bufferSize, smokeAudioContext.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-
-        for (let i = 0; i < bufferSize; i++) {
-            output[i] = (Math.random() * 2 - 1) * 0.34;
-        }
-
-        smokeNoiseSource = smokeAudioContext.createBufferSource();
-        smokeNoiseSource.buffer = noiseBuffer;
-        smokeNoiseSource.loop = true;
-
-        const smokeFilter = smokeAudioContext.createBiquadFilter();
-        smokeFilter.type = 'bandpass';
-        smokeFilter.frequency.setValueAtTime(540, now);
-
-        const whooshOscillator = smokeAudioContext.createOscillator();
-        whooshOscillator.type = 'triangle';
-        whooshOscillator.frequency.setValueAtTime(180, now);
-        whooshOscillator.frequency.exponentialRampToValueAtTime(52, now + 1.4);
-
-        smokeGain = smokeAudioContext.createGain();
-        smokeGain.gain.setValueAtTime(0.001, now);
-        smokeGain.gain.linearRampToValueAtTime(0.2, now + 0.16);
-
-        const whooshGain = smokeAudioContext.createGain();
-        whooshGain.gain.setValueAtTime(0.0001, now);
-        whooshGain.gain.linearRampToValueAtTime(0.12, now + 0.18);
-
-        smokeNoiseSource.connect(smokeFilter);
-        smokeFilter.connect(smokeGain);
-        smokeGain.connect(smokeAudioContext.destination);
-
-        whooshOscillator.connect(whooshGain);
-        whooshGain.connect(smokeAudioContext.destination);
-
-        smokeNoiseSource.start();
-        whooshOscillator.start();
-        whooshOscillator.stop(now + 1.5);
-    } catch (error) {
-        console.error('Smoke sound start failed:', error);
-    }
-}
-
-function stopSmokeSound() {
-    try {
-        if (smokeGain && smokeAudioContext) {
-            smokeGain.gain.cancelScheduledValues(smokeAudioContext.currentTime);
-            smokeGain.gain.setTargetAtTime(0.0001, smokeAudioContext.currentTime, 0.18);
-        }
-
-        if (smokeNoiseSource) {
-            smokeNoiseSource.stop();
-            smokeNoiseSource.disconnect();
-        }
-
-        if (smokeGain) {
-            smokeGain.disconnect();
-        }
-
-        if (smokeAudioContext) {
-            smokeAudioContext.close();
-        }
-    } catch (error) {
-        console.error('Smoke sound stop failed:', error);
-    } finally {
-        smokeAudioContext = null;
-        smokeNoiseSource = null;
-        smokeGain = null;
-    }
-}
 
 async function init() {
     state.recent = loadRecent();
