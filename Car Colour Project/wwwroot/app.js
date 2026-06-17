@@ -147,22 +147,6 @@ function bootLogin() {
             const span = document.createElement('span');
             span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
             
-            // Pick a random starting position far off-screen
-            const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
-            let startX = 0;
-            let startY = 0;
-            const dist = 1500;
-            
-            if (side === 0) startY = -dist;
-            else if (side === 1) startX = dist;
-            else if (side === 2) startY = dist;
-            else startX = -dist;
-
-            // Store original transform string
-            span.dataset.startX = startX;
-            span.dataset.startY = startY;
-            span.style.transform = `translate(${startX}px, ${startY}px)`;
-            
             errorMessageContainer.appendChild(span);
             window.errorSpans.push(span);
         });
@@ -233,47 +217,48 @@ function triggerFlyingError() {
     if (window.isFlyingErrorShowing || !window.errorSpans) return;
     window.isFlyingErrorShowing = true;
     
-    // Pick a random vibrant color each time
-    const colors = ['#ff3333', '#33ff33', '#3399ff', '#ff33ff', '#00ffff', '#ffff33', '#ff8800'];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const container = document.getElementById('dynamicErrorMessage');
-    if (container) {
-        container.style.color = randomColor;
-        container.style.textShadow = `0 0 20px ${randomColor}, 0 0 10px rgba(255, 255, 255, 0.3)`;
-    }
-
-    // Assemble the letters from different directions
+    // Assemble the letters from the deep background
     window.errorSpans.forEach((span, index) => {
-        span.classList.remove('melting'); // Cancel any ongoing melt
+        span.classList.remove('shattering'); // Cancel any ongoing shatter
         setTimeout(() => {
             span.classList.add('assembled');
-        }, index * 20); // 20ms stagger per letter
+            try {
+                const blastSound = new Audio('/sounds/Login page Validation Text explosure sound.mp3');
+                blastSound.volume = 0.4;
+                blastSound.play().catch(e => {});
+            } catch(e) {}
+        }, index * 100); // 100ms stagger per letter for clear "one by one" feel
     });
     
     if (window.flyingErrorTimeout) clearTimeout(window.flyingErrorTimeout);
     window.flyingErrorTimeout = setTimeout(() => {
         hideFlyingError();
-    }, 2500); // Melt after 2.5 seconds
+    }, 5000); // Shatter after 5 seconds to allow full assembly
 }
 
 function hideFlyingError() {
     if (!window.isFlyingErrorShowing || !window.errorSpans) return;
     window.isFlyingErrorShowing = false;
     
-    // Melt and pour down to the screen
+    // Cinematic 3D Shatter towards the camera
     window.errorSpans.forEach((span, index) => {
         setTimeout(() => {
             span.classList.remove('assembled');
-            span.classList.add('melting');
-        }, index * 30); // Stagger the melting effect like a liquid
+            span.classList.add('shattering');
+            try {
+                const blastSound = new Audio('/sounds/Login page Validation Text explosure sound.mp3');
+                blastSound.volume = 0.4;
+                blastSound.play().catch(e => {});
+            } catch(e) {}
+        }, index * 100); // 100ms stagger for shattering one by one
     });
 
-    // Cleanup melting class after animation finishes so it can trigger again
+    // Cleanup shattering class after animation finishes so it can trigger again
     setTimeout(() => {
         window.errorSpans.forEach(span => {
-            span.classList.remove('melting');
+            span.classList.remove('shattering');
         });
-    }, 2000);
+    }, (window.errorSpans.length * 100) + 2000);
 }
 
 async function handleLoginSubmit(event) {

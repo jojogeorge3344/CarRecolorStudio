@@ -245,42 +245,51 @@ body {
     margin: 0;
 }
 
-/* Flying Error Message */
+/* Cinematic 3D Error Message */
 .dynamic-error-message {
     position: absolute;
-    top: 30%; /* Positioned above the form */
+    top: calc(50% - 180px); /* Moved higher up */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%) perspective(1000px);
     display: flex;
-    gap: 1px;
+    gap: 0.15rem; /* Slightly reduced gap between letters */
     z-index: 100;
     pointer-events: none;
-    font-size: 2rem;
+    font-size: 1.2rem; /* Significantly reduced font size */
     font-weight: 900;
-    color: #ff3333;
     text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.9), 0 0 10px rgba(255, 0, 0, 0.5);
     white-space: nowrap;
+    transform-style: preserve-3d;
 }
 
 .dynamic-error-message span {
     display: inline-block;
-    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
+    color: #fff;
+    text-shadow: 
+        0px 1px 0px #aaa,
+        0px 2px 0px #999,
+        0px 3px 0px #888,
+        0px 4px 0px #777,
+        0px 5px 0px #666,
+        0px 6px 10px rgba(0,0,0,0.8),
+        0px 0px 20px rgba(255, 0, 0, 0.9); /* Hard pure red glow */
     opacity: 0;
+    transform: translateZ(-1500px) rotateX(60deg) scale(0.5);
+    transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease;
 }
 
 .dynamic-error-message span.assembled {
-    transform: translate(0, 0) !important;
+    transform: translateZ(50px) rotateX(0deg) scale(1) !important;
     opacity: 1;
 }
 
-.dynamic-error-message span.melting {
-    transform: translate(0, 600px) scaleY(4) scaleX(0.8) !important;
+.dynamic-error-message span.shattering {
+    transform: translateZ(600px) rotateX(-90deg) rotateY(45deg) scale(2) !important;
     opacity: 0 !important;
-    filter: blur(4px);
-    color: #ffaa00; /* Turns orange/yellow like fire */
-    text-shadow: 0 0 30px #ff0000, 0 0 10px #ffcc00;
-    transition: transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 1.2s ease-in, filter 1.2s ease, color 0.4s ease;
+    filter: blur(8px);
+    color: #ff0000; /* Pure hard red */
+    text-shadow: 0 0 50px #ff0000; /* Stronger glow */
+    transition: transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 1s ease-in, filter 1.2s ease, color 0.5s ease;
 }
 
 /* ═══════════════════════════════════════════

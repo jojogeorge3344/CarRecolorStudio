@@ -40,7 +40,7 @@ D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Proj
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\Car Colour Project.genruntimeconfig.cache
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\ref\Car Colour Project.dll
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\si2gva8h47-{0}-7i68ss282m-7i68ss282m.gz
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\dgh69yr5lh-{0}-r4abl6zizy-r4abl6zizy.gz
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\4mthzs9lzj-{0}-dizcgupuwr-dizcgupuwr.gz
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\sgf4ka4t2u-{0}-iz5zk5wqq7-iz5zk5wqq7.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\sgf4ka4t2u-{0}-zupjqldv4q-zupjqldv4q.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\4mthzs9lzj-{0}-uyb3v7zyaa-uyb3v7zyaa.gz
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\obj\Debug\net10.0\compressed\dgh69yr5lh-{0}-2ff08mcqsg-2ff08mcqsg.gz
