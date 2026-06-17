@@ -43,10 +43,14 @@ const el = {
     logoutBtn: document.getElementById('logoutBtn'),
     recolorModuleBtn: document.getElementById('recolorModuleBtn'),
     carInfoModuleBtn: document.getElementById('carInfoModuleBtn'),
+    vehicleManagementModuleBtn: document.getElementById('vehicleManagementModuleBtn'),
     recolorModule: document.getElementById('recolorModule'),
     carInfoModule: document.getElementById('carInfoModule'),
+    vehicleManagementModule: document.getElementById('vehicleManagementModule'),
+    carBrandSelect: document.getElementById('carBrandSelect'),
     carSelect: document.getElementById('carSelect'),
     carInfo: document.getElementById('carInfo'),
+    colorList: document.getElementById('colorList'),
     carBrandBadge: document.getElementById('carBrandBadge'),
     colorSearch: document.getElementById('colorSearch'),
     customHex: document.getElementById('customHex'),
@@ -79,11 +83,18 @@ const el = {
     carNameSearch: document.getElementById('carNameSearch'),
     carSearchResults: document.getElementById('carSearchResults'),
     carInfoSelect: document.getElementById('carInfoSelect'),
+    vehicleManagementSelect: document.getElementById('vehicleManagementSelect'),
     carInfoImageWrap: document.getElementById('carInfoImageWrap'),
     carInfoEmpty: document.getElementById('carInfoEmpty'),
     carInfoImage: document.getElementById('carInfoImage'),
     carInfoTitle: document.getElementById('carInfoTitle'),
     carInfoActions: document.getElementById('carInfoActions'),
+    vehicleManagementViewer: document.getElementById('vehicleManagementViewer'),
+    vehicleManagementEmpty: document.getElementById('vehicleManagementEmpty'),
+    vehicleManagementImageWrap: document.getElementById('vehicleManagementImageWrap'),
+    vehicleManagementImage: document.getElementById('vehicleManagementImage'),
+    vehicleManagementTitle: document.getElementById('vehicleManagementTitle'),
+    vehicleManagementActions: document.getElementById('vehicleManagementActions'),
     updateCarImageInput: document.getElementById('updateCarImageInput'),
     saveCarImageBtn: document.getElementById('saveCarImageBtn'),
     deleteCarBtn: document.getElementById('deleteCarBtn'),
@@ -103,7 +114,7 @@ const el = {
     detailWordCount: document.getElementById('detailWordCount'),
     addSectionBtn: document.getElementById('addSectionBtn'),
     previewDetailsBtn: document.getElementById('previewDetailsBtn'),
-    backToCarInfoBtn: document.getElementById('backToCarInfoBtn'),
+    backToManagementBtn: document.getElementById('backToManagementBtn'),
     detailFormError: document.getElementById('detailFormError'),
     detailSectionList: document.getElementById('detailSectionList'),
     carDetailsPreviewScreen: document.getElementById('carDetailsPreviewScreen'),
@@ -112,7 +123,6 @@ const el = {
     backToEditorBtn: document.getElementById('backToEditorBtn'),
     carDetailsViewScreen: document.getElementById('carDetailsViewScreen'),
     savedDetailsList: document.getElementById('savedDetailsList'),
-    editDetailsBtn: document.getElementById('editDetailsBtn'),
     closeDetailsViewBtn: document.getElementById('closeDetailsViewBtn')
 };
 
@@ -479,18 +489,11 @@ async function init() {
         state.cars = cars;
         state.colors = colors;
 
-        populateRecolorCarDropdown(cars);
+        populateRecolorCarBrandDropdown(cars);
         populateCarInfoDropdown(cars);
         renderCategoryFilter(colors);
         applyColorFilter();
 
-        if (cars.length > 0) {
-            el.carSelect.value = cars[0].id;
-            selectCar(cars[0].id);
-
-            el.carInfoSelect.value = cars[0].id;
-            renderCarInfo(cars[0].id);
-        }
     } catch (err) {
         console.error('Failed to initialise:', err);
     }
@@ -503,25 +506,35 @@ async function init() {
 // ─────────────────────────────────────────────
 //  Populate car dropdowns
 // ─────────────────────────────────────────────
-function populateRecolorCarDropdown(cars) {
-    while (el.carSelect.options.length > 1) {
-        el.carSelect.remove(1);
+function populateRecolorCarBrandDropdown(cars) {
+    while (el.carBrandSelect.options.length > 1) {
+        el.carBrandSelect.remove(1);
     }
 
     const brands = [...new Set(cars.map(c => c.brand))].sort();
 
     brands.forEach(brand => {
-        const group = document.createElement('optgroup');
-        group.label = brand;
+        const option = document.createElement('option');
+        option.value = brand;
+        option.textContent = brand;
+        el.carBrandSelect.appendChild(option);
+    });
+}
 
-        cars.filter(c => c.brand === brand).forEach(car => {
-            const option = document.createElement('option');
-            option.value = car.id;
-            option.textContent = `${car.model}`;
-            group.appendChild(option);
-        });
+function populateRecolorCarModelDropdown(brand) {
+    while (el.carSelect.options.length > 1) {
+        el.carSelect.remove(1);
+    }
+    el.carSelect.value = '';
 
-        el.carSelect.appendChild(group);
+    if (!brand) return;
+
+    const filteredCars = state.cars.filter(c => c.brand === brand);
+    filteredCars.forEach(car => {
+        const option = document.createElement('option');
+        option.value = car.id;
+        option.textContent = car.model;
+        el.carSelect.appendChild(option);
     });
 }
 
@@ -529,14 +542,22 @@ function populateCarInfoDropdown(cars, searchTerm = '') {
     while (el.carInfoSelect.options.length > 1) {
         el.carInfoSelect.remove(1);
     }
+    while (el.vehicleManagementSelect.options.length > 1) {
+        el.vehicleManagementSelect.remove(1);
+    }
 
     cars
         .filter(car => matchesCarTerm(car, searchTerm))
         .forEach(car => {
-            const option = document.createElement('option');
-            option.value = car.id;
-            option.textContent = `${car.brand} ${car.model}`;
-            el.carInfoSelect.appendChild(option);
+            const option1 = document.createElement('option');
+            option1.value = car.id;
+            option1.textContent = `${car.brand} ${car.model}`;
+            el.carInfoSelect.appendChild(option1);
+
+            const option2 = document.createElement('option');
+            option2.value = car.id;
+            option2.textContent = `${car.brand} ${car.model}`;
+            el.vehicleManagementSelect.appendChild(option2);
         });
 }
 
@@ -546,6 +567,15 @@ function populateCarInfoDropdown(cars, searchTerm = '') {
 function wireEvents() {
     el.recolorModuleBtn.addEventListener('click', () => setActiveModule('recolor'));
     el.carInfoModuleBtn.addEventListener('click', () => setActiveModule('carInfo'));
+    el.vehicleManagementModuleBtn.addEventListener('click', () => setActiveModule('vehicleManagement'));
+
+    el.carBrandSelect.addEventListener('change', e => {
+        const brand = e.target.value;
+        populateRecolorCarModelDropdown(brand);
+        if (state.selectedCar && state.selectedCar.brand !== brand) {
+            resetRecolorViewerForNoCars();
+        }
+    });
 
     el.carSelect.addEventListener('change', e => {
         const carId = e.target.value;
@@ -553,6 +583,7 @@ function wireEvents() {
 
         selectCar(carId);
         el.carInfoSelect.value = carId;
+        el.vehicleManagementSelect.value = carId;
         renderCarInfo(carId);
     });
 
@@ -560,11 +591,21 @@ function wireEvents() {
 
     el.carInfoSelect.addEventListener('change', e => {
         const carId = e.target.value;
+        el.vehicleManagementSelect.value = carId;
         if (!carId) {
             clearCarInfoPreview();
             return;
         }
+        renderCarInfo(carId);
+    });
 
+    el.vehicleManagementSelect.addEventListener('change', e => {
+        const carId = e.target.value;
+        el.carInfoSelect.value = carId;
+        if (!carId) {
+            clearCarInfoPreview();
+            return;
+        }
         renderCarInfo(carId);
     });
 
@@ -576,10 +617,14 @@ function wireEvents() {
     el.detailDescription.addEventListener('input', updateWordCount);
     el.addSectionBtn.addEventListener('click', addDetailSection);
     el.previewDetailsBtn.addEventListener('click', openPreviewScreen);
-    el.backToCarInfoBtn.addEventListener('click', showDefaultCarInfoScreen);
+    el.backToManagementBtn = document.getElementById('backToManagementBtn');
+    if (el.backToManagementBtn) {
+        el.backToManagementBtn.addEventListener('click', () => {
+            document.getElementById('carDetailsEditorScreen').classList.add('hidden');
+        });
+    }
     el.saveDetailsOrderBtn.addEventListener('click', savePreviewOrder);
     el.backToEditorBtn.addEventListener('click', () => showScreen('editor'));
-    el.editDetailsBtn.addEventListener('click', openDetailsEditor);
     el.closeDetailsViewBtn.addEventListener('click', showDefaultCarInfoScreen);
 
     el.colorSearch.addEventListener('input', debounce(applyColorFilter, 120));
@@ -639,12 +684,22 @@ function wireEvents() {
 
 function setActiveModule(module) {
     const showRecolor = module === 'recolor';
+    const showCarInfo = module === 'carInfo';
+    const showVehicleManagement = module === 'vehicleManagement';
 
     el.recolorModuleBtn.classList.toggle('active', showRecolor);
-    el.carInfoModuleBtn.classList.toggle('active', !showRecolor);
+    el.carInfoModuleBtn.classList.toggle('active', showCarInfo);
+    el.vehicleManagementModuleBtn.classList.toggle('active', showVehicleManagement);
 
     el.recolorModule.classList.toggle('hidden', !showRecolor);
-    el.carInfoModule.classList.toggle('hidden', showRecolor);
+    el.carInfoModule.classList.toggle('hidden', !showCarInfo);
+    el.vehicleManagementModule.classList.toggle('hidden', !showVehicleManagement);
+
+    if (showCarInfo || showVehicleManagement) {
+        el.carInfoSelect.value = '';
+        el.vehicleManagementSelect.value = '';
+        clearCarInfoPreview();
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -697,24 +752,44 @@ async function renderCarInfo(carId) {
     el.carInfoImage.alt = `${car.brand} ${car.model}`;
     el.carInfoTitle.textContent = `${car.brand} ${car.model}`;
 
+    el.vehicleManagementImage.src = `/${car.image}`;
+    el.vehicleManagementImage.alt = `${car.brand} ${car.model}`;
+    el.vehicleManagementTitle.textContent = `${car.brand} ${car.model}`;
+
     await syncCarDetailsForCar(car.id);
 
     el.carInfoEmpty.classList.add('hidden');
     el.carInfoImageWrap.classList.remove('hidden');
     el.carInfoActions.classList.remove('hidden');
+
+    el.vehicleManagementEmpty.classList.add('hidden');
+    el.vehicleManagementImageWrap.classList.remove('hidden');
+    el.vehicleManagementActions.classList.remove('hidden');
+
     setUpdateCarImageFeedback('', false, true);
     setDeleteCarFeedback('', false, true);
 
-    showDefaultCarInfoScreen();
+    if (!el.carDetailsViewScreen.classList.contains('hidden')) {
+        openDetailsViewer();
+    } else {
+        showDefaultCarInfoScreen();
+    }
 }
 
 function clearCarInfoPreview() {
     state.selectedInfoCar = null;
     el.carInfoImage.src = '';
     el.carInfoTitle.textContent = '';
-    el.carInfoImageWrap.classList.add('hidden');
     el.carInfoEmpty.classList.remove('hidden');
+    el.carInfoImageWrap.classList.add('hidden');
     el.carInfoActions.classList.add('hidden');
+
+    el.vehicleManagementImage.src = '';
+    el.vehicleManagementTitle.textContent = '';
+    el.vehicleManagementEmpty.classList.remove('hidden');
+    el.vehicleManagementImageWrap.classList.add('hidden');
+    el.vehicleManagementActions.classList.add('hidden');
+
     el.updateCarImageInput.value = '';
     setUpdateCarImageFeedback('', false, true);
     setDeleteCarFeedback('', false, true);
@@ -1052,7 +1127,7 @@ async function openDetailsEditor() {
     showScreen('editor');
 }
 
-function addDetailSection() {
+async function addDetailSection() {
     const result = validateSectionInputs();
     if (!result.success) {
         showDetailFormError(result.message);
@@ -1066,6 +1141,20 @@ function addDetailSection() {
         description: el.detailDescription.value.trim(),
         fontStyle: el.detailFontStyle.value
     });
+
+    const carId = getCurrentInfoCarId();
+    if (carId) {
+        state.carDetailsByCar[carId] = cloneSections(state.draftSections);
+        try {
+            await fetch(`/api/car-details/${encodeURIComponent(carId)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state.draftSections)
+            });
+        } catch (e) {
+            console.error('Failed to auto-save detail section:', e);
+        }
+    }
 
     renderDraftSections();
     resetDetailForm();
@@ -1268,6 +1357,9 @@ function clearDetailFormError() {
 }
 
 function getCurrentInfoCarId() {
+    if (!el.vehicleManagementModule.classList.contains('hidden')) {
+        return el.vehicleManagementSelect.value || null;
+    }
     return el.carInfoSelect.value || state.selectedInfoCar?.id || null;
 }
 

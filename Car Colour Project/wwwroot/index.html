@@ -29,7 +29,6 @@
             <div class="centered-login-container" id="loginFormContainer">
                 <div class="login-branding">
                     <h2>CarColour<span class="brand-accent">Studio</span></h2>
-                    <p>Enter credentials to continue</p>
                 </div>
                 <form id="loginForm" class="centered-login-form" autocomplete="off">
                     <div class="input-wrapper">
@@ -60,6 +59,7 @@
                 <nav class="module-nav" aria-label="Application modules">
                     <button id="recolorModuleBtn" type="button" class="module-btn active">Recolor Studio</button>
                     <button id="carInfoModuleBtn" type="button" class="module-btn">Car Info</button>
+                    <button id="vehicleManagementModuleBtn" type="button" class="module-btn">Car Management</button>
                 </nav>
 
                 <button id="logoutBtn" type="button" class="btn-secondary logout-btn">Logout</button>
@@ -75,11 +75,20 @@
 
                 <!-- Car Selector -->
                 <div class="section-block">
-                    <h2 class="section-title">🚙 Select Car</h2>
+                    <h2 class="section-title">🚘 Select Vehicle</h2>
+
+                    <label for="carBrandSelect" class="field-label">Car Brand</label>
+                    <div class="select-wrapper" style="margin-bottom: 1rem;">
+                        <select id="carBrandSelect" aria-label="Choose a car brand">
+                            <option value="">— Choose a brand —</option>
+                        </select>
+                        <span class="select-arrow">▾</span>
+                    </div>
+
                     <label for="carSelect" class="field-label">Car Model</label>
                     <div class="select-wrapper">
                         <select id="carSelect" aria-label="Choose a car model">
-                            <option value="">— Choose a car —</option>
+                            <option value="">— Choose a model —</option>
                         </select>
                         <span class="select-arrow">▾</span>
                     </div>
@@ -230,23 +239,7 @@
                     <span class="select-arrow">▾</span>
                 </div>
 
-                <section class="add-car-card" aria-label="Add new car">
-                    <h3 class="section-subtitle">Add New Car</h3>
 
-                    <label for="newCarBrand" class="field-label">Brand</label>
-                    <input id="newCarBrand" type="text" placeholder="e.g. Mercedes">
-
-                    <label for="newCarModel" class="field-label">Model</label>
-                    <input id="newCarModel" type="text" placeholder="e.g. GLC 300">
-
-                    <label for="newCarImage" class="field-label">Car Image</label>
-                    <input id="newCarImage" type="file" accept=".png,.jpg,.jpeg,.webp">
-
-                    <div class="detail-actions-row add-car-actions">
-                        <button id="addCarBtn" type="button" class="btn-primary">Add Car</button>
-                    </div>
-                    <p id="addCarFeedback" class="add-car-feedback hidden"></p>
-                </section>
 
                 <div id="carInfoViewer" class="car-info-viewer">
                     <div id="carInfoEmpty" class="empty-state car-info-empty">
@@ -260,12 +253,65 @@
                 </div>
 
                 <div id="carInfoActions" class="car-info-actions hidden">
+                    <button id="viewCarInfoBtn" type="button" class="btn-primary" aria-label="View car info" title="View car info">ℹ️ View Details</button>
+                </div>
+
+                <section id="carDetailsViewScreen" class="car-details-screen hidden" aria-label="Saved car details view">
+                    <h3 class="section-subtitle">Saved Car Details</h3>
+                    <div id="savedDetailsList" class="saved-details-list"></div>
+                    <div class="detail-actions-row">
+                        <button id="closeDetailsViewBtn" type="button" class="btn-secondary">Close</button>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <main id="vehicleManagementModule" class="car-info-layout module-view hidden">
+            <section class="car-info-card" aria-label="Car management module">
+                <h2 class="section-title">⚙️ Car Management</h2>
+
+                <section class="add-car-card" aria-label="Add new car">
+                    <h3 class="section-subtitle">Add New Car</h3>
+                    <label for="newCarBrand" class="field-label">Brand</label>
+                    <input id="newCarBrand" type="text" placeholder="e.g. Mercedes">
+                    <label for="newCarModel" class="field-label">Model</label>
+                    <input id="newCarModel" type="text" placeholder="e.g. GLC 300">
+                    <label for="newCarImage" class="field-label">Car Image</label>
+                    <input id="newCarImage" type="file" accept=".png,.jpg,.jpeg,.webp">
+                    <div class="detail-actions-row add-car-actions">
+                        <button id="addCarBtn" type="button" class="btn-primary">Add Car</button>
+                    </div>
+                    <p id="addCarFeedback" class="add-car-feedback hidden"></p>
+                </section>
+
+                <hr style="border-color: #333; margin: 2rem 0;">
+
+                <h3 class="section-subtitle">Manage Existing Cars</h3>
+                <label for="vehicleManagementSelect" class="field-label">Car Selection</label>
+                <div class="select-wrapper">
+                    <select id="vehicleManagementSelect" aria-label="Choose a car to manage">
+                        <option value="">— Choose a car —</option>
+                    </select>
+                    <span class="select-arrow">▾</span>
+                </div>
+
+                <div id="vehicleManagementViewer" class="car-info-viewer">
+                    <div id="vehicleManagementEmpty" class="empty-state car-info-empty">
+                        <div class="empty-icon">🚙</div>
+                        <p>Select a car to view its image</p>
+                    </div>
+                    <div id="vehicleManagementImageWrap" class="car-info-image-wrap hidden">
+                        <img id="vehicleManagementImage" alt="Selected car image preview">
+                        <p id="vehicleManagementTitle" class="car-info-title"></p>
+                    </div>
+                </div>
+
+                <div id="vehicleManagementActions" class="car-info-actions">
                     <label for="updateCarImageInput" class="field-label update-image-label">Update Car Image</label>
                     <input id="updateCarImageInput" type="file" accept=".png,.jpg,.jpeg,.webp">
                     <button id="saveCarImageBtn" type="button" class="btn-secondary">Save New Image</button>
                     <button id="addCarDetailsBtn" type="button" class="btn-primary">Add Car Details</button>
                     <button id="deleteCarBtn" type="button" class="btn-danger">Delete Car</button>
-                    <button id="viewCarInfoBtn" type="button" class="icon-btn" aria-label="View car info" title="View car info">ℹ️</button>
                 </div>
                 <p id="updateCarImageFeedback" class="add-car-feedback hidden"></p>
                 <p id="deleteCarFeedback" class="add-car-feedback hidden"></p>
@@ -294,7 +340,7 @@
                     <div class="detail-actions-row">
                         <button id="addSectionBtn" type="button" class="btn-secondary">Add Section</button>
                         <button id="previewDetailsBtn" type="button" class="btn-primary">Preview</button>
-                        <button id="backToCarInfoBtn" type="button" class="btn-secondary">Back</button>
+                        <button id="backToManagementBtn" type="button" class="btn-secondary">Back</button>
                     </div>
 
                     <p id="detailFormError" class="detail-error hidden"></p>
@@ -315,14 +361,6 @@
                     </div>
                 </section>
 
-                <section id="carDetailsViewScreen" class="car-details-screen hidden" aria-label="Saved car details view">
-                    <h3 class="section-subtitle">Saved Car Details</h3>
-                    <div id="savedDetailsList" class="saved-details-list"></div>
-                    <div class="detail-actions-row">
-                        <button id="editDetailsBtn" type="button" class="btn-primary">Edit Details</button>
-                        <button id="closeDetailsViewBtn" type="button" class="btn-secondary">Close</button>
-                    </div>
-                </section>
             </section>
         </main>
     </div>

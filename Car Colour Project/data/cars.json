@@ -78,9 +78,15 @@
     "Image": "images/volkswagen-vento-highline-1-6-1781168690207.jpg"
   },
   {
-    "Id": "volkwagen-taigun",
-    "Brand": "Volkwagen",
+    "Id": "kia-sonet",
+    "Brand": "Kia",
+    "Model": "Sonet",
+    "Image": "images/kia-sonet.png"
+  },
+  {
+    "Id": "volkswagen-taigun",
+    "Brand": "Volkswagen",
     "Model": "Taigun",
-    "Image": "images/volkwagen-taigun.jpg"
+    "Image": "images/volkswagen-taigun.jpg"
   }
 ]

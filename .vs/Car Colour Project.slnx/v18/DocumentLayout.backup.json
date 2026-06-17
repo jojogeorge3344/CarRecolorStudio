@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\styles.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\styles.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -55,10 +55,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\wwwroot\\sounds\\.gitkeep||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\wwwroot\\sounds\\.gitkeep||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -68,7 +64,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 34,
+          "SelectedChildIndex": 22,
           "Children": [
             {
               "$type": "Bookmark",
@@ -160,15 +156,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 0,
               "Title": "AuthController.cs",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Car Colour Project\\Controllers\\AuthController.cs",
               "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\Controllers\\AuthController.cs",
               "RelativeToolTip": "Car Colour Project\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-11T12:21:57.133Z"
+              "WhenOpened": "2026-06-11T12:21:57.133Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -296,21 +293,7 @@
               "RelativeToolTip": "Car Colour Project\\wwwroot\\app.js",
               "ViewState": "AgIAAL4BAAAAAAAAAAAAAMoBAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-06-11T11:16:12.813Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "styles.css",
-              "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\styles.css",
-              "RelativeDocumentMoniker": "Car Colour Project\\wwwroot\\styles.css",
-              "ToolTip": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\wwwroot\\styles.css",
-              "RelativeToolTip": "Car Colour Project\\wwwroot\\styles.css",
-              "ViewState": "AgIAAHAAAAAAAAAAAAAawIgAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2026-06-11T11:16:00.034Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T11:16:12.813Z"
             },
             {
               "$type": "Document",

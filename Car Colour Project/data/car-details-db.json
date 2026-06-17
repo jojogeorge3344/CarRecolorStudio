@@ -1,1 +1,10 @@
-{}
+{
+  "bmw-x1": [
+    {
+      "Id": "661065e8-ed7b-491f-b984-50cc89e99f32",
+      "Heading": "Price",
+      "Description": "Ex showroom : RS. 4500000\n\nOn the road : 5200000",
+      "FontStyle": "classic"
+    }
+  ]
+}
