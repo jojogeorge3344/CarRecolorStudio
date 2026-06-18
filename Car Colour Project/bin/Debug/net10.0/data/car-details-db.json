@@ -6,5 +6,13 @@
       "Description": "Ex showroom : RS. 4500000\n\nOn the road : 5200000",
       "FontStyle": "classic"
     }
+  ],
+  "audi-q7": [
+    {
+      "Id": "c8c12b38-703e-4420-a9de-3f4448caedd4",
+      "Heading": "Price",
+      "Description": "RS. 4900000\n\nOn the road : 5700000",
+      "FontStyle": "classic"
+    }
   ]
 }

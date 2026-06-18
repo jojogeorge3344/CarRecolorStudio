@@ -18,6 +18,15 @@ const state = {
         isDrawing: false,
         lastX: 0,
         lastY: 0
+    },
+    users: [],
+    filteredUsers: [],
+    selectedUser: null,
+    userSortDirection: 'none',
+    cinematic: {
+        mode: 'pulse',
+        color: '#FF2800',
+        rotation: 0
     }
 };
 
@@ -123,7 +132,65 @@ const el = {
     backToEditorBtn: document.getElementById('backToEditorBtn'),
     carDetailsViewScreen: document.getElementById('carDetailsViewScreen'),
     savedDetailsList: document.getElementById('savedDetailsList'),
-    closeDetailsViewBtn: document.getElementById('closeDetailsViewBtn')
+    closeDetailsViewBtn: document.getElementById('closeDetailsViewBtn'),
+    adminModuleBtn: document.getElementById('adminModuleBtn'),
+    adminModule: document.getElementById('adminModule'),
+    newUsername: document.getElementById('newUsername'),
+    newEmail: document.getElementById('newEmail'),
+    newPassword: document.getElementById('newPassword'),
+    newProfilePic: document.getElementById('newProfilePic'),
+    addUserForm: document.getElementById('addUserForm'),
+    addUserFormWrapper: document.getElementById('addUserFormWrapper'),
+    toggleRegistrationHeader: document.getElementById('toggleRegistrationHeader'),
+    registrationToggleIcon: document.getElementById('registrationToggleIcon'),
+    addUserSubmitBtn: document.getElementById('addUserSubmitBtn'),
+    addUserFeedback: document.getElementById('addUserFeedback'),
+    userSearch: document.getElementById('userSearch'),
+    userGridBody: document.getElementById('userGridBody'),
+    userGridEmpty: document.getElementById('userGridEmpty'),
+    forgotPasswordLink: document.getElementById('forgotPasswordLink'),
+    sortUsernameHeader: document.getElementById('sortUsernameHeader'),
+    sortDirectionIcon: document.getElementById('sortDirectionIcon'),
+    viewUserModal: document.getElementById('viewUserModal'),
+    closeViewUserModalBtn: document.getElementById('closeViewUserModalBtn'),
+    viewUsernameVal: document.getElementById('viewUsernameVal'),
+    viewEmailVal: document.getElementById('viewEmailVal'),
+    viewIdVal: document.getElementById('viewIdVal'),
+    editUserModal: document.getElementById('editUserModal'),
+    closeEditUserModalBtn: document.getElementById('closeEditUserModalBtn'),
+    editUsername: document.getElementById('editUsername'),
+    editEmail: document.getElementById('editEmail'),
+    editPassword: document.getElementById('editPassword'),
+    editProfilePic: document.getElementById('editProfilePic'),
+    editUserForm: document.getElementById('editUserForm'),
+    saveEditUserBtn: document.getElementById('saveEditUserBtn'),
+    cancelEditUserBtn: document.getElementById('cancelEditUserBtn'),
+    editUserFeedback: document.getElementById('editUserFeedback'),
+    userProfileHeaderWrap: document.getElementById('userProfileHeaderWrap'),
+    userProfileHeaderBtn: document.getElementById('userProfileHeaderBtn'),
+    headerUserPic: document.getElementById('headerUserPic'),
+    userProfileDropdown: document.getElementById('userProfileDropdown'),
+    dropdownUserPic: document.getElementById('dropdownUserPic'),
+    dropdownUserName: document.getElementById('dropdownUserName'),
+    dropdownUserEmail: document.getElementById('dropdownUserEmail'),
+    dropdownLogoutBtn: document.getElementById('dropdownLogoutBtn'),
+    cinematicWindow: document.getElementById('cinematicWindow'),
+    cinematicGlow: document.getElementById('cinematicGlow'),
+    cinematicScanner: document.getElementById('cinematicScanner'),
+    cinematicCarImage: document.getElementById('cinematicCarImage'),
+    cinematicCarWrap: document.getElementById('cinematicCarWrap'),
+    cinematicModePulse: document.getElementById('cinematicModePulse'),
+    cinematicModeDrift: document.getElementById('cinematicModeDrift'),
+    cinematicModeCyber: document.getElementById('cinematicModeCyber'),
+    cinematicSwatches: document.getElementById('cinematicSwatches'),
+    cinematicColorText: document.getElementById('cinematicColorText'),
+    cinematicRotationText: document.getElementById('cinematicRotationText'),
+    editUserId: document.getElementById('editUserId'),
+    deleteUserModal: document.getElementById('deleteUserModal'),
+    closeDeleteUserModalBtn: document.getElementById('closeDeleteUserModalBtn'),
+    deleteUserTargetName: document.getElementById('deleteUserTargetName'),
+    confirmDeleteUserBtn: document.getElementById('confirmDeleteUserBtn'),
+    cancelDeleteUserBtn: document.getElementById('cancelDeleteUserBtn')
 };
 
 // ─────────────────────────────────────────────
@@ -131,9 +198,53 @@ const el = {
 // ─────────────────────────────────────────────
 bootLogin();
 
+async function refreshValidEmails() {
+    try {
+        const response = await fetch('/api/auth/emails');
+        if (response.ok) {
+            window.validEmails = await response.json();
+        }
+    } catch (err) {
+        console.error('Failed to load validation emails:', err);
+    }
+}
+
 function bootLogin() {
+    refreshValidEmails();
+
     el.loginForm.addEventListener('submit', handleLoginSubmit);
     el.logoutBtn.addEventListener('click', handleLogoutClick);
+
+    const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+    if (toggleLoginPassword) {
+        toggleLoginPassword.addEventListener('click', () => {
+            const passwordInput = el.loginPassword;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleLoginPassword.style.color = '#00d4ff';
+            } else {
+                passwordInput.type = 'password';
+                toggleLoginPassword.style.color = 'rgba(255, 255, 255, 0.4)';
+            }
+        });
+    }
+
+    if (el.forgotPasswordLink) {
+        el.forgotPasswordLink.addEventListener('click', handleForgotPasswordClick);
+    }
+
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            state.currentUser = JSON.parse(savedUser);
+            renderCurrentUserHeader();
+            el.loginScreen.classList.add('hidden');
+            el.appShell.classList.remove('hidden');
+            startApp();
+        } catch (e) {
+            localStorage.removeItem('currentUser');
+        }
+    }
 
     el.loginUsername.value = '';
     el.loginPassword.value = '';
@@ -156,11 +267,14 @@ function bootLogin() {
 
     // "Catch me if you can" button effect
     const dodgeButton = (e) => {
-        const username = el.loginUsername.value.trim();
+        const username = el.loginUsername.value.trim().toLowerCase();
         const password = el.loginPassword.value;
         
+        const list = window.validEmails || ['jojogeorge3344@gmail.com'];
+        const isValid = list.some(email => email.toLowerCase() === username);
+
         // If not valid, make the button run away!
-        if (username !== 'jojogeorge3344@gmail.com' || password !== 'jojo3344') {
+        if (!isValid || !password) {
             const btnRect = el.loginSubmitBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
@@ -208,6 +322,81 @@ function bootLogin() {
     el.loginForm.addEventListener('mouseleave', () => {
         el.loginSubmitBtn.style.transform = `translate(0, 0)`;
     });
+}
+
+function handleForgotPasswordClick(e) {
+    e.preventDefault();
+    const emailVal = el.loginUsername.value.trim();
+    if (!emailVal) {
+        setLoginError('Please enter your email in the username field first.');
+        el.loginUsername.focus();
+        return;
+    }
+    
+    // Construct Google Mail compose URL
+    const subject = encodeURIComponent("Password Reset Request - CarColourStudio");
+    const body = encodeURIComponent(`Hello Admin,\n\nI need to reset the password for my account registered under the following email address:\n\nEmail: ${emailVal}\n\nPlease send me a password reset option.\n\nThank you.`);
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=jojogeorge3344@gmail.com&su=${subject}&body=${body}`;
+    
+    // Open Gmail in a new tab
+    window.open(gmailUrl, '_blank');
+}
+
+function renderCurrentUserHeader() {
+    if (!state.currentUser) return;
+    const user = state.currentUser;
+    const profilePicSrc = user.profilePic ? `/${user.profilePic}` : '/images/default_avatar.png';
+    if (el.headerUserPic) {
+        el.headerUserPic.src = profilePicSrc;
+    }
+    if (el.dropdownUserPic) {
+        el.dropdownUserPic.src = profilePicSrc;
+    }
+    if (el.dropdownUserName) {
+        el.dropdownUserName.textContent = user.username || 'Admin User';
+    }
+    if (el.dropdownUserEmail) {
+        el.dropdownUserEmail.textContent = user.email || 'admin@gmail.com';
+    }
+}
+
+function toggleProfileDropdown() {
+    if (el.userProfileDropdown) {
+        el.userProfileDropdown.classList.toggle('hidden');
+    }
+}
+
+function toggleRegistrationPanel() {
+    if (!el.addUserFormWrapper) return;
+    const isExpanded = el.addUserFormWrapper.classList.toggle('expanded');
+    if (el.registrationToggleIcon) {
+        el.registrationToggleIcon.textContent = isExpanded ? '▾' : '▸';
+    }
+}
+
+function toggleUserSort() {
+    if (state.userSortDirection === 'none') {
+        state.userSortDirection = 'asc';
+    } else if (state.userSortDirection === 'asc') {
+        state.userSortDirection = 'desc';
+    } else {
+        state.userSortDirection = 'none';
+    }
+
+    if (el.sortDirectionIcon) {
+        if (state.userSortDirection === 'asc') {
+            el.sortDirectionIcon.textContent = '▲';
+            el.sortDirectionIcon.style.color = '#00d4ff';
+        } else if (state.userSortDirection === 'desc') {
+            el.sortDirectionIcon.textContent = '▼';
+            el.sortDirectionIcon.style.color = '#00d4ff';
+        } else {
+            el.sortDirectionIcon.textContent = '⇅';
+            el.sortDirectionIcon.style.color = 'rgba(255,255,255,0.3)';
+        }
+    }
+
+    applyUserFilter();
 }
 
 window.isFlyingErrorShowing = false;
@@ -264,11 +453,14 @@ function hideFlyingError() {
 async function handleLoginSubmit(event) {
     event.preventDefault();
 
-    const username = el.loginUsername.value.trim();
+    const username = el.loginUsername.value.trim().toLowerCase();
     const password = el.loginPassword.value;
 
+    const list = window.validEmails || ['jojogeorge3344@gmail.com'];
+    const isValid = list.some(email => email.toLowerCase() === username);
+
     // If they manage to submit via keyboard or fast clicking while invalid, force dodge and abort!
-    if (username !== 'jojogeorge3344@gmail.com' || password !== 'jojo3344') {
+    if (!isValid || !password) {
         // Pick a random aggressive direction
         const pushX = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 100 + 80);
         const pushY = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
@@ -371,7 +563,15 @@ async function startApp() {
 
 
 async function handleLogoutClick() {
+    if (el.dropdownLogoutBtn) el.dropdownLogoutBtn.disabled = true;
     el.logoutBtn.disabled = true;
+
+    localStorage.removeItem('currentUser');
+    state.currentUser = null;
+
+    if (el.userProfileDropdown) {
+        el.userProfileDropdown.classList.add('hidden');
+    }
 
     setActiveModule('recolor');
     setLoginError('');
@@ -381,6 +581,7 @@ async function handleLogoutClick() {
     el.loginUsername.focus();
 
     el.logoutBtn.disabled = false;
+    if (el.dropdownLogoutBtn) el.dropdownLogoutBtn.disabled = false;
 }
 
 async function authenticateLogin(username, password) {
@@ -395,6 +596,11 @@ async function authenticateLogin(username, password) {
     }
 
     const result = await response.json();
+    if (result.success && result.user) {
+        state.currentUser = result.user;
+        localStorage.setItem('currentUser', JSON.stringify(result.user));
+        renderCurrentUserHeader();
+    }
     return !!result.success;
 }
 
@@ -665,25 +871,85 @@ function wireEvents() {
             document.exitFullscreen();
         }
     });
+
+    // Wire Admin module events
+    if (el.adminModuleBtn) el.adminModuleBtn.addEventListener('click', () => setActiveModule('admin'));
+    if (el.addUserForm) el.addUserForm.addEventListener('submit', handleAddUser);
+    if (el.toggleRegistrationHeader) {
+        el.toggleRegistrationHeader.addEventListener('click', toggleRegistrationPanel);
+    }
+    if (el.sortUsernameHeader) {
+        el.sortUsernameHeader.addEventListener('click', toggleUserSort);
+    }
+    if (el.userSearch) el.userSearch.addEventListener('input', debounce(applyUserFilter, 120));
+    if (el.closeViewUserModalBtn) el.closeViewUserModalBtn.addEventListener('click', closeViewUserModal);
+    if (el.closeEditUserModalBtn) el.closeEditUserModalBtn.addEventListener('click', closeEditUserModal);
+    if (el.cancelEditUserBtn) el.cancelEditUserBtn.addEventListener('click', closeEditUserModal);
+    if (el.editUserForm) el.editUserForm.addEventListener('submit', handleEditUserSubmit);
+
+    // Delete confirmation modal events
+    if (el.closeDeleteUserModalBtn) el.closeDeleteUserModalBtn.addEventListener('click', closeDeleteUserModal);
+    if (el.cancelDeleteUserBtn) el.cancelDeleteUserBtn.addEventListener('click', closeDeleteUserModal);
+    if (el.confirmDeleteUserBtn) el.confirmDeleteUserBtn.addEventListener('click', handleConfirmDeleteUser);
+
+    // 3D Cinematic click events
+    if (el.cinematicModePulse) el.cinematicModePulse.addEventListener('click', () => setCinematicMode('pulse'));
+    if (el.cinematicModeDrift) el.cinematicModeDrift.addEventListener('click', () => setCinematicMode('drift'));
+    if (el.cinematicModeCyber) el.cinematicModeCyber.addEventListener('click', () => setCinematicMode('cyber'));
+
+    if (el.cinematicSwatches) {
+        el.cinematicSwatches.addEventListener('click', e => {
+            const swatch = e.target.closest('.cinematic-swatch');
+            if (!swatch) return;
+            const hex = swatch.dataset.hex;
+            setCinematicColor(hex, swatch);
+        });
+    }
+
+    if (el.cinematicWindow) {
+        el.cinematicWindow.addEventListener('mousemove', handleCinematicMouseMove);
+        el.cinematicWindow.addEventListener('mouseleave', resetCinematicPerspective);
+    }
+
+    if (el.userProfileHeaderBtn) {
+        el.userProfileHeaderBtn.addEventListener('click', toggleProfileDropdown);
+    }
+    if (el.dropdownLogoutBtn) {
+        el.dropdownLogoutBtn.addEventListener('click', handleLogoutClick);
+    }
+    document.addEventListener('click', e => {
+        if (el.userProfileDropdown && !el.userProfileDropdown.classList.contains('hidden')) {
+            if (!el.userProfileHeaderWrap.contains(e.target)) {
+                el.userProfileDropdown.classList.add('hidden');
+            }
+        }
+    });
 }
 
 function setActiveModule(module) {
     const showRecolor = module === 'recolor';
     const showCarInfo = module === 'carInfo';
     const showVehicleManagement = module === 'vehicleManagement';
+    const showAdmin = module === 'admin';
 
     el.recolorModuleBtn.classList.toggle('active', showRecolor);
     el.carInfoModuleBtn.classList.toggle('active', showCarInfo);
     el.vehicleManagementModuleBtn.classList.toggle('active', showVehicleManagement);
+    if (el.adminModuleBtn) el.adminModuleBtn.classList.toggle('active', showAdmin);
 
     el.recolorModule.classList.toggle('hidden', !showRecolor);
     el.carInfoModule.classList.toggle('hidden', !showCarInfo);
     el.vehicleManagementModule.classList.toggle('hidden', !showVehicleManagement);
+    if (el.adminModule) el.adminModule.classList.toggle('hidden', !showAdmin);
 
     if (showCarInfo || showVehicleManagement) {
         el.carInfoSelect.value = '';
         el.vehicleManagementSelect.value = '';
         clearCarInfoPreview();
+    }
+
+    if (showAdmin) {
+        loadUsers();
     }
 }
 
@@ -1669,4 +1935,451 @@ function debounce(fn, delay) {
         clearTimeout(timer);
         timer = setTimeout(() => fn(...args), delay);
     };
+}
+
+// ─────────────────────────────────────────────
+//  User Management & Admin panel functions
+// ─────────────────────────────────────────────
+async function loadUsers() {
+    try {
+        const users = await fetchJson('/api/users');
+        state.users = users;
+        applyUserFilter();
+    } catch (err) {
+        console.error('Failed to load users:', err);
+    }
+}
+
+function renderUserGrid() {
+    if (!el.userGridBody) return;
+    el.userGridBody.innerHTML = '';
+    const filtered = state.filteredUsers;
+    
+    if (filtered.length === 0) {
+        if (el.userGridEmpty) el.userGridEmpty.classList.remove('hidden');
+        return;
+    }
+    
+    if (el.userGridEmpty) el.userGridEmpty.classList.add('hidden');
+    filtered.forEach(user => {
+        const row = document.createElement('tr');
+        
+        const usernameTd = document.createElement('td');
+        usernameTd.textContent = user.username;
+        usernameTd.style.fontWeight = '600';
+        
+        const emailTd = document.createElement('td');
+        emailTd.textContent = user.email;
+        
+        const passwordTd = document.createElement('td');
+        passwordTd.className = 'user-grid-pw';
+        passwordTd.textContent = '••••••••';
+        passwordTd.title = 'Password is encrypted';
+        
+        const actionsTd = document.createElement('td');
+        actionsTd.className = 'grid-actions';
+        
+        const viewBtn = document.createElement('button');
+        viewBtn.type = 'button';
+        viewBtn.className = 'btn-secondary';
+        viewBtn.textContent = '👁 View';
+        viewBtn.addEventListener('click', () => handleViewUserClick(user.id));
+        
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'btn-secondary';
+        editBtn.textContent = '✏ Edit';
+        editBtn.addEventListener('click', () => handleEditUserClick(user.id));
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn-danger';
+        deleteBtn.textContent = '🗑 Delete';
+        deleteBtn.addEventListener('click', () => handleDeleteUserClick(user.id));
+        
+        actionsTd.append(viewBtn, editBtn, deleteBtn);
+        row.append(usernameTd, emailTd, passwordTd, actionsTd);
+        el.userGridBody.appendChild(row);
+    });
+}
+
+function applyUserFilter() {
+    if (!el.userSearch) return;
+    const term = el.userSearch.value.trim().toLowerCase();
+    if (!term) {
+        state.filteredUsers = [...state.users];
+    } else {
+        state.filteredUsers = state.users.filter(user => 
+            user.username.toLowerCase().includes(term) ||
+            user.email.toLowerCase().includes(term)
+        );
+    }
+
+    if (state.userSortDirection === 'asc') {
+        state.filteredUsers.sort((a, b) => a.username.localeCompare(b.username));
+    } else if (state.userSortDirection === 'desc') {
+        state.filteredUsers.sort((a, b) => b.username.localeCompare(a.username));
+    }
+
+    renderUserGrid();
+}
+
+async function handleAddUser(event) {
+    event.preventDefault();
+    const username = el.newUsername.value.trim();
+    const email = el.newEmail.value.trim();
+    const password = el.newPassword.value;
+    
+    if (!username || !email || !password) {
+        setAddUserFeedback('All fields are required.', true);
+        return;
+    }
+    
+    el.addUserSubmitBtn.disabled = true;
+    setAddUserFeedback('Registering user...', false);
+    
+    try {
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('email', email);
+        formData.append('password', password);
+        
+        if (el.newProfilePic && el.newProfilePic.files && el.newProfilePic.files[0]) {
+            formData.append('profilePic', el.newProfilePic.files[0]);
+        }
+        
+        const response = await fetch('/api/users', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || 'Registration failed.');
+        }
+        
+        setAddUserFeedback('User created successfully!', false);
+        el.newUsername.value = '';
+        el.newEmail.value = '';
+        el.newPassword.value = '';
+        if (el.newProfilePic) el.newProfilePic.value = '';
+        
+        await loadUsers();
+        await refreshValidEmails();
+    } catch (err) {
+        console.error('Add user failed:', err);
+        setAddUserFeedback(err.message || 'Failed to create user. Email may already be in use.', true);
+    } finally {
+        el.addUserSubmitBtn.disabled = false;
+    }
+}
+
+function setAddUserFeedback(message, isError) {
+    if (!el.addUserFeedback) return;
+    el.addUserFeedback.textContent = message;
+    el.addUserFeedback.classList.remove('hidden', 'error', 'success');
+    el.addUserFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+function handleEditUserClick(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    el.editUserId.value = user.id;
+    el.editUsername.value = user.username;
+    el.editEmail.value = user.email;
+    el.editPassword.value = user.password;
+    
+    setEditUserFeedback('', false, true);
+    el.editUserModal.classList.remove('hidden');
+}
+
+function closeEditUserModal() {
+    if (el.editUserModal) el.editUserModal.classList.add('hidden');
+}
+
+async function handleEditUserSubmit(event) {
+    event.preventDefault();
+    const id = el.editUserId.value;
+    const username = el.editUsername.value.trim();
+    const email = el.editEmail.value.trim();
+    const password = el.editPassword.value;
+    
+    if (!username || !email || !password) {
+        setEditUserFeedback('All fields are required.', true);
+        return;
+    }
+    
+    el.saveEditUserBtn.disabled = true;
+    setEditUserFeedback('Saving changes...', false);
+    
+    try {
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('email', email);
+        formData.append('password', password);
+        
+        if (el.editProfilePic && el.editProfilePic.files && el.editProfilePic.files[0]) {
+            formData.append('profilePic', el.editProfilePic.files[0]);
+        }
+        
+        const response = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || 'Update failed.');
+        }
+        
+        const updatedUser = await response.json();
+        
+        const originalUser = state.users.find(u => u.id === id);
+        if (state.currentUser && originalUser && originalUser.email === state.currentUser.email) {
+            state.currentUser = {
+                username: updatedUser.username,
+                email: updatedUser.email,
+                profilePic: updatedUser.profilePic
+            };
+            localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+            renderCurrentUserHeader();
+        }
+        
+        if (el.editProfilePic) el.editProfilePic.value = '';
+        
+        await loadUsers();
+        await refreshValidEmails();
+        closeEditUserModal();
+    } catch (err) {
+        console.error('Edit user failed:', err);
+        setEditUserFeedback(err.message || 'Failed to update user. Email may be in use.', true);
+    } finally {
+        el.saveEditUserBtn.disabled = false;
+    }
+}
+
+function setEditUserFeedback(message, isError, hide = false) {
+    if (!el.editUserFeedback) return;
+    if (hide) {
+        el.editUserFeedback.textContent = '';
+        el.editUserFeedback.classList.add('hidden');
+        el.editUserFeedback.classList.remove('error', 'success');
+        return;
+    }
+    el.editUserFeedback.textContent = message;
+    el.editUserFeedback.classList.remove('hidden', 'error', 'success');
+    el.editUserFeedback.classList.add(isError ? 'error' : 'success');
+}
+
+function handleDeleteUserClick(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    state.selectedUser = user;
+    if (el.deleteUserTargetName) el.deleteUserTargetName.textContent = `${user.username} (${user.email})`;
+    if (el.deleteUserModal) el.deleteUserModal.classList.remove('hidden');
+}
+
+function closeDeleteUserModal() {
+    if (el.deleteUserModal) el.deleteUserModal.classList.add('hidden');
+    state.selectedUser = null;
+}
+
+async function handleConfirmDeleteUser() {
+    const user = state.selectedUser;
+    if (!user) return;
+    
+    el.confirmDeleteUserBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete user.');
+        }
+        
+        await loadUsers();
+        await refreshValidEmails();
+        closeDeleteUserModal();
+    } catch (err) {
+        console.error('Delete user failed:', err);
+        alert(err.message || 'Failed to delete user.');
+    } finally {
+        if (el.confirmDeleteUserBtn) el.confirmDeleteUserBtn.disabled = false;
+    }
+}
+
+// ─────────────────────────────────────────────
+//  3D Cinematic Viewport Window
+// ─────────────────────────────────────────────
+let cinematicInterval = null;
+
+function handleViewUserClick(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    if (el.viewUsernameVal) el.viewUsernameVal.textContent = user.username;
+    if (el.viewEmailVal) el.viewEmailVal.textContent = user.email;
+    if (el.viewIdVal) el.viewIdVal.textContent = user.id;
+    
+    // Set user's profile picture inside the cinematic showroom
+    if (el.cinematicCarImage) {
+        el.cinematicCarImage.src = user.profilePic ? `/${user.profilePic}` : '/images/default_avatar.png';
+        el.cinematicCarImage.style.borderRadius = '50%';
+        el.cinematicCarImage.style.objectFit = 'cover';
+        el.cinematicCarImage.style.width = '140px';
+        el.cinematicCarImage.style.height = '140px';
+    }
+
+    // Reset cinematic state
+    state.cinematic.mode = 'pulse';
+    state.cinematic.color = '#FF2800';
+    state.cinematic.rotation = 0;
+    
+    if (el.cinematicColorText) el.cinematicColorText.textContent = '#FF2800';
+    if (el.cinematicRotationText) el.cinematicRotationText.textContent = '0° Y';
+    
+    // Active class updates on showroom style buttons
+    updateCinematicControls();
+    
+    // Set first swatch active
+    if (el.cinematicSwatches) {
+        [...el.cinematicSwatches.children].forEach(sw => {
+            sw.classList.toggle('active', sw.dataset.hex === '#FF2800');
+        });
+    }
+    
+    applyCinematicAnimation();
+    if (el.viewUserModal) el.viewUserModal.classList.remove('hidden');
+}
+
+function closeViewUserModal() {
+    if (el.viewUserModal) el.viewUserModal.classList.add('hidden');
+    stopCinematicLoop();
+}
+
+function setCinematicMode(mode) {
+    state.cinematic.mode = mode;
+    updateCinematicControls();
+    applyCinematicAnimation();
+}
+
+function updateCinematicControls() {
+    if (el.cinematicModePulse) el.cinematicModePulse.classList.toggle('active', state.cinematic.mode === 'pulse');
+    if (el.cinematicModeDrift) el.cinematicModeDrift.classList.toggle('active', state.cinematic.mode === 'drift');
+    if (el.cinematicModeCyber) el.cinematicModeCyber.classList.toggle('active', state.cinematic.mode === 'cyber');
+}
+
+function applyCinematicAnimation() {
+    stopCinematicLoop();
+    
+    const carWrap = el.cinematicCarWrap;
+    const carImg = el.cinematicCarImage;
+    const glow = el.cinematicGlow;
+    const scanner = el.cinematicScanner;
+    
+    if (!carWrap || !carImg) return;
+    
+    // Clear styles
+    carWrap.className = 'cinematic-car-wrap';
+    carWrap.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
+    carImg.className = 'cinematic-car-img';
+    if (scanner) scanner.style.display = 'none';
+    
+    if (state.cinematic.mode === 'pulse') {
+        carImg.classList.add('pulse-anim');
+        updateCarColorFilter(state.cinematic.color);
+    } else if (state.cinematic.mode === 'drift') {
+        carWrap.classList.add('drift-anim');
+        updateCarColorFilter(state.cinematic.color);
+    } else if (state.cinematic.mode === 'cyber') {
+        if (scanner) scanner.style.display = 'block';
+        
+        let hue = 0;
+        cinematicInterval = setInterval(() => {
+            hue = (hue + 2) % 360;
+            carImg.style.filter = `drop-shadow(0px 15px 20px rgba(0, 0, 0, 0.9)) hue-rotate(${hue}deg) brightness(1.2)`;
+            if (glow) glow.style.background = `radial-gradient(circle, hsla(${hue}, 100%, 50%, 0.25) 0%, transparent 70%)`;
+            if (el.cinematicColorText) {
+                el.cinematicColorText.textContent = `HUE: ${hue}°`;
+            }
+        }, 35);
+    }
+}
+
+function stopCinematicLoop() {
+    if (cinematicInterval) {
+        clearInterval(cinematicInterval);
+        cinematicInterval = null;
+    }
+}
+
+function setCinematicColor(hex, swatchEl) {
+    if (state.cinematic.mode === 'cyber') return; // Cyber scan cycles automatically
+    
+    state.cinematic.color = hex;
+    
+    // Update active swatch
+    if (el.cinematicSwatches) {
+        [...el.cinematicSwatches.children].forEach(sw => {
+            sw.classList.toggle('active', sw === swatchEl);
+        });
+    }
+    
+    if (el.cinematicColorText) el.cinematicColorText.textContent = hex;
+    updateCarColorFilter(hex);
+}
+
+function updateCarColorFilter(hex) {
+    const carImg = el.cinematicCarImage;
+    const glow = el.cinematicGlow;
+    if (!carImg) return;
+    
+    let hueRotate = 0;
+    switch(hex) {
+        case '#FF2800': hueRotate = 0; break;
+        case '#00FFCC': hueRotate = 130; break;
+        case '#FF00FF': hueRotate = 280; break;
+        case '#FFFF00': hueRotate = 45; break;
+        case '#00FF00': hueRotate = 80; break;
+        case '#0066FF': hueRotate = 185; break;
+        default: hueRotate = 0;
+    }
+    
+    carImg.style.filter = `drop-shadow(0px 15px 20px rgba(0, 0, 0, 0.9)) hue-rotate(${hueRotate}deg) saturate(1.5)`;
+    if (glow) glow.style.background = `radial-gradient(circle, ${hex}33 0%, transparent 70%)`;
+}
+
+function handleCinematicMouseMove(e) {
+    const wrap = el.cinematicCarWrap;
+    if (!wrap || state.cinematic.mode === 'drift') return; 
+    
+    const rect = el.cinematicWindow.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateY = ((x - centerX) / centerX) * 20;
+    const rotateX = -((y - centerY) / centerY) * 15;
+    
+    wrap.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(15px)`;
+    
+    if (el.cinematicRotationText) {
+        el.cinematicRotationText.textContent = `${Math.round(rotateY)}° Y, ${Math.round(rotateX)}° X`;
+    }
+}
+
+function resetCinematicPerspective() {
+    const wrap = el.cinematicCarWrap;
+    if (!wrap || state.cinematic.mode === 'drift') return;
+    
+    wrap.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
+    if (el.cinematicRotationText) {
+        el.cinematicRotationText.textContent = '0° Y, 0° X';
+    }
 }

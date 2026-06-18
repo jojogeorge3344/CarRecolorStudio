@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Car_Colour_Project.Services;
 
 namespace Car_Colour_Project.Controllers;
 
@@ -7,30 +8,91 @@ namespace Car_Colour_Project.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly IUserRepository _userRepository;
 
-    public AuthController(IConfiguration configuration)
+    public AuthController(IConfiguration configuration, IUserRepository userRepository)
     {
         _configuration = configuration;
+        _userRepository = userRepository;
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        var configuredUsername = _configuration["LoginCredentials:Username"]?.Trim();
-        var configuredPassword = _configuration["LoginCredentials:Password"];
+        var inputUser = request.Username?.Trim() ?? string.Empty;
+        var inputPassword = request.Password ?? string.Empty;
 
-        if (string.IsNullOrWhiteSpace(configuredUsername) || string.IsNullOrWhiteSpace(configuredPassword))
+        // 1. Check against the user database (matching by email or username)
+        var user = await _userRepository.GetByEmailAsync(inputUser, cancellationToken);
+        if (user is null)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Login credentials are not configured." });
+            var allUsers = await _userRepository.GetAllAsync(cancellationToken);
+            user = allUsers.FirstOrDefault(u => string.Equals(u.Username.Trim(), inputUser, StringComparison.OrdinalIgnoreCase));
         }
 
-        var username = request.Username?.Trim() ?? string.Empty;
-        var password = request.Password ?? string.Empty;
+        bool success = false;
+        if (user is not null)
+        {
+            success = string.Equals(user.Password, inputPassword, StringComparison.Ordinal);
+        }
+        else
+        {
+            // 2. Fallback to appsettings config credentials
+            var configuredUsername = _configuration["LoginCredentials:Username"]?.Trim();
+            var configuredPassword = _configuration["LoginCredentials:Password"];
 
-        var success = string.Equals(username, configuredUsername, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(password, configuredPassword, StringComparison.Ordinal);
+            if (!string.IsNullOrWhiteSpace(configuredUsername) && !string.IsNullOrWhiteSpace(configuredPassword))
+            {
+                success = string.Equals(inputUser, configuredUsername, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(inputPassword, configuredPassword, StringComparison.Ordinal);
+            }
+        }
 
-        return Ok(new { success });
+        if (success)
+        {
+            if (user is not null)
+            {
+                return Ok(new { 
+                    success = true, 
+                    user = new { 
+                        username = user.Username, 
+                        email = user.Email, 
+                        profilePic = user.ProfilePic 
+                    } 
+                });
+            }
+            else
+            {
+                var configuredUsername = _configuration["LoginCredentials:Username"]?.Trim() ?? "Admin";
+                return Ok(new { 
+                    success = true, 
+                    user = new { 
+                        username = "Admin", 
+                        email = configuredUsername, 
+                        profilePic = (string?)null 
+                    } 
+                });
+            }
+        }
+
+        return Ok(new { success = false });
+    }
+
+    [HttpGet("emails")]
+    public async Task<IActionResult> GetEmails(CancellationToken cancellationToken)
+    {
+        var emails = new List<string>();
+        var configuredUsername = _configuration["LoginCredentials:Username"]?.Trim();
+        if (!string.IsNullOrWhiteSpace(configuredUsername))
+        {
+            emails.Add(configuredUsername);
+        }
+
+        var users = await _userRepository.GetAllAsync(cancellationToken);
+        emails.AddRange(users.Select(u => u.Email));
+        emails.AddRange(users.Select(u => u.Username));
+
+        return Ok(emails.Distinct(StringComparer.OrdinalIgnoreCase));
     }
 
     public sealed class LoginRequest
@@ -39,3 +101,4 @@ public sealed class AuthController : ControllerBase
         public string? Password { get; init; }
     }
 }
+

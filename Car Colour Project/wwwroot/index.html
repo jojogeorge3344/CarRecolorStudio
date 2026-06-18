@@ -33,12 +33,19 @@
                 <form id="loginForm" class="centered-login-form" autocomplete="off">
                     <div class="input-wrapper">
                         <label for="loginUsername">User name</label>
-                        <input id="loginUsername" type="email" placeholder="jojogeorge3344@gmail.com" required>
+                        <input id="loginUsername" type="email" placeholder="jojogeorge@carstudio.com" required>
                     </div>
 
                     <div class="input-wrapper">
                         <label for="loginPassword">Password</label>
-                        <input id="loginPassword" type="password" placeholder="jojo3344" required>
+                        <div class="password-input-container">
+                            <input id="loginPassword" type="password" placeholder="12345" required>
+                            <span id="toggleLoginPassword" class="password-toggle-btn" title="Toggle password visibility">👁</span>
+                        </div>
+                    </div>
+
+                    <div class="forgot-password-wrap" style="text-align: right; margin-top: -0.75rem; margin-bottom: 0.25rem;">
+                        <a href="#" id="forgotPasswordLink" class="forgot-password-link">Forgot Password?</a>
                     </div>
 
                     <button id="loginSubmitBtn" type="submit" class="btn-primary">Login</button>
@@ -60,11 +67,25 @@
                     <button id="recolorModuleBtn" type="button" class="module-btn active">Recolor Studio</button>
                     <button id="carInfoModuleBtn" type="button" class="module-btn">Car Info</button>
                     <button id="vehicleManagementModuleBtn" type="button" class="module-btn">Car Management</button>
+                    <button id="adminModuleBtn" type="button" class="module-btn">Admin</button>
                 </nav>
 
-                <button id="logoutBtn" type="button" class="btn-secondary logout-btn">Logout</button>
-
-                <p class="brand-tagline">Select a car &amp; paint it your colour</p>
+                <div class="user-profile-header-wrap" id="userProfileHeaderWrap">
+                    <button id="userProfileHeaderBtn" type="button" class="user-profile-header-btn" aria-label="Toggle user profile menu">
+                        <img id="headerUserPic" src="/images/default_avatar.png" class="header-user-pic" alt="Profile">
+                        <span class="online-indicator"></span>
+                    </button>
+                    <div id="userProfileDropdown" class="user-profile-dropdown hidden">
+                        <div class="dropdown-avatar-wrap">
+                            <img id="dropdownUserPic" src="/images/default_avatar.png" class="dropdown-user-pic" alt="User Profile">
+                        </div>
+                        <h4 id="dropdownUserName">Admin User</h4>
+                        <p id="dropdownUserEmail">admin@gmail.com</p>
+                        <div class="dropdown-divider"></div>
+                        <button id="dropdownLogoutBtn" type="button" class="btn-danger logout-btn-dropdown">Logout</button>
+                    </div>
+                </div>
+                <button id="logoutBtn" type="button" class="hidden"></button>
             </div>
         </header>
 
@@ -363,6 +384,191 @@
 
             </section>
         </main>
+
+        <main id="adminModule" class="car-info-layout module-view hidden">
+            <!-- Left Panel: Create User -->
+            <section class="car-info-card" aria-label="Add User Module" style="flex: 1; min-width: 300px; max-width: 400px; height: fit-content;">
+                <h2 class="section-title collapsible-header" id="toggleRegistrationHeader">
+                    <span>👤 User Registration</span>
+                    <span class="toggle-icon" id="registrationToggleIcon">▸</span>
+                </h2>
+                <div id="addUserFormWrapper" class="addUserForm-wrapper">
+                    <form id="addUserForm" class="centered-login-form" autocomplete="off" style="margin:0; padding:0; width:100%; border:none; background:none; box-shadow:none;">
+                        <div class="input-wrapper">
+                            <label for="newUsername">Username</label>
+                            <input id="newUsername" type="text" placeholder="e.g. Jojo George" required>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label for="newEmail">Email Address</label>
+                            <input id="newEmail" type="email" placeholder="e.g. user@gmail.com" required>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label for="newPassword">Password</label>
+                            <input id="newPassword" type="password" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label for="newProfilePic">Profile Picture</label>
+                            <input id="newProfilePic" type="file" accept=".png,.jpg,.jpeg,.webp">
+                        </div>
+
+                        <button id="addUserSubmitBtn" type="submit" class="btn-primary">Create User</button>
+                        <p id="addUserFeedback" class="add-car-feedback hidden"></p>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Right Panel: User Grid -->
+            <section class="car-info-card" aria-label="User List Module" style="flex: 2; min-width: 450px;">
+                <h2 class="section-title">⚙️ User Management</h2>
+                
+                <div class="section-block" style="padding: 0; background: none; border: none; box-shadow: none; margin-bottom: 1.5rem;">
+                    <label for="userSearch" class="field-label">Search Users by name or email</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔍</span>
+                        <input id="userSearch" type="text" placeholder="Type username or email..." autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="grid-container" style="overflow-x: auto;">
+                    <table class="user-grid">
+                        <thead>
+                            <tr>
+                                <th id="sortUsernameHeader" style="cursor: pointer; user-select: none;">Username <span id="sortDirectionIcon" style="font-size: 0.8rem; margin-left: 4px; color: rgba(255,255,255,0.3);">⇅</span></th>
+                                <th>Email</th>
+                                <th>Password</th>
+                                <th style="width: 200px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userGridBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                    <div id="userGridEmpty" class="empty-state car-info-empty hidden">
+                        <div class="empty-icon">👥</div>
+                        <p>No user accounts found.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- View User Modal (Readonly & 3D Cinematic Car Design Window) -->
+    <div id="viewUserModal" class="modal-overlay hidden">
+        <div class="modal-card view-user-card">
+            <div class="modal-header">
+                <h3>User Profile View</h3>
+                <button id="closeViewUserModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body view-user-body">
+                <div class="view-user-details">
+                    <div class="user-avatar-wrap">
+                        <span class="user-avatar">👤</span>
+                    </div>
+                    <div class="detail-group">
+                        <label class="field-label">Username</label>
+                        <p id="viewUsernameVal" class="readonly-field"></p>
+                    </div>
+                    <div class="detail-group">
+                        <label class="field-label">Email Address</label>
+                        <p id="viewEmailVal" class="readonly-field"></p>
+                    </div>
+                    <div class="detail-group">
+                        <label class="field-label">Account ID</label>
+                        <p id="viewIdVal" class="readonly-field-small"></p>
+                    </div>
+                </div>
+                
+                <!-- 3D Cinematic Car Window -->
+                <div class="cinematic-car-window" id="cinematicWindow">
+                    <div class="hud-layer">
+                        <div class="hud-corner top-left">SYS_ONLINE</div>
+                        <div class="hud-corner top-right">CAM_3D_CINEMATIC</div>
+                        <div class="hud-center-crosshair"></div>
+                        <div class="hud-telemetry">
+                            <div class="telemetry-row"><span>COLOR SCAN:</span> <span id="cinematicColorText">#FF2800</span></div>
+                            <div class="telemetry-row"><span>ROTATION:</span> <span id="cinematicRotationText">0° Y</span></div>
+                            <div class="telemetry-row"><span>STATUS:</span> <span class="pulse-green">READY</span></div>
+                        </div>
+                    </div>
+                    <div class="cinematic-scene">
+                        <div class="reflection-glow" id="cinematicGlow"></div>
+                        <div class="laser-scanner" id="cinematicScanner"></div>
+                        <div class="cinematic-car-wrap" id="cinematicCarWrap">
+                            <img src="/images/3d_hypercar.png" id="cinematicCarImage" class="cinematic-car-img" alt="3D Cinematic Car">
+                        </div>
+                        <div class="grid-floor"></div>
+                    </div>
+                    <div class="cinematic-controls">
+                        <button id="cinematicModePulse" class="btn-cinematic active" type="button">Neon Pulse</button>
+                        <button id="cinematicModeDrift" class="btn-cinematic" type="button">Drift Showroom</button>
+                        <button id="cinematicModeCyber" class="btn-cinematic" type="button">Cyber Scan</button>
+                        <div class="cinematic-swatches" id="cinematicSwatches">
+                            <span class="cinematic-swatch active" data-hex="#FF2800" style="background:#FF2800" title="Crimson Red"></span>
+                            <span class="cinematic-swatch" data-hex="#00FFCC" style="background:#00FFCC" title="Cyber Cyan"></span>
+                            <span class="cinematic-swatch" data-hex="#FF00FF" style="background:#FF00FF" title="Laser Magenta"></span>
+                            <span class="cinematic-swatch" data-hex="#FFFF00" style="background:#FFFF00" title="Acid Yellow"></span>
+                            <span class="cinematic-swatch" data-hex="#00FF00" style="background:#00FF00" title="Electric Green"></span>
+                            <span class="cinematic-swatch" data-hex="#0066FF" style="background:#0066FF" title="Hyper Blue"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Edit User Details</h3>
+                <button id="closeEditUserModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <form id="editUserForm" class="modal-form" style="margin: 0; width: 100%;">
+                <input type="hidden" id="editUserId">
+                <div class="input-wrapper">
+                    <label for="editUsername">Username</label>
+                    <input id="editUsername" type="text" placeholder="e.g. Jojo George" required>
+                </div>
+                <div class="input-wrapper">
+                    <label for="editEmail">Email Address</label>
+                    <input id="editEmail" type="email" placeholder="e.g. user@gmail.com" required>
+                </div>
+                <div class="input-wrapper">
+                    <label for="editPassword">Password</label>
+                    <input id="editPassword" type="text" placeholder="Password" required>
+                </div>
+                <div class="input-wrapper" style="margin-top: 0.5rem;">
+                    <label for="editProfilePic">Profile Picture (optional)</label>
+                    <input id="editProfilePic" type="file" accept=".png,.jpg,.jpeg,.webp">
+                </div>
+                <div class="modal-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" id="saveEditUserBtn" style="flex: 1;">Save Changes</button>
+                    <button type="button" class="btn-secondary" id="cancelEditUserBtn" style="flex: 1;">Cancel</button>
+                </div>
+                <p id="editUserFeedback" class="add-car-feedback hidden" style="margin-top: 1rem;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteUserModal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3>Confirm Account Deletion</h3>
+                <button id="closeDeleteUserModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <p style="font-size: 0.95rem; line-height: 1.6;">Are you sure you want to delete the user account for <strong id="deleteUserTargetName" style="color: #00d4ff;"></strong>?</p>
+                <p style="color: var(--warning); margin-top: 0.65rem; font-size: 0.82rem; font-weight: 500;">⚠️ This action will permanently remove their credentials and they will no longer be able to log in.</p>
+                <div class="modal-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn-danger" id="confirmDeleteUserBtn" style="flex: 1;">Delete Account</button>
+                    <button type="button" class="btn-secondary" id="cancelDeleteUserBtn" style="flex: 1;">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/app.js"></script>

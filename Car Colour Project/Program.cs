@@ -1,4 +1,4 @@
-﻿using Car_Colour_Project.Services;
+using Car_Colour_Project.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +9,7 @@ builder.Services.AddSingleton<JsonDataLoader>();
 builder.Services.AddSingleton<ICarRepository, CarRepository>();
 builder.Services.AddSingleton<IColorRepository, ColorRepository>();
 builder.Services.AddSingleton<ICarDetailsRepository, CarDetailsRepository>();
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IImageRecolorService, ImageRecolorService>();
 
 var app = builder.Build();
