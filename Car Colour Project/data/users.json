@@ -1,7 +1,7 @@
 [
   {
     "Id": "b1f12d57306844098c31173d34e1a1ba",
-    "Username": "JOJO GEORGE",
+    "Username": "Super Admin",
     "Email": "jojogeorge@carstudio.com",
     "Password": "12345",
     "ProfilePic": " Profile Pic/b1f12d57306844098c31173d34e1a1ba.jpeg"
@@ -54,5 +54,12 @@
     "Email": "techlead@carstudio.com",
     "Password": "12345",
     "ProfilePic": " Profile Pic/5aba7ed2779a486592a647c07b5b158a.png"
+  },
+  {
+    "Id": "502ba44e60f249e8a6b3530c1589b2ca",
+    "Username": "JOJO GEORGE",
+    "Email": "jojogeorge3344@gmail.com",
+    "Password": "jojo3344",
+    "ProfilePic": " Profile Pic/502ba44e60f249e8a6b3530c1589b2ca.png"
   }
 ]

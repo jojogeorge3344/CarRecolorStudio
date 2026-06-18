@@ -149,6 +149,8 @@ const el = {
     userGridBody: document.getElementById('userGridBody'),
     userGridEmpty: document.getElementById('userGridEmpty'),
     forgotPasswordLink: document.getElementById('forgotPasswordLink'),
+    mailUserSelect: document.getElementById('mailUserSelect'),
+    mailDesignBtn: document.getElementById('mailDesignBtn'),
     sortUsernameHeader: document.getElementById('sortUsernameHeader'),
     sortDirectionIcon: document.getElementById('sortDirectionIcon'),
     viewUserModal: document.getElementById('viewUserModal'),
@@ -190,7 +192,17 @@ const el = {
     closeDeleteUserModalBtn: document.getElementById('closeDeleteUserModalBtn'),
     deleteUserTargetName: document.getElementById('deleteUserTargetName'),
     confirmDeleteUserBtn: document.getElementById('confirmDeleteUserBtn'),
-    cancelDeleteUserBtn: document.getElementById('cancelDeleteUserBtn')
+    cancelDeleteUserBtn: document.getElementById('cancelDeleteUserBtn'),
+    mailAttachmentModal: document.getElementById('mailAttachmentModal'),
+    closeMailAttachmentModalBtn: document.getElementById('closeMailAttachmentModalBtn'),
+    closeMailAttachmentModalBtn2: document.getElementById('closeMailAttachmentModalBtn2'),
+    openGmailDraftBtn: document.getElementById('openGmailDraftBtn'),
+    originalDownloadStatus: document.getElementById('originalDownloadStatus'),
+    recoloredDownloadStatus: document.getElementById('recoloredDownloadStatus'),
+    clipboardStatusIcon: document.getElementById('clipboardStatusIcon'),
+    clipboardStatusText: document.getElementById('clipboardStatusText'),
+    originalDownloadName: document.getElementById('originalDownloadName'),
+    recoloredDownloadName: document.getElementById('recoloredDownloadName')
 };
 
 // ─────────────────────────────────────────────
@@ -684,6 +696,7 @@ async function init() {
         populateCarInfoDropdown(cars);
         renderCategoryFilter(colors);
         applyColorFilter();
+        loadUsers();
 
     } catch (err) {
         console.error('Failed to initialise:', err);
@@ -848,6 +861,13 @@ function wireEvents() {
         });
     });
 
+    if (el.mailUserSelect) {
+        el.mailUserSelect.addEventListener('change', updateMailButtonState);
+    }
+    if (el.mailDesignBtn) {
+        el.mailDesignBtn.addEventListener('click', handleMailDesignClick);
+    }
+
     el.paintBrushBtn.addEventListener('click', () => setPaintTool('brush'));
     el.eraseBrushBtn.addEventListener('click', () => setPaintTool('eraser'));
     el.paintSizeRange.addEventListener('input', e => {
@@ -891,6 +911,10 @@ function wireEvents() {
     if (el.closeDeleteUserModalBtn) el.closeDeleteUserModalBtn.addEventListener('click', closeDeleteUserModal);
     if (el.cancelDeleteUserBtn) el.cancelDeleteUserBtn.addEventListener('click', closeDeleteUserModal);
     if (el.confirmDeleteUserBtn) el.confirmDeleteUserBtn.addEventListener('click', handleConfirmDeleteUser);
+
+    // Mail attachment modal events
+    if (el.closeMailAttachmentModalBtn) el.closeMailAttachmentModalBtn.addEventListener('click', closeMailAttachmentModal);
+    if (el.closeMailAttachmentModalBtn2) el.closeMailAttachmentModalBtn2.addEventListener('click', closeMailAttachmentModal);
 
     // 3D Cinematic click events
     if (el.cinematicModePulse) el.cinematicModePulse.addEventListener('click', () => setCinematicMode('pulse'));
@@ -1945,8 +1969,175 @@ async function loadUsers() {
         const users = await fetchJson('/api/users');
         state.users = users;
         applyUserFilter();
+        populateMailUserDropdown(users);
     } catch (err) {
         console.error('Failed to load users:', err);
+    }
+}
+
+function populateMailUserDropdown(users) {
+    if (!el.mailUserSelect) return;
+    
+    while (el.mailUserSelect.options.length > 1) {
+        el.mailUserSelect.remove(1);
+    }
+    
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.email;
+        option.dataset.username = user.username;
+        option.textContent = `${user.username} (${user.email})`;
+        el.mailUserSelect.appendChild(option);
+    });
+}
+
+async function handleMailDesignClick() {
+    const selectedEmail = el.mailUserSelect.value;
+    if (!selectedEmail) return;
+
+    if (!state.selectedCar) {
+        alert('Please select a car first!');
+        return;
+    }
+
+    const originalUrl = el.originalImage.src;
+    const recoloredUrl = el.recoloredImage.src;
+
+    if (!originalUrl || !recoloredUrl) {
+        alert('Please recolor the car first to generate the designs.');
+        return;
+    }
+
+    const selectedOption = el.mailUserSelect.options[el.mailUserSelect.selectedIndex];
+    const username = selectedOption.dataset.username || 'User';
+
+    const carName = `${state.selectedCar.brand} ${state.selectedCar.model}`;
+    const colorName = state.selectedColor ? `${state.selectedColor.name} (${state.selectedColor.hex})` : 'Custom Paint';
+    const colorHex = state.selectedColor ? state.selectedColor.hex.replace('#', '').toLowerCase() : 'custom';
+
+    const originalExt = originalUrl.split('.').pop().split('?')[0] || 'png';
+    const originalFilename = `${state.selectedCar.id}-original.${originalExt}`;
+    const recoloredFilename = `${state.selectedCar.id}-${colorHex}.png`;
+
+    // 1. Set loading statuses in modal
+    if (el.originalDownloadStatus) el.originalDownloadStatus.innerHTML = '⏳';
+    if (el.recoloredDownloadStatus) el.recoloredDownloadStatus.innerHTML = '⏳';
+    if (el.clipboardStatusIcon) el.clipboardStatusIcon.innerHTML = '⏳';
+    if (el.clipboardStatusText) el.clipboardStatusText.textContent = 'Copying to clipboard...';
+    if (el.originalDownloadName) el.originalDownloadName.textContent = `${originalFilename} (Downloading...)`;
+    if (el.recoloredDownloadName) el.recoloredDownloadName.textContent = `${recoloredFilename} (Downloading...)`;
+
+    // Show the helper modal overlay immediately
+    if (el.mailAttachmentModal) {
+        el.mailAttachmentModal.classList.remove('hidden');
+    }
+
+    // Prepare Gmail URL
+    const subject = encodeURIComponent(`Car Design Details - ${carName}`);
+    const body = encodeURIComponent(`Hi ${username},\n\nI have generated a custom recoloured car design in CarColourStudio for you!\n\nCar Model: ${carName}\nSelected Paint: ${colorName}\n\nI have downloaded both the original and recoloured car designs for you, and the recoloured image is copied to your clipboard. You can press Ctrl+V to paste the recoloured design here, or drag-and-drop the downloaded files (original and recoloured images) directly into this draft!\n\nBest regards,\nCarColourStudio`);
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${selectedEmail}&su=${subject}&body=${body}`;
+
+    // Set up open Gmail button click action in the modal
+    if (el.openGmailDraftBtn) {
+        el.openGmailDraftBtn.onclick = () => {
+            window.open(gmailUrl, '_blank');
+        };
+    }
+
+    // 2. Perform original image download
+    let originalSuccess = false;
+    try {
+        const response = await fetch(originalUrl);
+        if (response.ok) {
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = originalFilename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(objectUrl);
+            originalSuccess = true;
+        }
+    } catch (err) {
+        console.error('Failed to download original image:', err);
+    }
+
+    if (el.originalDownloadStatus) {
+        el.originalDownloadStatus.innerHTML = originalSuccess ? '✅' : '❌';
+        el.originalDownloadStatus.style.color = originalSuccess ? '#00ff66' : '#ff3b30';
+    }
+    if (el.originalDownloadName) {
+        el.originalDownloadName.textContent = originalSuccess ? `${originalFilename} (Downloaded successfully)` : `${originalFilename} (Download failed)`;
+    }
+
+    // 3. Perform recoloured image download
+    let recoloredSuccess = false;
+    try {
+        const response = await fetch(recoloredUrl);
+        if (response.ok) {
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = recoloredFilename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(objectUrl);
+            recoloredSuccess = true;
+        }
+    } catch (err) {
+        console.error('Failed to download recoloured image:', err);
+    }
+
+    if (el.recoloredDownloadStatus) {
+        el.recoloredDownloadStatus.innerHTML = recoloredSuccess ? '✅' : '❌';
+        el.recoloredDownloadStatus.style.color = recoloredSuccess ? '#00ff66' : '#ff3b30';
+    }
+    if (el.recoloredDownloadName) {
+        el.recoloredDownloadName.textContent = recoloredSuccess ? `${recoloredFilename} (Downloaded successfully)` : `${recoloredFilename} (Download failed)`;
+    }
+
+    // 4. Perform clipboard copy of recoloured image
+    let clipboardSuccess = false;
+    try {
+        const response = await fetch(recoloredUrl);
+        if (response.ok) {
+            const blob = await response.blob();
+            const pngBlob = blob.type === 'image/png' ? blob : new Blob([blob], { type: 'image/png' });
+            const item = new ClipboardItem({ 'image/png': pngBlob });
+            await navigator.clipboard.write([item]);
+            clipboardSuccess = true;
+        }
+    } catch (err) {
+        console.warn('Failed to copy recoloured image to clipboard:', err);
+    }
+
+    if (el.clipboardStatusIcon) {
+        el.clipboardStatusIcon.innerHTML = clipboardSuccess ? '✅' : '⚠️';
+        el.clipboardStatusIcon.style.color = clipboardSuccess ? '#00ff66' : '#ffcc00';
+    }
+    if (el.clipboardStatusText) {
+        el.clipboardStatusText.textContent = clipboardSuccess 
+            ? 'Copied recoloured image to clipboard!' 
+            : 'Could not copy to clipboard automatically (unsupported or blocked).';
+    }
+
+    // 5. Open Gmail compose window automatically
+    window.open(gmailUrl, '_blank');
+}
+
+function closeMailAttachmentModal() {
+    if (el.mailAttachmentModal) {
+        el.mailAttachmentModal.classList.add('hidden');
+    }
+}
+
+function updateMailButtonState() {
+    if (el.mailDesignBtn && el.mailUserSelect) {
+        el.mailDesignBtn.disabled = !el.mailUserSelect.value;
     }
 }
 

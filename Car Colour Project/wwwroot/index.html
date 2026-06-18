@@ -179,6 +179,18 @@
                     <button id="fullscreenBtn" type="button" class="btn-primary" aria-label="Toggle full screen">⛶ Full Screen</button>
                 </div>
 
+                <!-- Mail Design controls -->
+                <div class="viewer-controls" style="margin-top: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
+                    <label for="mailUserSelect" class="field-label">Mail to User</label>
+                    <div class="select-wrapper" style="min-width: 150px; flex-grow: 1;">
+                        <select id="mailUserSelect" aria-label="Select user to email design">
+                            <option value="">— Select a user —</option>
+                        </select>
+                        <span class="select-arrow">▾</span>
+                    </div>
+                    <button id="mailDesignBtn" type="button" class="btn-secondary" disabled>📧 Mail Design</button>
+                </div>
+
                 <div class="paint-tools" aria-label="Manual paint tools">
                     <button id="paintBrushBtn" type="button" class="btn-secondary paint-tool active">🖌 Brush</button>
                     <button id="eraseBrushBtn" type="button" class="btn-secondary paint-tool">🧽 Eraser</button>
@@ -550,6 +562,58 @@
                 </div>
                 <p id="editUserFeedback" class="add-car-feedback hidden" style="margin-top: 1rem;"></p>
             </form>
+        </div>
+    </div>
+
+    <!-- Mail Attachment Helper Modal -->
+    <div id="mailAttachmentModal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>📧 Email Draft Prepared</h3>
+                <button id="closeMailAttachmentModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <p style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.25rem;">
+                    Due to browser security restrictions, files cannot be attached automatically to email drafts. We have prepared them for you:
+                </p>
+                
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <span id="originalDownloadStatus" style="font-size: 1.15rem; color: #00ff66;">📥</span>
+                        <div style="flex-grow: 1;">
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #fff;">Original Car Design</div>
+                            <div id="originalDownloadName" style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">original-car.png (Downloaded)</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <span id="recoloredDownloadStatus" style="font-size: 1.15rem; color: #00ff66;">📥</span>
+                        <div style="flex-grow: 1;">
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #fff;">Recoloured Car Design</div>
+                            <div id="recoloredDownloadName" style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">recolored-car.png (Downloaded)</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span id="clipboardStatusIcon" style="font-size: 1.15rem; color: #00ff66;">📋</span>
+                        <div style="flex-grow: 1;">
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #fff;">Clipboard Image Copy</div>
+                            <div id="clipboardStatusText" style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Copied recoloured image to clipboard!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border-left: 3px solid #00d4ff; padding-left: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.5; color: rgba(255,255,255,0.85);">
+                    <strong>How to send:</strong>
+                    <ul style="margin: 0.25rem 0 0 1rem; padding: 0;">
+                        <li>Press <strong>Ctrl+V</strong> inside the Gmail tab to paste the recoloured design.</li>
+                        <li>Alternatively, drag the downloaded files from your browser's downloads list/folder into the email.</li>
+                    </ul>
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn-primary" id="openGmailDraftBtn" style="flex: 1.5; padding: 0.65rem 1rem;">Open Gmail Draft</button>
+                    <button type="button" class="btn-secondary" id="closeMailAttachmentModalBtn2" style="flex: 1; padding: 0.65rem 1rem;">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 

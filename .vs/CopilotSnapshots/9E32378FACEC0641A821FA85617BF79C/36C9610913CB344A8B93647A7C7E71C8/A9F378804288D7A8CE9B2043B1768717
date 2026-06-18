@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "Car Colour Project": {
@@ -7,8 +7,7 @@
       "launchUrl": "index.html",
       "applicationUrl": "http://localhost:5080;https://localhost:5081",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5080;https://localhost:5081"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Container (Dockerfile)": {
