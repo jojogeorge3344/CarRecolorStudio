@@ -20,37 +20,6 @@ wwwroot\cars\kia-seltos.png
 wwwroot\cars\mahindra-scorpio.png
 wwwroot\cars\toyota-fortuner.png
 wwwroot\fire-animation.js
-wwwroot\generated\audiq7-000.png
-wwwroot\generated\audiq7-0000ff.png
-wwwroot\generated\audiq7-0011ff.png
-wwwroot\generated\audiq7-808a38.png
-wwwroot\generated\audiq7-818b37.png
-wwwroot\generated\audiq7-838d3a.png
-wwwroot\generated\audiq7-848e39.png
-wwwroot\generated\audiq7-9caa31.png
-wwwroot\generated\audiq7-ffbf00.png
-wwwroot\generated\bmwx1-ffbf00.png
-wwwroot\generated\volkswagenventohighline16-000000.png
-wwwroot\generated\volkswagenventohighline16-0077be.png
-wwwroot\generated\volkswagenventohighline16-808a38.png
-wwwroot\generated\volkswagenventohighline16-818b37.png
-wwwroot\generated\volkswagenventohighline16-828c36.png
-wwwroot\generated\volkswagenventohighline16-838d3a.png
-wwwroot\generated\volkswagenventohighline16-848e39.png
-wwwroot\generated\volkswagenventohighline16-858f38.png
-wwwroot\generated\volkswagenventohighline16-869037.png
-wwwroot\generated\volkswagenventohighline16-879235.png
-wwwroot\generated\volkswagenventohighline16-8c9735.png
-wwwroot\generated\volkswagenventohighline16-8c9834.png
-wwwroot\generated\volkswagenventohighline16-919e33.png
-wwwroot\generated\volkswagenventohighline16-97a432.png
-wwwroot\generated\volkswagenventohighline16-9caa31.png
-wwwroot\generated\volkswagenventohighline16-a1b030.png
-wwwroot\generated\volkswagenventohighline16-a3b22e.png
-wwwroot\generated\volkswagenventohighline16-a4b42d.png
-wwwroot\generated\volkswagenventohighline16-e1ff00.png
-wwwroot\generated\volkswagenventohighline16-e2fe10.png
-wwwroot\generated\volkswagenventohighline16-fcf8f7.png
 wwwroot\images\3d_hypercar.png
 wwwroot\images\audi-q7.jpg
 wwwroot\images\baleno.png
@@ -77,9 +46,7 @@ wwwroot\sounds\Login fail sound.mp3
 wwwroot\sounds\Login page Validation Text explosure sound.mp3
 wwwroot\sounds\login-success.mp3
 wwwroot\styles.css
-wwwroot\generated\audiq7-1e00ff.png
-wwwroot\generated\bmwx2-ffbf00.png
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\fire-animation.js
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\index.html
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\styles.css
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\app.js
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\styles.css

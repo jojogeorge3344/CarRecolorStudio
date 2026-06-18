@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Car Colour Project")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+355bfc97aa2a4267bafe08ad2d1dbd07275e9c8a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+822816fc90a73171a6647def94fb4c832b53f08c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Car Colour Project")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Car Colour Project")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
