@@ -20,6 +20,8 @@ wwwroot\cars\kia-seltos.png
 wwwroot\cars\mahindra-scorpio.png
 wwwroot\cars\toyota-fortuner.png
 wwwroot\fire-animation.js
+wwwroot\generated\audiq7-b5331c.png
+wwwroot\generated\audiq7-b6321b.png
 wwwroot\images\3d_hypercar.png
 wwwroot\images\audi-q7.jpg
 wwwroot\images\baleno.png
@@ -46,7 +48,8 @@ wwwroot\sounds\Login fail sound.mp3
 wwwroot\sounds\Login page Validation Text explosure sound.mp3
 wwwroot\sounds\login-success.mp3
 wwwroot\styles.css
+wwwroot\generated\audiq7-1e00ff.png
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\fire-animation.js
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\index.html
-D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\app.js
 D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\styles.css
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\app.js
+D:\personal project\Car Colour Change Project\Car Colour Project\Car Colour Project\wwwroot\index.html

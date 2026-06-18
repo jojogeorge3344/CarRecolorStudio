@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|d:\\personal project\\car colour change project\\car colour project\\car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B4C474D5-ECB8-7570-A8C6-7913EEF0DE26}|Car Colour Project\\Car Colour Project.csproj|solutionrelative:car colour project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 22,
+          "SelectedChildIndex": 24,
           "Children": [
             {
               "$type": "Bookmark",
@@ -114,7 +114,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\appsettings.json",
               "RelativeDocumentMoniker": "Car Colour Project\\appsettings.json",
@@ -140,7 +140,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "D:\\personal project\\Car Colour Change Project\\Car Colour Project\\Car Colour Project\\appsettings.Development.json",
               "RelativeDocumentMoniker": "Car Colour Project\\appsettings.Development.json",

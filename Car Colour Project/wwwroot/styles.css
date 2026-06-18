@@ -592,6 +592,7 @@ input[type="range"] {
 ═══════════════════════════════════════════ */
 .color-list {
     flex: 1;
+    min-height: 300px;
     overflow-y: auto;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -1097,9 +1098,11 @@ input[type="range"] {
 ═══════════════════════════════════════════ */
 .car-info-layout {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 1.5rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .car-info-card {
@@ -1398,6 +1401,9 @@ input[type="range"] {
     border-radius: var(--radius-md);
     margin-top: 1rem;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    overflow: auto;
+    max-height: min(55vh, 500px);
+    width: 100%;
 }
 
 .user-grid {
@@ -1408,7 +1414,10 @@ input[type="range"] {
 }
 
 .user-grid th {
-    background: rgba(255, 255, 255, 0.02);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg-input);
     border-bottom: 1px solid var(--border);
     padding: 0.9rem 1.2rem;
     font-size: 0.78rem;
