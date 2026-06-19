@@ -57,7 +57,8 @@ public sealed class AuthController : ControllerBase
                     user = new { 
                         username = user.Username, 
                         email = user.Email, 
-                        profilePic = user.ProfilePic 
+                        profilePic = user.ProfilePic,
+                        disabledModules = user.DisabledModules ?? new System.Collections.Generic.List<string>()
                     } 
                 });
             }
@@ -69,7 +70,8 @@ public sealed class AuthController : ControllerBase
                     user = new { 
                         username = "Admin", 
                         email = configuredUsername, 
-                        profilePic = (string?)null 
+                        profilePic = (string?)null,
+                        disabledModules = new System.Collections.Generic.List<string>()
                     } 
                 });
             }

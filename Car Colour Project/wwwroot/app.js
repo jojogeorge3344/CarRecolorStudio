@@ -168,6 +168,17 @@ const el = {
     saveEditUserBtn: document.getElementById('saveEditUserBtn'),
     cancelEditUserBtn: document.getElementById('cancelEditUserBtn'),
     editUserFeedback: document.getElementById('editUserFeedback'),
+    userAuthModal: document.getElementById('userAuthModal'),
+    closeUserAuthModalBtn: document.getElementById('closeUserAuthModalBtn'),
+    saveUserAuthBtn: document.getElementById('saveUserAuthBtn'),
+    cancelUserAuthBtn: document.getElementById('cancelUserAuthBtn'),
+    authUserDisplay: document.getElementById('authUserDisplay'),
+    authUserId: document.getElementById('authUserId'),
+    authRecolor: document.getElementById('authRecolor'),
+    authCarInfo: document.getElementById('authCarInfo'),
+    authVehicleManagement: document.getElementById('authVehicleManagement'),
+    authAdmin: document.getElementById('authAdmin'),
+    userAuthFeedback: document.getElementById('userAuthFeedback'),
     userProfileHeaderWrap: document.getElementById('userProfileHeaderWrap'),
     userProfileHeaderBtn: document.getElementById('userProfileHeaderBtn'),
     headerUserPic: document.getElementById('headerUserPic'),
@@ -245,18 +256,6 @@ function bootLogin() {
         el.forgotPasswordLink.addEventListener('click', handleForgotPasswordClick);
     }
 
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            state.currentUser = JSON.parse(savedUser);
-            renderCurrentUserHeader();
-            el.loginScreen.classList.add('hidden');
-            el.appShell.classList.remove('hidden');
-            startApp();
-        } catch (e) {
-            localStorage.removeItem('currentUser');
-        }
-    }
 
     el.loginUsername.value = '';
     el.loginPassword.value = '';
@@ -313,7 +312,7 @@ function bootLogin() {
             const now = Date.now();
             if (now - lastDodgeTime > 250) {
                 try {
-                    const failAudio = new Audio('/sounds/Login fail sound.mp3');
+                    const failAudio = new Audio('/sounds/Login Button sound for failure.mp3');
                     failAudio.play().catch(e => console.warn('Fail audio prevented:', e));
                     lastDodgeTime = now;
                 } catch(e) {}
@@ -372,6 +371,34 @@ function renderCurrentUserHeader() {
     }
 }
 
+function applyUserAuthorization(user) {
+    if (!user) return;
+    const disabled = user.disabledModules || [];
+    
+    const recolorDisabled = disabled.includes('recolor');
+    const carInfoDisabled = disabled.includes('carInfo');
+    const vehicleManagementDisabled = disabled.includes('vehicleManagement');
+    const adminDisabled = disabled.includes('admin');
+    
+    el.recolorModuleBtn.classList.toggle('hidden', recolorDisabled);
+    el.carInfoModuleBtn.classList.toggle('hidden', carInfoDisabled);
+    el.vehicleManagementModuleBtn.classList.toggle('hidden', vehicleManagementDisabled);
+    if (el.adminModuleBtn) el.adminModuleBtn.classList.toggle('hidden', adminDisabled);
+    
+    let activeModule = 'recolor';
+    if (el.recolorModuleBtn.classList.contains('active')) activeModule = 'recolor';
+    else if (el.carInfoModuleBtn.classList.contains('active')) activeModule = 'carInfo';
+    else if (el.vehicleManagementModuleBtn.classList.contains('active')) activeModule = 'vehicleManagement';
+    else if (el.adminModuleBtn && el.adminModuleBtn.classList.contains('active')) activeModule = 'admin';
+    
+    if (disabled.includes(activeModule)) {
+        if (!recolorDisabled) setActiveModule('recolor');
+        else if (!carInfoDisabled) setActiveModule('carInfo');
+        else if (!vehicleManagementDisabled) setActiveModule('vehicleManagement');
+        else if (!adminDisabled) setActiveModule('admin');
+    }
+}
+
 function toggleProfileDropdown() {
     if (el.userProfileDropdown) {
         el.userProfileDropdown.classList.toggle('hidden');
@@ -423,11 +450,8 @@ function triggerFlyingError() {
         span.classList.remove('shattering'); // Cancel any ongoing shatter
         setTimeout(() => {
             span.classList.add('assembled');
-            try {
-                const blastSound = new Audio('/sounds/Login page Validation Text explosure sound.mp3');
-                blastSound.volume = 0.4;
-                blastSound.play().catch(e => {});
-            } catch(e) {}
+            // Sound removed
+            try {} catch(e) {}
         }, index * 100); // 100ms stagger per letter for clear "one by one" feel
     });
     
@@ -446,11 +470,8 @@ function hideFlyingError() {
         setTimeout(() => {
             span.classList.remove('assembled');
             span.classList.add('shattering');
-            try {
-                const blastSound = new Audio('/sounds/Login page Validation Text explosure sound.mp3');
-                blastSound.volume = 0.4;
-                blastSound.play().catch(e => {});
-            } catch(e) {}
+            // Sound removed
+            try {} catch(e) {}
         }, index * 100); // 100ms stagger for shattering one by one
     });
 
@@ -477,6 +498,10 @@ async function handleLoginSubmit(event) {
         const pushX = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 100 + 80);
         const pushY = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 80 + 40);
         el.loginSubmitBtn.style.transform = `translate(${pushX}px, ${pushY}px)`;
+        try {
+            const failAudio = new Audio('/sounds/Login Button sound for failure.mp3');
+            failAudio.play().catch(e => console.warn('Fail audio prevented:', e));
+        } catch(e) {}
         return; 
     }
 
@@ -585,6 +610,12 @@ async function handleLogoutClick() {
         el.userProfileDropdown.classList.add('hidden');
     }
 
+    // Reset module nav buttons visibility on logout
+    el.recolorModuleBtn.classList.remove('hidden');
+    el.carInfoModuleBtn.classList.remove('hidden');
+    el.vehicleManagementModuleBtn.classList.remove('hidden');
+    if (el.adminModuleBtn) el.adminModuleBtn.classList.remove('hidden');
+
     setActiveModule('recolor');
     setLoginError('');
     el.loginPassword.value = '';
@@ -612,6 +643,7 @@ async function authenticateLogin(username, password) {
         state.currentUser = result.user;
         localStorage.setItem('currentUser', JSON.stringify(result.user));
         renderCurrentUserHeader();
+        applyUserAuthorization(result.user);
     }
     return !!result.success;
 }
@@ -916,6 +948,11 @@ function wireEvents() {
     if (el.closeMailAttachmentModalBtn) el.closeMailAttachmentModalBtn.addEventListener('click', closeMailAttachmentModal);
     if (el.closeMailAttachmentModalBtn2) el.closeMailAttachmentModalBtn2.addEventListener('click', closeMailAttachmentModal);
 
+    // User authorization modal events
+    if (el.closeUserAuthModalBtn) el.closeUserAuthModalBtn.addEventListener('click', closeUserAuthModal);
+    if (el.cancelUserAuthBtn) el.cancelUserAuthBtn.addEventListener('click', closeUserAuthModal);
+    if (el.saveUserAuthBtn) el.saveUserAuthBtn.addEventListener('click', handleSaveUserAuthClick);
+
     // 3D Cinematic click events
     if (el.cinematicModePulse) el.cinematicModePulse.addEventListener('click', () => setCinematicMode('pulse'));
     if (el.cinematicModeDrift) el.cinematicModeDrift.addEventListener('click', () => setCinematicMode('drift'));
@@ -1163,7 +1200,7 @@ async function handleAddCar() {
         const createdCar = await response.json();
         state.cars = [...state.cars, createdCar].sort((a, b) => `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`));
 
-        populateRecolorCarDropdown(state.cars);
+        populateRecolorCarBrandDropdown(state.cars);
         populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
 
         el.carSelect.value = createdCar.id;
@@ -1252,7 +1289,7 @@ async function handleUpdateCarImage() {
             clearPaintCanvas();
         }
 
-        populateRecolorCarDropdown(state.cars);
+        populateRecolorCarBrandDropdown(state.cars);
         populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
         el.carSelect.value = updatedCar.id;
         el.carInfoSelect.value = updatedCar.id;
@@ -1297,7 +1334,7 @@ async function handleDeleteCar() {
         state.cars = state.cars.filter(item => item.id !== carId);
         delete state.carDetailsByCar[carId];
 
-        populateRecolorCarDropdown(state.cars);
+        populateRecolorCarBrandDropdown(state.cars);
         populateCarInfoDropdown(state.cars, el.carNameSearch.value.trim());
 
         if (state.cars.length === 0) {
@@ -2182,13 +2219,25 @@ function renderUserGrid() {
         editBtn.textContent = '✏ Edit';
         editBtn.addEventListener('click', () => handleEditUserClick(user.id));
         
-        const deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.className = 'btn-danger';
-        deleteBtn.textContent = '🗑 Delete';
-        deleteBtn.addEventListener('click', () => handleDeleteUserClick(user.id));
+        actionsTd.append(viewBtn, editBtn);
         
-        actionsTd.append(viewBtn, editBtn, deleteBtn);
+        const isSuperAdmin = user.email.toLowerCase() === 'jojogeorge3344@gmail.com';
+        if (!isSuperAdmin) {
+            const authBtn = document.createElement('button');
+            authBtn.type = 'button';
+            authBtn.className = 'btn-secondary';
+            authBtn.textContent = '🔑 Auth';
+            authBtn.addEventListener('click', () => handleUserAuthorizationClick(user));
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn-danger';
+            deleteBtn.textContent = '🗑 Delete';
+            deleteBtn.addEventListener('click', () => handleDeleteUserClick(user.id));
+            
+            actionsTd.append(authBtn, deleteBtn);
+        }
+        
         row.append(usernameTd, emailTd, passwordTd, actionsTd);
         el.userGridBody.appendChild(row);
     });
@@ -2250,6 +2299,7 @@ async function handleAddUser(event) {
         }
         
         setAddUserFeedback('User created successfully!', false);
+        showCinematicToast(username, 'add');
         el.newUsername.value = '';
         el.newEmail.value = '';
         el.newPassword.value = '';
@@ -2342,6 +2392,7 @@ async function handleEditUserSubmit(event) {
         await loadUsers();
         await refreshValidEmails();
         closeEditUserModal();
+        showCinematicToast(username, 'update');
     } catch (err) {
         console.error('Edit user failed:', err);
         setEditUserFeedback(err.message || 'Failed to update user. Email may be in use.', true);
@@ -2363,6 +2414,86 @@ function setEditUserFeedback(message, isError, hide = false) {
     el.editUserFeedback.classList.add(isError ? 'error' : 'success');
 }
 
+function handleUserAuthorizationClick(user) {
+    if (!user) return;
+    el.authUserId.value = user.id;
+    if (el.authUserDisplay) el.authUserDisplay.textContent = `${user.username} (${user.email})`;
+    
+    const disabled = user.disabledModules || [];
+    el.authRecolor.checked = !disabled.includes('recolor');
+    el.authCarInfo.checked = !disabled.includes('carInfo');
+    el.authVehicleManagement.checked = !disabled.includes('vehicleManagement');
+    el.authAdmin.checked = !disabled.includes('admin');
+    
+    setUserAuthFeedback('', false, true);
+    if (el.userAuthModal) el.userAuthModal.classList.remove('hidden');
+}
+
+function closeUserAuthModal() {
+    if (el.userAuthModal) el.userAuthModal.classList.add('hidden');
+}
+
+async function handleSaveUserAuthClick() {
+    const id = el.authUserId.value;
+    if (!id) return;
+    
+    const userToAuth = state.users.find(u => u.id === id);
+    const username = userToAuth ? userToAuth.username : 'Unknown User';
+    
+    const disabledModules = [];
+    if (!el.authRecolor.checked) disabledModules.push('recolor');
+    if (!el.authCarInfo.checked) disabledModules.push('carInfo');
+    if (!el.authVehicleManagement.checked) disabledModules.push('vehicleManagement');
+    if (!el.authAdmin.checked) disabledModules.push('admin');
+    
+    el.saveUserAuthBtn.disabled = true;
+    setUserAuthFeedback('Saving changes...', false);
+    
+    try {
+        const response = await fetch(`/api/users/${encodeURIComponent(id)}/authorization`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(disabledModules)
+        });
+        
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || 'Failed to save authorization settings.');
+        }
+        
+        await loadUsers();
+        
+        const originalUser = state.users.find(u => u.id === id);
+        if (state.currentUser && originalUser && originalUser.email === state.currentUser.email) {
+            state.currentUser.disabledModules = disabledModules;
+            localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+            applyUserAuthorization(state.currentUser);
+        }
+        
+        setUserAuthFeedback('Authorization settings updated successfully.', false);
+        showCinematicToast(username, 'auth');
+        setTimeout(closeUserAuthModal, 1000);
+    } catch (err) {
+        console.error('Save user auth failed:', err);
+        setUserAuthFeedback(err.message || 'Failed to update authorization settings.', true);
+    } finally {
+        el.saveUserAuthBtn.disabled = false;
+    }
+}
+
+function setUserAuthFeedback(message, isError, hide = false) {
+    if (!el.userAuthFeedback) return;
+    if (hide) {
+        el.userAuthFeedback.textContent = '';
+        el.userAuthFeedback.classList.add('hidden');
+        el.userAuthFeedback.classList.remove('error', 'success');
+        return;
+    }
+    el.userAuthFeedback.textContent = message;
+    el.userAuthFeedback.classList.remove('hidden', 'error', 'success');
+    el.userAuthFeedback.classList.add(isError ? 'error' : 'success');
+}
+
 function handleDeleteUserClick(userId) {
     const user = state.users.find(u => u.id === userId);
     if (!user) return;
@@ -2381,6 +2512,7 @@ async function handleConfirmDeleteUser() {
     const user = state.selectedUser;
     if (!user) return;
     
+    const username = user.username;
     el.confirmDeleteUserBtn.disabled = true;
     
     try {
@@ -2395,6 +2527,7 @@ async function handleConfirmDeleteUser() {
         await loadUsers();
         await refreshValidEmails();
         closeDeleteUserModal();
+        showCinematicToast(username, 'delete');
     } catch (err) {
         console.error('Delete user failed:', err);
         alert(err.message || 'Failed to delete user.');
@@ -2573,4 +2706,92 @@ function resetCinematicPerspective() {
     if (el.cinematicRotationText) {
         el.cinematicRotationText.textContent = '0° Y, 0° X';
     }
+}
+
+// ─────────────────────────────────────────────
+//  Cinematic Toasts Support
+// ─────────────────────────────────────────────
+function getOrCreateToastContainer() {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function showCinematicToast(username, actionType) {
+    const container = getOrCreateToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `cinematic-toast toast-${actionType} cinematic-toast-entrance`;
+    
+    let iconHtml = '';
+    let badgeText = '';
+    
+    switch (actionType) {
+        case 'add':
+            badgeText = 'Successfully Added';
+            iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>`;
+            break;
+        case 'update':
+            badgeText = 'Successfully Updated';
+            iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+            break;
+        case 'delete':
+            badgeText = 'Successfully Deleted';
+            iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+            break;
+        case 'auth':
+            badgeText = 'Authorization Done';
+            iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
+            break;
+    }
+    
+    toast.innerHTML = `
+        <div class="cinematic-toast-scanline"></div>
+        <div class="cinematic-toast-glow"></div>
+        <div class="cinematic-toast-inner">
+            <div class="cinematic-toast-icon">
+                ${iconHtml}
+            </div>
+            <div class="cinematic-toast-content">
+                <div class="cinematic-toast-badge">${badgeText}</div>
+                <div class="cinematic-toast-username">${username}</div>
+            </div>
+            <button class="cinematic-toast-close">&times;</button>
+        </div>
+    `;
+    
+    const closeBtn = toast.querySelector('.cinematic-toast-close');
+    closeBtn.addEventListener('click', () => {
+        dismissToast(toast);
+    });
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            dismissToast(toast);
+        }
+    }, 4000);
+}
+
+function dismissToast(toast) {
+    toast.classList.remove('cinematic-toast-entrance');
+    toast.classList.add('cinematic-toast-exit');
+    let removed = false;
+    const removeFn = () => {
+        if (!removed) {
+            removed = true;
+            toast.remove();
+        }
+    };
+    toast.addEventListener('animationend', (e) => {
+        if (e.animationName === 'cinematicExit') {
+            removeFn();
+        }
+    });
+    setTimeout(removeFn, 600);
 }

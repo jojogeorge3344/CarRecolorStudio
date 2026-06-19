@@ -60,12 +60,6 @@
     "Image": "images/kia-seltos.png"
   },
   {
-    "Id": "mahindra-scorpio",
-    "Brand": "Mahindra",
-    "Model": "Scorpio",
-    "Image": "images/mahindra-scorpio.png"
-  },
-  {
     "Id": "baleno",
     "Brand": "Maruthi",
     "Model": "Baleno Sigma",
@@ -88,5 +82,11 @@
     "Brand": "Volkswagen",
     "Model": "Taigun",
     "Image": "images/volkswagen-taigun.jpg"
+  },
+  {
+    "Id": "rolls-royce-phantom-2",
+    "Brand": "Rolls Royce",
+    "Model": "Phantom",
+    "Image": "images/rolls-royce-phantom-2.jpg"
   }
 ]

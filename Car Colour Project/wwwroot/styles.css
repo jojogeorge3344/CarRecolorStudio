@@ -2088,3 +2088,241 @@ input[type="range"] {
     text-shadow: 0 0 8px rgba(255, 59, 48, 0.4);
 }
 
+/* ═══════════════════════════════════════════
+   3D CINEMATIC TOAST SYSTEM
+   ═══════════════════════════════════════════ */
+#toastContainer {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    pointer-events: none;
+    width: 90%;
+    max-width: 440px;
+}
+
+.cinematic-toast {
+    position: relative;
+    pointer-events: auto;
+    width: 100%;
+    background: rgba(15, 17, 23, 0.95);
+    border-radius: var(--radius-md, 14px);
+    padding: 1.25rem 1.5rem;
+    box-sizing: border-box;
+    font-family: var(--font), system-ui, sans-serif;
+    color: #ffffff;
+    overflow: hidden;
+    
+    /* 3D setup */
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    
+    /* Box Shadow & Glow border */
+    border: 1px solid var(--border);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.7),
+        0 0 25px var(--glow-color-light),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+}
+
+/* Hover effects */
+.cinematic-toast:hover {
+    transform: perspective(1000px) translateZ(10px) rotateX(2deg);
+    box-shadow: 
+        0 25px 45px rgba(0, 0, 0, 0.8),
+        0 0 35px var(--glow-color),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Sub-types styling keys */
+.cinematic-toast.toast-add {
+    --glow-color: rgba(0, 212, 255, 0.4);
+    --glow-color-light: rgba(0, 212, 255, 0.12);
+    --accent-color: #00d4ff;
+    border-left: 4px solid #00d4ff;
+}
+
+.cinematic-toast.toast-update {
+    --glow-color: rgba(255, 179, 0, 0.4);
+    --glow-color-light: rgba(255, 179, 0, 0.12);
+    --accent-color: #ffb300;
+    border-left: 4px solid #ffb300;
+}
+
+.cinematic-toast.toast-delete {
+    --glow-color: rgba(255, 59, 48, 0.4);
+    --glow-color-light: rgba(255, 59, 48, 0.12);
+    --accent-color: #ff3b30;
+    border-left: 4px solid #ff3b30;
+}
+
+.cinematic-toast.toast-auth {
+    --glow-color: rgba(168, 85, 247, 0.4);
+    --glow-color-light: rgba(168, 85, 247, 0.12);
+    --accent-color: #a855f7;
+    border-left: 4px solid #a855f7;
+}
+
+/* Toast Inner structure */
+.cinematic-toast-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* 3D Icon wrap */
+.cinematic-toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--accent-color);
+    box-shadow: 
+        0 0 15px var(--glow-color-light),
+        inset 0 0 10px rgba(0, 0, 0, 0.5);
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    transform: translateZ(20px); /* 3D layer separation */
+}
+
+.cinematic-toast-icon svg {
+    width: 22px;
+    height: 22px;
+    filter: drop-shadow(0 0 4px var(--accent-color));
+}
+
+/* Content layout */
+.cinematic-toast-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    transform: translateZ(10px);
+}
+
+.cinematic-toast-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    text-shadow: 0 0 8px var(--glow-color-light);
+}
+
+.cinematic-toast-username {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff;
+    word-break: break-all;
+    line-height: 1.25;
+}
+
+/* Close button styling */
+.cinematic-toast-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1.4rem;
+    font-weight: 300;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.25s, transform 0.25s;
+    margin-left: auto;
+    flex-shrink: 0;
+    transform: translateZ(15px);
+}
+
+.cinematic-toast-close:hover {
+    color: #ffffff;
+    transform: translateZ(15px) scale(1.15);
+}
+
+/* Futuristic Scanline Overlay */
+.cinematic-toast-scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 1;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+/* Ambient glow sweeping line */
+.cinematic-toast-glow {
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    z-index: 1;
+    pointer-events: none;
+    animation: toastShimmer 6s infinite linear;
+}
+
+/* Keyframes */
+@keyframes toastShimmer {
+    0% { left: -150%; }
+    100% { left: 150%; }
+}
+
+@keyframes cinematicEntrance {
+    0% {
+        opacity: 0;
+        transform: perspective(1000px) translateY(-50px) rotateX(-20deg) scale(0.85);
+    }
+    60% {
+        transform: perspective(1000px) translateY(5px) rotateX(5deg) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: perspective(1000px) translateY(0) rotateX(0deg) scale(1);
+    }
+}
+
+@keyframes cinematicExit {
+    0% {
+        opacity: 1;
+        transform: perspective(1000px) translateY(0) rotateX(0deg) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: perspective(1000px) translateY(30px) rotateX(15deg) scale(0.9);
+        filter: blur(4px);
+    }
+}
+
+.cinematic-toast-entrance {
+    animation: cinematicEntrance 0.65s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.cinematic-toast-exit {
+    animation: cinematicExit 0.45s cubic-bezier(0.755, 0.05, 0.855, 0.06) forwards;
+}
+

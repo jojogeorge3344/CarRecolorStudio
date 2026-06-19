@@ -124,6 +124,12 @@ public sealed class UsersController : ControllerBase
             return BadRequest("User id is required.");
         }
 
+        var existing = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (existing is not null && string.Equals(existing.Email.Trim(), "jojogeorge3344@gmail.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Cannot delete the super admin user.");
+        }
+
         var deleted = await _userRepository.DeleteAsync(id, cancellationToken);
         if (deleted is null)
         {
@@ -140,6 +146,44 @@ public sealed class UsersController : ControllerBase
         }
 
         return Ok(new { success = true, deletedUserId = deleted.Id });
+    }
+
+    [HttpPut("{id}/authorization")]
+    public async Task<IActionResult> UpdateAuthorization(string id, [FromBody] System.Collections.Generic.List<string> disabledModules, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return BadRequest("User id is required.");
+        }
+
+        var existing = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (existing is null)
+        {
+            return NotFound("User not found.");
+        }
+
+        if (string.Equals(existing.Email.Trim(), "jojogeorge3344@gmail.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Cannot modify authorization for the super admin.");
+        }
+
+        var updatedUser = new User
+        {
+            Id = existing.Id,
+            Username = existing.Username,
+            Email = existing.Email,
+            Password = existing.Password,
+            ProfilePic = existing.ProfilePic,
+            DisabledModules = disabledModules
+        };
+
+        var updated = await _userRepository.UpdateAsync(updatedUser, cancellationToken);
+        if (updated is null)
+        {
+            return NotFound("User not found.");
+        }
+
+        return Ok(updated);
     }
 
     private async Task<string?> SaveProfilePicAsync(IFormFile? file, string userId, string? existingProfilePic, CancellationToken cancellationToken)

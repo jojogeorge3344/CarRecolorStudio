@@ -88,5 +88,11 @@
     "Brand": "Volkswagen",
     "Model": "Taigun",
     "Image": "images/volkswagen-taigun.jpg"
+  },
+  {
+    "Id": "rolls-royce-phantom-2",
+    "Brand": "Rolls Royce",
+    "Model": "Phantom",
+    "Image": "images/rolls-royce-phantom-2.jpg"
   }
 ]

@@ -565,6 +565,45 @@
         </div>
     </div>
 
+    <!-- User Authorization Modal -->
+    <div id="userAuthModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>User Feature Authorization</h3>
+                <button id="closeUserAuthModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Enable or disable features for <strong id="authUserDisplay" style="color: var(--accent);"></strong>:</p>
+                <input type="hidden" id="authUserId">
+                
+                <div class="auth-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="authRecolor" value="recolor" style="width: auto; cursor: pointer;">
+                        <span>Recolor Studio</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="authCarInfo" value="carInfo" style="width: auto; cursor: pointer;">
+                        <span>Car Info</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="authVehicleManagement" value="vehicleManagement" style="width: auto; cursor: pointer;">
+                        <span>Car Management</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="authAdmin" value="admin" style="width: auto; cursor: pointer;">
+                        <span>Admin</span>
+                    </label>
+                </div>
+                
+                <div class="modal-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn-primary" id="saveUserAuthBtn" style="flex: 1;">Save Changes</button>
+                    <button type="button" class="btn-secondary" id="cancelUserAuthBtn" style="flex: 1;">Cancel</button>
+                </div>
+                <p id="userAuthFeedback" class="add-car-feedback hidden" style="margin-top: 1rem;"></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Mail Attachment Helper Modal -->
     <div id="mailAttachmentModal" class="modal-overlay hidden">
         <div class="modal-card" style="max-width: 500px;">
