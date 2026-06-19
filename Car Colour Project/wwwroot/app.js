@@ -36,6 +36,8 @@ let appInitialized = false;
 let engineAudioContext = null;
 let engineOscillator = null;
 let engineGain = null;
+let loginTypingAudioContext = null;
+let lastLoginTypingSoundTime = 0;
 
 
 // ─────────────────────────────────────────────
@@ -237,6 +239,7 @@ function bootLogin() {
 
     el.loginForm.addEventListener('submit', handleLoginSubmit);
     el.logoutBtn.addEventListener('click', handleLogoutClick);
+    wireLoginTypingSound();
 
     const toggleLoginPassword = document.getElementById('toggleLoginPassword');
     if (toggleLoginPassword) {
@@ -664,6 +667,62 @@ async function authenticateLogin(username, password) {
 function setLoginError(message) {
     el.loginError.textContent = message;
     el.loginError.classList.toggle('hidden', !message);
+}
+
+function wireLoginTypingSound() {
+    [el.loginUsername, el.loginPassword].forEach(input => {
+        input.addEventListener('keydown', playLoginTypingSound);
+    });
+}
+
+function playLoginTypingSound(event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+    }
+
+    const isTypingKey = event.key.length === 1 || event.key === 'Backspace' || event.key === 'Delete';
+    if (!isTypingKey) {
+        return;
+    }
+
+    const now = Date.now();
+    if (now - lastLoginTypingSoundTime < 35) {
+        return;
+    }
+    lastLoginTypingSoundTime = now;
+
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return;
+        }
+
+        loginTypingAudioContext ??= new AudioContextClass();
+        if (loginTypingAudioContext.state === 'suspended') {
+            loginTypingAudioContext.resume().catch(error => console.warn('Typing audio resume prevented:', error));
+        }
+
+        const startTime = loginTypingAudioContext.currentTime;
+        const oscillator = loginTypingAudioContext.createOscillator();
+        const gain = loginTypingAudioContext.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(850 + Math.random() * 120, startTime);
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.035, startTime + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.045);
+
+        oscillator.connect(gain);
+        gain.connect(loginTypingAudioContext.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.05);
+        oscillator.addEventListener('ended', () => {
+            oscillator.disconnect();
+            gain.disconnect();
+        });
+    } catch (error) {
+        console.warn('Typing audio failed:', error);
+    }
 }
 
 function startEngineSound() {
