@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,5 +13,9 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
   </ItemGroup>
+
+  <Target Name="KillRunningApp" BeforeTargets="PrepareForBuild" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="taskkill /f /im &quot;Car Colour Project.exe&quot; 2&gt;nul" IgnoreExitCode="true" />
+  </Target>
 
 </Project>

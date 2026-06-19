@@ -268,7 +268,7 @@ function bootLogin() {
         errorText.split('').forEach(char => {
             const span = document.createElement('span');
             span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
-            
+
             errorMessageContainer.appendChild(span);
             window.errorSpans.push(span);
         });
@@ -280,7 +280,7 @@ function bootLogin() {
     const dodgeButton = (e) => {
         const username = el.loginUsername.value.trim().toLowerCase();
         const password = el.loginPassword.value;
-        
+
         const list = window.validEmails || ['jojogeorge3344@gmail.com'];
         const isValid = list.some(email => email.toLowerCase() === username);
 
@@ -289,7 +289,7 @@ function bootLogin() {
             const btnRect = el.loginSubmitBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
-            
+
             // If triggered by mouse, use mouse coords, else just pick a random direction
             let dx = 0, dy = 0;
             if (e && e.clientX) {
@@ -299,12 +299,12 @@ function bootLogin() {
                 dx = Math.random() - 0.5;
                 dy = Math.random() - 0.5;
             }
-            
+
             let pushX = (dx > 0 ? 1 : -1) * (Math.random() * 80 + 60);
             let pushY = (dy > 0 ? 1 : -1) * (Math.random() * 60 + 30);
-            
+
             el.loginSubmitBtn.style.transform = `translate(${pushX}px, ${pushY}px)`;
-            
+
             // Trigger Flying Error Message
             triggerFlyingError();
 
@@ -315,7 +315,7 @@ function bootLogin() {
                     const failAudio = new Audio('/sounds/Login Button sound for failure.mp3');
                     failAudio.play().catch(e => console.warn('Fail audio prevented:', e));
                     lastDodgeTime = now;
-                } catch(e) {}
+                } catch (e) { }
             }
 
             return true; // dodged
@@ -343,12 +343,12 @@ function handleForgotPasswordClick(e) {
         el.loginUsername.focus();
         return;
     }
-    
+
     // Construct Google Mail compose URL
     const subject = encodeURIComponent("Password Reset Request - CarColourStudio");
     const body = encodeURIComponent(`Hello Admin,\n\nI need to reset the password for my account registered under the following email address:\n\nEmail: ${emailVal}\n\nPlease send me a password reset option.\n\nThank you.`);
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=jojogeorge3344@gmail.com&su=${subject}&body=${body}`;
-    
+
     // Open Gmail in a new tab
     window.open(gmailUrl, '_blank');
 }
@@ -374,23 +374,23 @@ function renderCurrentUserHeader() {
 function applyUserAuthorization(user) {
     if (!user) return;
     const disabled = user.disabledModules || [];
-    
+
     const recolorDisabled = disabled.includes('recolor');
     const carInfoDisabled = disabled.includes('carInfo');
     const vehicleManagementDisabled = disabled.includes('vehicleManagement');
     const adminDisabled = disabled.includes('admin');
-    
+
     el.recolorModuleBtn.classList.toggle('hidden', recolorDisabled);
     el.carInfoModuleBtn.classList.toggle('hidden', carInfoDisabled);
     el.vehicleManagementModuleBtn.classList.toggle('hidden', vehicleManagementDisabled);
     if (el.adminModuleBtn) el.adminModuleBtn.classList.toggle('hidden', adminDisabled);
-    
+
     let activeModule = 'recolor';
     if (el.recolorModuleBtn.classList.contains('active')) activeModule = 'recolor';
     else if (el.carInfoModuleBtn.classList.contains('active')) activeModule = 'carInfo';
     else if (el.vehicleManagementModuleBtn.classList.contains('active')) activeModule = 'vehicleManagement';
     else if (el.adminModuleBtn && el.adminModuleBtn.classList.contains('active')) activeModule = 'admin';
-    
+
     if (disabled.includes(activeModule)) {
         if (!recolorDisabled) setActiveModule('recolor');
         else if (!carInfoDisabled) setActiveModule('carInfo');
@@ -444,17 +444,17 @@ window.flyingErrorTimeout = null;
 function triggerFlyingError() {
     if (window.isFlyingErrorShowing || !window.errorSpans) return;
     window.isFlyingErrorShowing = true;
-    
+
     // Assemble the letters from the deep background
     window.errorSpans.forEach((span, index) => {
         span.classList.remove('shattering'); // Cancel any ongoing shatter
         setTimeout(() => {
             span.classList.add('assembled');
             // Sound removed
-            try {} catch(e) {}
+            try { } catch (e) { }
         }, index * 100); // 100ms stagger per letter for clear "one by one" feel
     });
-    
+
     if (window.flyingErrorTimeout) clearTimeout(window.flyingErrorTimeout);
     window.flyingErrorTimeout = setTimeout(() => {
         hideFlyingError();
@@ -464,14 +464,14 @@ function triggerFlyingError() {
 function hideFlyingError() {
     if (!window.isFlyingErrorShowing || !window.errorSpans) return;
     window.isFlyingErrorShowing = false;
-    
+
     // Cinematic 3D Shatter towards the camera
     window.errorSpans.forEach((span, index) => {
         setTimeout(() => {
             span.classList.remove('assembled');
             span.classList.add('shattering');
             // Sound removed
-            try {} catch(e) {}
+            try { } catch (e) { }
         }, index * 100); // 100ms stagger for shattering one by one
     });
 
@@ -501,8 +501,8 @@ async function handleLoginSubmit(event) {
         try {
             const failAudio = new Audio('/sounds/Login Button sound for failure.mp3');
             failAudio.play().catch(e => console.warn('Fail audio prevented:', e));
-        } catch(e) {}
-        return; 
+        } catch (e) { }
+        return;
     }
 
     el.loginSubmitBtn.disabled = true;
@@ -526,12 +526,15 @@ async function handleLoginSubmit(event) {
         return;
     }
 
+    // Wait for exactly 3 seconds after successful login before starting the animation
+    //await new Promise(resolve => setTimeout(resolve, 3000));
+
     // --- FIRE & 3D CAR BLAST SEQUENCE ---
     // Play Audio IMMEDIATELY
     try {
         const audio = new Audio('/sounds/login-success.mp3');
         audio.play().catch(e => console.warn('Audio play prevented:', e));
-    } catch(e) {}
+    } catch (e) { }
 
     // The real video fire starts, overlaying the login design
     const fireVideo = document.getElementById('fireVideo');
@@ -539,29 +542,38 @@ async function handleLoginSubmit(event) {
         fireVideo.classList.add('burning');
         fireVideo.play().catch(e => console.warn('Video play prevented:', e));
     }
-    
-    // The login form slowly dissolves over the 5 seconds while the fire burns it
+
+    // The login form quickly dissolves over 1.5 seconds while the fire burns it
     const loginFormContainer = document.getElementById('loginFormContainer');
     if (loginFormContainer) {
-        loginFormContainer.style.transition = 'opacity 5s ease-in';
+        loginFormContainer.style.transition = 'opacity 1.5s ease-in';
         loginFormContainer.style.opacity = '0';
     }
 
-    // Let the fire burn the login design for 5 seconds
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    // Reveal the 3D car and start it driving towards the camera
+    // Reveal the 3D car and start it driving towards the camera 3 times with different colors
     const blastCar = document.getElementById('blastCar');
     if (blastCar) {
         blastCar.classList.remove('hidden');
-        blastCar.classList.add('blasting');
-    }
-    
-    // Trigger the screen white-out blast
-    el.loginScreen.classList.add('login-blast-animation');
 
-    // Wait for the car to drive past the camera (1.5s total animation)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+        const hueRotations = [0, 190, 280];
+        for (let i = 0; i < 3; i++) {
+            // Apply different color filter for each run
+            blastCar.style.filter = `hue-rotate(${hueRotations[i]}deg) saturate(1.5)`;
+
+            // Trigger car animation
+            blastCar.classList.remove('blasting');
+            void blastCar.offsetWidth; // Force reflow
+            blastCar.classList.add('blasting');
+
+            // Trigger the screen white-out blast flash animation
+            el.loginScreen.classList.remove('login-blast-animation');
+            void el.loginScreen.offsetWidth; // Force reflow
+            el.loginScreen.classList.add('login-blast-animation');
+
+            // Wait for the car to drive past the camera (1.5s total animation)
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+    }
 
     // Cleanup and load app
     if (fireVideo) {
@@ -572,6 +584,7 @@ async function handleLoginSubmit(event) {
     if (blastCar) {
         blastCar.classList.add('hidden');
         blastCar.classList.remove('blasting');
+        blastCar.style.filter = ''; // Reset filter
     }
     if (loginFormContainer) {
         loginFormContainer.style.transition = '';
@@ -2014,11 +2027,11 @@ async function loadUsers() {
 
 function populateMailUserDropdown(users) {
     if (!el.mailUserSelect) return;
-    
+
     while (el.mailUserSelect.options.length > 1) {
         el.mailUserSelect.remove(1);
     }
-    
+
     users.forEach(user => {
         const option = document.createElement('option');
         option.value = user.email;
@@ -2157,8 +2170,8 @@ async function handleMailDesignClick() {
         el.clipboardStatusIcon.style.color = clipboardSuccess ? '#00ff66' : '#ffcc00';
     }
     if (el.clipboardStatusText) {
-        el.clipboardStatusText.textContent = clipboardSuccess 
-            ? 'Copied recoloured image to clipboard!' 
+        el.clipboardStatusText.textContent = clipboardSuccess
+            ? 'Copied recoloured image to clipboard!'
             : 'Could not copy to clipboard automatically (unsupported or blocked).';
     }
 
@@ -2182,45 +2195,45 @@ function renderUserGrid() {
     if (!el.userGridBody) return;
     el.userGridBody.innerHTML = '';
     const filtered = state.filteredUsers;
-    
+
     if (filtered.length === 0) {
         if (el.userGridEmpty) el.userGridEmpty.classList.remove('hidden');
         return;
     }
-    
+
     if (el.userGridEmpty) el.userGridEmpty.classList.add('hidden');
     filtered.forEach(user => {
         const row = document.createElement('tr');
-        
+
         const usernameTd = document.createElement('td');
         usernameTd.textContent = user.username;
         usernameTd.style.fontWeight = '600';
-        
+
         const emailTd = document.createElement('td');
         emailTd.textContent = user.email;
-        
+
         const passwordTd = document.createElement('td');
         passwordTd.className = 'user-grid-pw';
         passwordTd.textContent = '••••••••';
         passwordTd.title = 'Password is encrypted';
-        
+
         const actionsTd = document.createElement('td');
         actionsTd.className = 'grid-actions';
-        
+
         const viewBtn = document.createElement('button');
         viewBtn.type = 'button';
         viewBtn.className = 'btn-secondary';
         viewBtn.textContent = '👁 View';
         viewBtn.addEventListener('click', () => handleViewUserClick(user.id));
-        
+
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'btn-secondary';
         editBtn.textContent = '✏ Edit';
         editBtn.addEventListener('click', () => handleEditUserClick(user.id));
-        
+
         actionsTd.append(viewBtn, editBtn);
-        
+
         const isSuperAdmin = user.email.toLowerCase() === 'jojogeorge3344@gmail.com';
         if (!isSuperAdmin) {
             const authBtn = document.createElement('button');
@@ -2228,16 +2241,16 @@ function renderUserGrid() {
             authBtn.className = 'btn-secondary';
             authBtn.textContent = '🔑 Auth';
             authBtn.addEventListener('click', () => handleUserAuthorizationClick(user));
-            
+
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
             deleteBtn.className = 'btn-danger';
             deleteBtn.textContent = '🗑 Delete';
             deleteBtn.addEventListener('click', () => handleDeleteUserClick(user.id));
-            
+
             actionsTd.append(authBtn, deleteBtn);
         }
-        
+
         row.append(usernameTd, emailTd, passwordTd, actionsTd);
         el.userGridBody.appendChild(row);
     });
@@ -2249,7 +2262,7 @@ function applyUserFilter() {
     if (!term) {
         state.filteredUsers = [...state.users];
     } else {
-        state.filteredUsers = state.users.filter(user => 
+        state.filteredUsers = state.users.filter(user =>
             user.username.toLowerCase().includes(term) ||
             user.email.toLowerCase().includes(term)
         );
@@ -2269,42 +2282,42 @@ async function handleAddUser(event) {
     const username = el.newUsername.value.trim();
     const email = el.newEmail.value.trim();
     const password = el.newPassword.value;
-    
+
     if (!username || !email || !password) {
         setAddUserFeedback('All fields are required.', true);
         return;
     }
-    
+
     el.addUserSubmitBtn.disabled = true;
     setAddUserFeedback('Registering user...', false);
-    
+
     try {
         const formData = new FormData();
         formData.append('username', username);
         formData.append('email', email);
         formData.append('password', password);
-        
+
         if (el.newProfilePic && el.newProfilePic.files && el.newProfilePic.files[0]) {
             formData.append('profilePic', el.newProfilePic.files[0]);
         }
-        
+
         const response = await fetch('/api/users', {
             method: 'POST',
             body: formData
         });
-        
+
         if (!response.ok) {
             const errText = await response.text();
             throw new Error(errText || 'Registration failed.');
         }
-        
+
         setAddUserFeedback('User created successfully!', false);
         showCinematicToast(username, 'add');
         el.newUsername.value = '';
         el.newEmail.value = '';
         el.newPassword.value = '';
         if (el.newProfilePic) el.newProfilePic.value = '';
-        
+
         await loadUsers();
         await refreshValidEmails();
     } catch (err) {
@@ -2325,12 +2338,12 @@ function setAddUserFeedback(message, isError) {
 function handleEditUserClick(userId) {
     const user = state.users.find(u => u.id === userId);
     if (!user) return;
-    
+
     el.editUserId.value = user.id;
     el.editUsername.value = user.username;
     el.editEmail.value = user.email;
     el.editPassword.value = user.password;
-    
+
     setEditUserFeedback('', false, true);
     el.editUserModal.classList.remove('hidden');
 }
@@ -2345,37 +2358,37 @@ async function handleEditUserSubmit(event) {
     const username = el.editUsername.value.trim();
     const email = el.editEmail.value.trim();
     const password = el.editPassword.value;
-    
+
     if (!username || !email || !password) {
         setEditUserFeedback('All fields are required.', true);
         return;
     }
-    
+
     el.saveEditUserBtn.disabled = true;
     setEditUserFeedback('Saving changes...', false);
-    
+
     try {
         const formData = new FormData();
         formData.append('username', username);
         formData.append('email', email);
         formData.append('password', password);
-        
+
         if (el.editProfilePic && el.editProfilePic.files && el.editProfilePic.files[0]) {
             formData.append('profilePic', el.editProfilePic.files[0]);
         }
-        
+
         const response = await fetch(`/api/users/${encodeURIComponent(id)}`, {
             method: 'PUT',
             body: formData
         });
-        
+
         if (!response.ok) {
             const errText = await response.text();
             throw new Error(errText || 'Update failed.');
         }
-        
+
         const updatedUser = await response.json();
-        
+
         const originalUser = state.users.find(u => u.id === id);
         if (state.currentUser && originalUser && originalUser.email === state.currentUser.email) {
             state.currentUser = {
@@ -2386,9 +2399,9 @@ async function handleEditUserSubmit(event) {
             localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
             renderCurrentUserHeader();
         }
-        
+
         if (el.editProfilePic) el.editProfilePic.value = '';
-        
+
         await loadUsers();
         await refreshValidEmails();
         closeEditUserModal();
@@ -2418,13 +2431,13 @@ function handleUserAuthorizationClick(user) {
     if (!user) return;
     el.authUserId.value = user.id;
     if (el.authUserDisplay) el.authUserDisplay.textContent = `${user.username} (${user.email})`;
-    
+
     const disabled = user.disabledModules || [];
     el.authRecolor.checked = !disabled.includes('recolor');
     el.authCarInfo.checked = !disabled.includes('carInfo');
     el.authVehicleManagement.checked = !disabled.includes('vehicleManagement');
     el.authAdmin.checked = !disabled.includes('admin');
-    
+
     setUserAuthFeedback('', false, true);
     if (el.userAuthModal) el.userAuthModal.classList.remove('hidden');
 }
@@ -2436,40 +2449,40 @@ function closeUserAuthModal() {
 async function handleSaveUserAuthClick() {
     const id = el.authUserId.value;
     if (!id) return;
-    
+
     const userToAuth = state.users.find(u => u.id === id);
     const username = userToAuth ? userToAuth.username : 'Unknown User';
-    
+
     const disabledModules = [];
     if (!el.authRecolor.checked) disabledModules.push('recolor');
     if (!el.authCarInfo.checked) disabledModules.push('carInfo');
     if (!el.authVehicleManagement.checked) disabledModules.push('vehicleManagement');
     if (!el.authAdmin.checked) disabledModules.push('admin');
-    
+
     el.saveUserAuthBtn.disabled = true;
     setUserAuthFeedback('Saving changes...', false);
-    
+
     try {
         const response = await fetch(`/api/users/${encodeURIComponent(id)}/authorization`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(disabledModules)
         });
-        
+
         if (!response.ok) {
             const errText = await response.text();
             throw new Error(errText || 'Failed to save authorization settings.');
         }
-        
+
         await loadUsers();
-        
+
         const originalUser = state.users.find(u => u.id === id);
         if (state.currentUser && originalUser && originalUser.email === state.currentUser.email) {
             state.currentUser.disabledModules = disabledModules;
             localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
             applyUserAuthorization(state.currentUser);
         }
-        
+
         setUserAuthFeedback('Authorization settings updated successfully.', false);
         showCinematicToast(username, 'auth');
         setTimeout(closeUserAuthModal, 1000);
@@ -2497,7 +2510,7 @@ function setUserAuthFeedback(message, isError, hide = false) {
 function handleDeleteUserClick(userId) {
     const user = state.users.find(u => u.id === userId);
     if (!user) return;
-    
+
     state.selectedUser = user;
     if (el.deleteUserTargetName) el.deleteUserTargetName.textContent = `${user.username} (${user.email})`;
     if (el.deleteUserModal) el.deleteUserModal.classList.remove('hidden');
@@ -2511,19 +2524,19 @@ function closeDeleteUserModal() {
 async function handleConfirmDeleteUser() {
     const user = state.selectedUser;
     if (!user) return;
-    
+
     const username = user.username;
     el.confirmDeleteUserBtn.disabled = true;
-    
+
     try {
         const response = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
             method: 'DELETE'
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to delete user.');
         }
-        
+
         await loadUsers();
         await refreshValidEmails();
         closeDeleteUserModal();
@@ -2544,11 +2557,11 @@ let cinematicInterval = null;
 function handleViewUserClick(userId) {
     const user = state.users.find(u => u.id === userId);
     if (!user) return;
-    
+
     if (el.viewUsernameVal) el.viewUsernameVal.textContent = user.username;
     if (el.viewEmailVal) el.viewEmailVal.textContent = user.email;
     if (el.viewIdVal) el.viewIdVal.textContent = user.id;
-    
+
     // Set user's profile picture inside the cinematic showroom
     if (el.cinematicCarImage) {
         el.cinematicCarImage.src = user.profilePic ? `/${user.profilePic}` : '/images/default_avatar.png';
@@ -2562,20 +2575,20 @@ function handleViewUserClick(userId) {
     state.cinematic.mode = 'pulse';
     state.cinematic.color = '#FF2800';
     state.cinematic.rotation = 0;
-    
+
     if (el.cinematicColorText) el.cinematicColorText.textContent = '#FF2800';
     if (el.cinematicRotationText) el.cinematicRotationText.textContent = '0° Y';
-    
+
     // Active class updates on showroom style buttons
     updateCinematicControls();
-    
+
     // Set first swatch active
     if (el.cinematicSwatches) {
         [...el.cinematicSwatches.children].forEach(sw => {
             sw.classList.toggle('active', sw.dataset.hex === '#FF2800');
         });
     }
-    
+
     applyCinematicAnimation();
     if (el.viewUserModal) el.viewUserModal.classList.remove('hidden');
 }
@@ -2599,20 +2612,20 @@ function updateCinematicControls() {
 
 function applyCinematicAnimation() {
     stopCinematicLoop();
-    
+
     const carWrap = el.cinematicCarWrap;
     const carImg = el.cinematicCarImage;
     const glow = el.cinematicGlow;
     const scanner = el.cinematicScanner;
-    
+
     if (!carWrap || !carImg) return;
-    
+
     // Clear styles
     carWrap.className = 'cinematic-car-wrap';
     carWrap.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
     carImg.className = 'cinematic-car-img';
     if (scanner) scanner.style.display = 'none';
-    
+
     if (state.cinematic.mode === 'pulse') {
         carImg.classList.add('pulse-anim');
         updateCarColorFilter(state.cinematic.color);
@@ -2621,7 +2634,7 @@ function applyCinematicAnimation() {
         updateCarColorFilter(state.cinematic.color);
     } else if (state.cinematic.mode === 'cyber') {
         if (scanner) scanner.style.display = 'block';
-        
+
         let hue = 0;
         cinematicInterval = setInterval(() => {
             hue = (hue + 2) % 360;
@@ -2643,16 +2656,16 @@ function stopCinematicLoop() {
 
 function setCinematicColor(hex, swatchEl) {
     if (state.cinematic.mode === 'cyber') return; // Cyber scan cycles automatically
-    
+
     state.cinematic.color = hex;
-    
+
     // Update active swatch
     if (el.cinematicSwatches) {
         [...el.cinematicSwatches.children].forEach(sw => {
             sw.classList.toggle('active', sw === swatchEl);
         });
     }
-    
+
     if (el.cinematicColorText) el.cinematicColorText.textContent = hex;
     updateCarColorFilter(hex);
 }
@@ -2661,9 +2674,9 @@ function updateCarColorFilter(hex) {
     const carImg = el.cinematicCarImage;
     const glow = el.cinematicGlow;
     if (!carImg) return;
-    
+
     let hueRotate = 0;
-    switch(hex) {
+    switch (hex) {
         case '#FF2800': hueRotate = 0; break;
         case '#00FFCC': hueRotate = 130; break;
         case '#FF00FF': hueRotate = 280; break;
@@ -2672,27 +2685,27 @@ function updateCarColorFilter(hex) {
         case '#0066FF': hueRotate = 185; break;
         default: hueRotate = 0;
     }
-    
+
     carImg.style.filter = `drop-shadow(0px 15px 20px rgba(0, 0, 0, 0.9)) hue-rotate(${hueRotate}deg) saturate(1.5)`;
     if (glow) glow.style.background = `radial-gradient(circle, ${hex}33 0%, transparent 70%)`;
 }
 
 function handleCinematicMouseMove(e) {
     const wrap = el.cinematicCarWrap;
-    if (!wrap || state.cinematic.mode === 'drift') return; 
-    
+    if (!wrap || state.cinematic.mode === 'drift') return;
+
     const rect = el.cinematicWindow.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    
+
     const rotateY = ((x - centerX) / centerX) * 20;
     const rotateX = -((y - centerY) / centerY) * 15;
-    
+
     wrap.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(15px)`;
-    
+
     if (el.cinematicRotationText) {
         el.cinematicRotationText.textContent = `${Math.round(rotateY)}° Y, ${Math.round(rotateX)}° X`;
     }
@@ -2701,7 +2714,7 @@ function handleCinematicMouseMove(e) {
 function resetCinematicPerspective() {
     const wrap = el.cinematicCarWrap;
     if (!wrap || state.cinematic.mode === 'drift') return;
-    
+
     wrap.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
     if (el.cinematicRotationText) {
         el.cinematicRotationText.textContent = '0° Y, 0° X';
@@ -2723,13 +2736,13 @@ function getOrCreateToastContainer() {
 
 function showCinematicToast(username, actionType) {
     const container = getOrCreateToastContainer();
-    
+
     const toast = document.createElement('div');
     toast.className = `cinematic-toast toast-${actionType} cinematic-toast-entrance`;
-    
+
     let iconHtml = '';
     let badgeText = '';
-    
+
     switch (actionType) {
         case 'add':
             badgeText = 'Successfully Added';
@@ -2748,7 +2761,7 @@ function showCinematicToast(username, actionType) {
             iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
             break;
     }
-    
+
     toast.innerHTML = `
         <div class="cinematic-toast-scanline"></div>
         <div class="cinematic-toast-glow"></div>
@@ -2763,14 +2776,14 @@ function showCinematicToast(username, actionType) {
             <button class="cinematic-toast-close">&times;</button>
         </div>
     `;
-    
+
     const closeBtn = toast.querySelector('.cinematic-toast-close');
     closeBtn.addEventListener('click', () => {
         dismissToast(toast);
     });
-    
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
         if (toast.parentNode) {
             dismissToast(toast);

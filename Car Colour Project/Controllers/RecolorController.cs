@@ -8,19 +8,19 @@ namespace Car_Colour_Project.Controllers;
 [Route("api/[controller]")]
 public sealed class RecolorController : ControllerBase
 {
-    private readonly ICarRepository _carRepository;
+    private readonly ICarService _carService;
     private readonly IImageRecolorService _imageRecolorService;
 
-    public RecolorController(ICarRepository carRepository, IImageRecolorService imageRecolorService)
+    public RecolorController(ICarService carService, IImageRecolorService imageRecolorService)
     {
-        _carRepository = carRepository;
+        _carService = carService;
         _imageRecolorService = imageRecolorService;
     }
 
     [HttpPost]
     public async Task<ActionResult<RecolorResponse>> Recolor([FromBody] RecolorRequest request, CancellationToken cancellationToken)
     {
-        var car = await _carRepository.GetByIdAsync(request.CarId, cancellationToken);
+        var car = await _carService.GetByIdAsync(request.CarId, cancellationToken);
         if (car is null)
         {
             return NotFound(new RecolorResponse { Success = false, Message = "Car not found." });

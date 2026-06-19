@@ -8,12 +8,12 @@ namespace Car_Colour_Project.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
 
-    public AuthController(IConfiguration configuration, IUserRepository userRepository)
+    public AuthController(IConfiguration configuration, IUserService userService)
     {
         _configuration = configuration;
-        _userRepository = userRepository;
+        _userService = userService;
     }
 
     [HttpPost("login")]
@@ -23,10 +23,10 @@ public sealed class AuthController : ControllerBase
         var inputPassword = request.Password ?? string.Empty;
 
         // 1. Check against the user database (matching by email or username)
-        var user = await _userRepository.GetByEmailAsync(inputUser, cancellationToken);
+        var user = await _userService.GetByEmailAsync(inputUser, cancellationToken);
         if (user is null)
         {
-            var allUsers = await _userRepository.GetAllAsync(cancellationToken);
+            var allUsers = await _userService.GetAllAsync(cancellationToken);
             user = allUsers.FirstOrDefault(u => string.Equals(u.Username.Trim(), inputUser, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -90,7 +90,7 @@ public sealed class AuthController : ControllerBase
             emails.Add(configuredUsername);
         }
 
-        var users = await _userRepository.GetAllAsync(cancellationToken);
+        var users = await _userService.GetAllAsync(cancellationToken);
         emails.AddRange(users.Select(u => u.Email));
         emails.AddRange(users.Select(u => u.Username));
 

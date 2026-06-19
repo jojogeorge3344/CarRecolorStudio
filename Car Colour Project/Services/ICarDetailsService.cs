@@ -1,0 +1,10 @@
+using Car_Colour_Project.Models;
+
+namespace Car_Colour_Project.Services;
+
+public interface ICarDetailsService
+{
+    Task<IReadOnlyList<CarDetailSection>> GetByCarIdAsync(string carId, CancellationToken cancellationToken = default);
+    Task SaveByCarIdAsync(string carId, IReadOnlyList<CarDetailSection> sections, CancellationToken cancellationToken = default);
+    Task DeleteByCarIdAsync(string carId, CancellationToken cancellationToken = default);
+}

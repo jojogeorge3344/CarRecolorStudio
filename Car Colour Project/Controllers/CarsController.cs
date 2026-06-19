@@ -9,28 +9,28 @@ namespace Car_Colour_Project.Controllers;
 public sealed class CarsController : ControllerBase
 {
     private static readonly HashSet<string> AllowedImageExtensions = [".png", ".jpg", ".jpeg", ".webp"];
-    private readonly ICarRepository _carRepository;
-    private readonly ICarDetailsRepository _carDetailsRepository;
+    private readonly ICarService _carService;
+    private readonly ICarDetailsService _carDetailsService;
     private readonly IWebHostEnvironment _environment;
 
-    public CarsController(ICarRepository carRepository, ICarDetailsRepository carDetailsRepository, IWebHostEnvironment environment)
+    public CarsController(ICarService carService, ICarDetailsService carDetailsService, IWebHostEnvironment environment)
     {
-        _carRepository = carRepository;
-        _carDetailsRepository = carDetailsRepository;
+        _carService = carService;
+        _carDetailsService = carDetailsService;
         _environment = environment;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var cars = await _carRepository.GetAllAsync(cancellationToken);
+        var cars = await _carService.GetAllAsync(cancellationToken);
         return Ok(cars);
     }
 
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string term, CancellationToken cancellationToken)
     {
-        var cars = await _carRepository.SearchAsync(term, cancellationToken);
+        var cars = await _carService.SearchAsync(term, cancellationToken);
         return Ok(cars);
     }
 
@@ -74,7 +74,7 @@ public sealed class CarsController : ControllerBase
             Image = $"images/{imageFileName}"
         };
 
-        var created = await _carRepository.AddAsync(car, cancellationToken);
+        var created = await _carService.AddAsync(car, cancellationToken);
         return Created($"/api/cars/{created.Id}", created);
     }
 
@@ -86,7 +86,7 @@ public sealed class CarsController : ControllerBase
             return BadRequest("Car id is required.");
         }
 
-        var existing = await _carRepository.GetByIdAsync(id, cancellationToken);
+        var existing = await _carService.GetByIdAsync(id, cancellationToken);
         if (existing is null)
         {
             return NotFound("Car not found.");
@@ -107,7 +107,7 @@ public sealed class CarsController : ControllerBase
         await SaveImageAsync(request.Image, fileName, cancellationToken);
 
         var newImageRelativePath = $"images/{fileName}";
-        var updated = await _carRepository.UpdateImageAsync(existing.Id, newImageRelativePath, cancellationToken);
+        var updated = await _carService.UpdateImageAsync(existing.Id, newImageRelativePath, cancellationToken);
         if (updated is null)
         {
             return NotFound("Car not found.");
@@ -125,13 +125,13 @@ public sealed class CarsController : ControllerBase
             return BadRequest("Car id is required.");
         }
 
-        var deleted = await _carRepository.DeleteAsync(id, cancellationToken);
+        var deleted = await _carService.DeleteAsync(id, cancellationToken);
         if (deleted is null)
         {
             return NotFound("Car not found.");
         }
 
-        await _carDetailsRepository.DeleteByCarIdAsync(id, cancellationToken);
+        await _carDetailsService.DeleteByCarIdAsync(id, cancellationToken);
         TryDeleteImage(deleted.Image);
 
         return Ok(new { success = true, deletedCarId = deleted.Id });
@@ -142,7 +142,7 @@ public sealed class CarsController : ControllerBase
         var suffix = 1;
         var candidate = idBase;
 
-        while (await _carRepository.GetByIdAsync(candidate, cancellationToken) is not null)
+        while (await _carService.GetByIdAsync(candidate, cancellationToken) is not null)
         {
             candidate = $"{idBase}-{suffix}";
             suffix++;

@@ -1,0 +1,13 @@
+using Car_Colour_Project.Models;
+
+namespace Car_Colour_Project.Repository;
+
+public interface ICarRepository
+{
+    Task<IReadOnlyList<Car>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Car>> SearchAsync(string term, CancellationToken cancellationToken = default);
+    Task<Car?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
+    Task<Car> AddAsync(Car car, CancellationToken cancellationToken = default);
+    Task<Car?> UpdateImageAsync(string id, string imageRelativePath, CancellationToken cancellationToken = default);
+    Task<Car?> DeleteAsync(string id, CancellationToken cancellationToken = default);
+}

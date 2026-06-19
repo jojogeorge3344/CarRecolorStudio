@@ -1,5 +1,6 @@
 using System.Net.NetworkInformation;
 using Car_Colour_Project.Services;
+using Car_Colour_Project.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,10 @@ builder.Services.AddSingleton<ICarRepository, CarRepository>();
 builder.Services.AddSingleton<IColorRepository, ColorRepository>();
 builder.Services.AddSingleton<ICarDetailsRepository, CarDetailsRepository>();
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<ICarService, CarService>();
+builder.Services.AddSingleton<IColorService, ColorService>();
+builder.Services.AddSingleton<ICarDetailsService, CarDetailsService>();
+builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddScoped<IImageRecolorService, ImageRecolorService>();
 
 var app = builder.Build();

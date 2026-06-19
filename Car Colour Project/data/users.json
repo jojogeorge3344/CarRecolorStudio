@@ -5,9 +5,7 @@
     "Email": "jojogeorge@carstudio.com",
     "Password": "12345",
     "ProfilePic": " Profile Pic/b1f12d57306844098c31173d34e1a1ba.jpeg",
-    "DisabledModules": [
-      "carInfo"
-    ]
+    "DisabledModules": []
   },
   {
     "Id": "b020b0e2a02c4e958cea41c6d9ff7e58",

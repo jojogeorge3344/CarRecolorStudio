@@ -8,26 +8,26 @@ namespace Car_Colour_Project.Controllers;
 [Route("api/[controller]")]
 public sealed class UsersController : ControllerBase
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
     private readonly IWebHostEnvironment _environment;
 
-    public UsersController(IUserRepository userRepository, IWebHostEnvironment environment)
+    public UsersController(IUserService userService, IWebHostEnvironment environment)
     {
-        _userRepository = userRepository;
+        _userService = userService;
         _environment = environment;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var users = await _userRepository.GetAllAsync(cancellationToken);
+        var users = await _userService.GetAllAsync(cancellationToken);
         return Ok(users);
     }
 
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string term, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.SearchAsync(term, cancellationToken);
+        var users = await _userService.SearchAsync(term, cancellationToken);
         return Ok(users);
     }
 
@@ -57,7 +57,7 @@ public sealed class UsersController : ControllerBase
                 ProfilePic = profilePicPath
             };
 
-            var created = await _userRepository.AddAsync(user, cancellationToken);
+            var created = await _userService.AddAsync(user, cancellationToken);
             return Created($"/api/users/{created.Id}", created);
         }
         catch (InvalidOperationException ex)
@@ -85,7 +85,7 @@ public sealed class UsersController : ControllerBase
 
         try
         {
-            var existing = await _userRepository.GetByIdAsync(id, cancellationToken);
+            var existing = await _userService.GetByIdAsync(id, cancellationToken);
             if (existing is null)
             {
                 return NotFound("User not found.");
@@ -102,7 +102,7 @@ public sealed class UsersController : ControllerBase
                 ProfilePic = profilePicPath
             };
 
-            var updated = await _userRepository.UpdateAsync(updatedUser, cancellationToken);
+            var updated = await _userService.UpdateAsync(updatedUser, cancellationToken);
             if (updated is null)
             {
                 return NotFound("User not found.");
@@ -124,13 +124,13 @@ public sealed class UsersController : ControllerBase
             return BadRequest("User id is required.");
         }
 
-        var existing = await _userRepository.GetByIdAsync(id, cancellationToken);
+        var existing = await _userService.GetByIdAsync(id, cancellationToken);
         if (existing is not null && string.Equals(existing.Email.Trim(), "jojogeorge3344@gmail.com", StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest("Cannot delete the super admin user.");
         }
 
-        var deleted = await _userRepository.DeleteAsync(id, cancellationToken);
+        var deleted = await _userService.DeleteAsync(id, cancellationToken);
         if (deleted is null)
         {
             return NotFound("User not found.");
@@ -156,7 +156,7 @@ public sealed class UsersController : ControllerBase
             return BadRequest("User id is required.");
         }
 
-        var existing = await _userRepository.GetByIdAsync(id, cancellationToken);
+        var existing = await _userService.GetByIdAsync(id, cancellationToken);
         if (existing is null)
         {
             return NotFound("User not found.");
@@ -177,7 +177,7 @@ public sealed class UsersController : ControllerBase
             DisabledModules = disabledModules
         };
 
-        var updated = await _userRepository.UpdateAsync(updatedUser, cancellationToken);
+        var updated = await _userService.UpdateAsync(updatedUser, cancellationToken);
         if (updated is null)
         {
             return NotFound("User not found.");

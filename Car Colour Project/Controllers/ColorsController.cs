@@ -7,24 +7,24 @@ namespace Car_Colour_Project.Controllers;
 [Route("api/[controller]")]
 public sealed class ColorsController : ControllerBase
 {
-    private readonly IColorRepository _colorRepository;
+    private readonly IColorService _colorService;
 
-    public ColorsController(IColorRepository colorRepository)
+    public ColorsController(IColorService colorService)
     {
-        _colorRepository = colorRepository;
+        _colorService = colorService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var colors = await _colorRepository.GetAllAsync(cancellationToken);
+        var colors = await _colorService.GetAllAsync(cancellationToken);
         return Ok(colors);
     }
 
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string term, CancellationToken cancellationToken)
     {
-        var colors = await _colorRepository.SearchAsync(term, cancellationToken);
+        var colors = await _colorService.SearchAsync(term, cancellationToken);
         return Ok(colors);
     }
 }
